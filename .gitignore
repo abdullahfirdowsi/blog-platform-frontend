@@ -1,0 +1,116 @@
+# Python-specific ignores
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment and local development
+.env
+.env.*
+!.env.example
+env/
+venv/
+ENV/
+.venv
+env.bak/
+venv.bak/
+.python-version
+
+# Distribution / packaging
+dist/
+build/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+.env.production
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Security and secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+
+# FastAPI specific
+.pytest_cache/
+celerybeat-schedule
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# Project specific
+tmp/
+uploads/
+static/uploads/
+media/
+.mypy_cache/
+
+# MongoDB dump files
+*.bson
+*.json.gz
+
+# System files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Windows specific
+*.lnk
+
