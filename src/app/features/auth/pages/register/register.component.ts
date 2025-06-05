@@ -67,9 +67,8 @@ export class RegisterComponent implements OnInit, AfterViewInit {
     private router: Router
   ) {
     this.registerForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3), Validators.pattern(/^[a-zA-Z0-9_]+$/)]],
-      email: ['', [Validators.required, Validators.email]],
       full_name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8), passwordStrengthValidator()]],
       confirm_password: ['', [Validators.required, passwordMatchValidator('password')]]
     });
@@ -155,7 +154,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       this.successMessage = '';
 
       const userData = {
-        username: this.registerForm.value.username,
+        username: this.registerForm.value.email, // Use email as username
         email: this.registerForm.value.email,
         full_name: this.registerForm.value.full_name,
         password: this.registerForm.value.password,

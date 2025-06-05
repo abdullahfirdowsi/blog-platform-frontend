@@ -1,0 +1,89 @@
+.brand-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Active navigation link styles */
+.router-link-active {
+  color: #818cf8 !important;
+}
+
+/* Dropdown animations */
+.absolute {
+  animation: dropdown-enter 0.2s ease-out;
+}
+
+@keyframes dropdown-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile menu animations */
+.md\:hidden {
+  animation: mobile-menu-enter 0.3s ease-out;
+}
+
+@keyframes mobile-menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus states for accessibility */
+button:focus,
+a:focus {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+}
+
+/* Hover transitions */
+a,
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Custom scrollbar for mobile menu */
+.md\:hidden::-webkit-scrollbar {
+  width: 4px;
+}
+
+.md\:hidden::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.md\:hidden::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 2px;
+}
+
+.md\:hidden::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+

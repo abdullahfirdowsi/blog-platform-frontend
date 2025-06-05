@@ -1,76 +1,88 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
-import { Subject, takeUntil, filter } from 'rxjs';
+import { RouterOutlet, RouterModule } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
-import { User } from './shared/interfaces';
+import { User } from './shared/interfaces/user.interface';
+import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  standalone: true,
+  imports: [CommonModule, RouterOutlet, RouterModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit, OnDestroy {
-  title = 'blog-platform';
-  currentUser: User | null = null;
-  isAuthenticated = false;
-  showUserMenu = false;
-  showMobileMenu = false;
-  isLandingPage = false;
+  title = 'BlogPlatform';
   
-  private destroy$ = new Subject<void>();
-
+  // Navigation state
+  isLandingPage = false;
+  showMobileMenu = false;
+  showUserMenu = false;
+  
+  // Authentication state
+  isAuthenticated = false;
+  currentUser: User | null = null;
+  
+  private subscription = new Subscription();
+  
   constructor(
-    private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
-
-  ngOnInit(): void {
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
+  
+  ngOnInit() {
+    // Listen to route changes to determine if we're on landing page
+    this.subscription.add(
+      this.router.events.pipe(
+        filter(event => event instanceof NavigationEnd)
+      ).subscribe((event: NavigationEnd) => {
+        this.isLandingPage = event.url === '/' || event.url === '/landing';
+        // Close menus on route change
+        this.closeMenus();
+      })
+    );
+    
+    // Subscribe to authentication state
+    this.subscription.add(
+      this.authService.currentUser$.subscribe(user => {
         this.currentUser = user;
         this.isAuthenticated = !!user;
-      });
-
-    // Listen to route changes to determine if we're on the landing page
-    this.router.events
-      .pipe(
-        filter(event => event instanceof NavigationEnd),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((event: NavigationEnd) => {
-        this.isLandingPage = event.url === '/landing' || event.url === '/';
-      });
-
-    // Check initial route
-    this.isLandingPage = this.router.url === '/landing' || this.router.url === '/';
+      })
+    );
+    
+    // Set initial landing page state
+    this.isLandingPage = this.router.url === '/' || this.router.url === '/landing';
   }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
-
-  toggleUserMenu(): void {
-    this.showUserMenu = !this.showUserMenu;
-    this.showMobileMenu = false;
-  }
-
-  toggleMobileMenu(): void {
+  
+  toggleMobileMenu() {
     this.showMobileMenu = !this.showMobileMenu;
-    this.showUserMenu = false;
+    if (this.showMobileMenu) {
+      this.showUserMenu = false;
+    }
   }
-
-  closeMenus(): void {
-    this.showUserMenu = false;
+  
+  toggleUserMenu() {
+    this.showUserMenu = !this.showUserMenu;
+    if (this.showUserMenu) {
+      this.showMobileMenu = false;
+    }
+  }
+  
+  closeMenus() {
     this.showMobileMenu = false;
+    this.showUserMenu = false;
   }
-
-  logout(): void {
+  
+  logout() {
     this.authService.logout();
     this.closeMenus();
-    this.router.navigate(['/landing']);
+    this.router.navigate(['/']);
   }
 }

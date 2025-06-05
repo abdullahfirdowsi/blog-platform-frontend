@@ -7,6 +7,67 @@
   @apply text-blue-400;
 }
 
+/* Ensure proper mobile/desktop navigation separation */
+.block {
+  display: block !important;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Mobile-first responsive classes */
+@media (max-width: 767px) {
+  .md\:hidden {
+    display: block !important;
+  }
+  
+  .hidden.md\:flex {
+    display: none !important;
+  }
+  
+  .block.md\:hidden {
+    display: block !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .md\:hidden {
+    display: none !important;
+  }
+  
+  .hidden.md\:flex {
+    display: flex !important;
+  }
+  
+  .block.md\:hidden {
+    display: none !important;
+  }
+}
+
+/* Force responsive behavior */
+@media screen and (max-width: 767px) {
+  nav .hidden.md\:flex {
+    display: none !important;
+  }
+  
+  nav .md\:hidden,
+  nav .block.md\:hidden {
+    display: block !important;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  nav .md\:hidden,
+  nav .block.md\:hidden {
+    display: none !important;
+  }
+  
+  nav .hidden.md\:flex {
+    display: flex !important;
+  }
+}
+
 /* Mobile menu animation */
 @keyframes slideIn {
   from {
