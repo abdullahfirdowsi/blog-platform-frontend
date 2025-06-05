@@ -21,6 +21,7 @@ export class AuthService {
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   private refreshTokenTimer: any;
   private router = inject(Router);
+  private googleAuthReturnUrl: string = '/home';
 
   public currentUser$ = this.currentUserSubject.asObservable();
   public token$ = this.tokenSubject.asObservable();
@@ -68,6 +69,13 @@ export class AuthService {
   private handleGoogleAuth(response: any): void {
     this.isLoadingSubject.next(true);
     
+    // Validate that we received a token from Google
+    if (!response?.credential) {
+      console.error('Google authentication failed: No token received');
+      this.isLoadingSubject.next(false);
+      return;
+    }
+    
     this.http.post<GoogleAuthResponse>(`${this.apiUrl}/google`, {
       token: response.credential
     }, {
@@ -75,12 +83,16 @@ export class AuthService {
     }).pipe(
       catchError(error => {
         this.isLoadingSubject.next(false);
+        console.error('Google authentication failed:', error);
         return throwError(() => error);
       })
     ).subscribe({
       next: (authResponse) => {
         this.handleAuthSuccess(authResponse);
         this.isLoadingSubject.next(false);
+        
+        // Navigate to the stored return URL
+        this.router.navigate([this.googleAuthReturnUrl]);
       },
       error: (error) => {
         console.error('Google authentication failed:', error);
@@ -89,12 +101,20 @@ export class AuthService {
     });
   }
 
-  renderGoogleButton(element: HTMLElement): void {
+  setGoogleAuthReturnUrl(returnUrl: string): void {
+    this.googleAuthReturnUrl = returnUrl;
+  }
+
+  renderGoogleButton(element: HTMLElement, returnUrl?: string): void {
+    if (returnUrl) {
+      this.setGoogleAuthReturnUrl(returnUrl);
+    }
+    
     if (window.google) {
       window.google.accounts.id.renderButton(element, {
         theme: 'outline',
         size: 'large',
-        width: '100%',
+        width: '320',
         text: 'signin_with'
       });
     }

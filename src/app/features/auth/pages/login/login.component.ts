@@ -54,7 +54,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     // Initialize Google Sign-In button
     if (this.googleButton) {
       setTimeout(() => {
-        this.authService.renderGoogleButton(this.googleButton.nativeElement);
+        this.authService.renderGoogleButton(this.googleButton.nativeElement, this.returnUrl);
       }, 100);
     }
   }
