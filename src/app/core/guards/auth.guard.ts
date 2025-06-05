@@ -21,7 +21,7 @@ export const guestGuard: CanActivateFn = (route, state) => {
   if (!authService.isAuthenticated()) {
     return true;
   } else {
-    router.navigate(['/home']);
+    router.navigate(['/landing']);
     return false;
   }
 };

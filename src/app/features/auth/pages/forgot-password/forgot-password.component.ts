@@ -31,7 +31,7 @@ export class ForgotPasswordComponent {
   ngOnInit(): void {
     // Redirect if already authenticated
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/home']);
+      this.router.navigate(['/landing']);
     }
 
     // Subscribe to auth loading state

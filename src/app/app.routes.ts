@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: '/home',
+    redirectTo: '/landing',
     pathMatch: 'full'
   },
   {
@@ -11,8 +11,8 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },
   {
-    path: 'home',
-    loadChildren: () => import('./features/home/home.routes').then(m => m.homeRoutes)
+    path: 'landing',
+    loadChildren: () => import('./features/landing/landing.routes').then(m => m.landingRoutes)
   },
   {
     path: 'posts',
@@ -24,6 +24,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '/home'
+    redirectTo: '/landing'
   }
 ];

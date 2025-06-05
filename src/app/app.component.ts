@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { Subject, takeUntil, filter } from 'rxjs';
 import { AuthService } from './core/services/auth.service';
 import { User } from './shared/interfaces';
 
@@ -17,6 +17,7 @@ export class AppComponent implements OnInit, OnDestroy {
   isAuthenticated = false;
   showUserMenu = false;
   showMobileMenu = false;
+  isLandingPage = false;
   
   private destroy$ = new Subject<void>();
 
@@ -32,6 +33,19 @@ export class AppComponent implements OnInit, OnDestroy {
         this.currentUser = user;
         this.isAuthenticated = !!user;
       });
+
+    // Listen to route changes to determine if we're on the landing page
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: NavigationEnd) => {
+        this.isLandingPage = event.url === '/landing' || event.url === '/';
+      });
+
+    // Check initial route
+    this.isLandingPage = this.router.url === '/landing' || this.router.url === '/';
   }
 
   ngOnDestroy(): void {
@@ -57,6 +71,6 @@ export class AppComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.closeMenus();
-    this.router.navigate(['/home']);
+    this.router.navigate(['/landing']);
   }
 }

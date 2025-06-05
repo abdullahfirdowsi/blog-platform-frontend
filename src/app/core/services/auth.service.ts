@@ -220,7 +220,7 @@ export class AuthService {
     this.clearStoredAuth();
     this.tokenSubject.next(null);
     this.currentUserSubject.next(null);
-    this.router.navigate(['/home']);
+    this.router.navigate(['/landing']);
   }
 
   getCurrentUser(): User | null {

@@ -85,7 +85,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     // Redirect if already authenticated
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/home']);
+      this.router.navigate(['/landing']);
     }
 
     // Subscribe to auth loading state
@@ -169,7 +169,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
             
             // Redirect to home after successful registration and auto-login
             setTimeout(() => {
-              this.router.navigate(['/home']);
+              this.router.navigate(['/landing']);
             }, 2000);
           },
           error: (error) => {

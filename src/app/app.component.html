@@ -1,139 +1,197 @@
-<nav class="bg-white shadow-lg sticky top-0 z-50">
-  <div class="max-w-7xl mx-auto px-4">
-    <div class="flex justify-between h-16">
+<!-- Navigation Header -->
+<nav class="glass-card fixed top-0 left-0 right-0 z-50 border-b border-white/10" *ngIf="!isLandingPage">
+  <div class="max-w-7xl mx-auto px-4 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      <!-- Logo -->
       <div class="flex items-center">
-        <a [routerLink]="['/']" class="text-xl font-bold text-blue-600 hover:text-blue-800">
-          <i class="fas fa-blog mr-2"></i>BlogPlatform
+        <a [routerLink]="['/']" class="flex items-center space-x-3 group">
+          <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+            <i class="fas fa-blog text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gradient hidden sm:block">BlogPlatform</span>
         </a>
       </div>
       
-      <!-- Navigation Menu -->
-      <div class="hidden md:flex items-center space-x-6">
-        <a [routerLink]="['/home']" 
-           routerLinkActive="text-blue-600 border-b-2 border-blue-600" 
-           class="text-gray-600 hover:text-blue-600 px-3 py-2 transition-colors">
-          Home
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center space-x-1">
+        <a [routerLink]="['/landing']" 
+           routerLinkActive="active" 
+           class="nav-link">
+          <i class="fas fa-home text-sm"></i>
+          <span>Home</span>
         </a>
         <a [routerLink]="['/posts']" 
-           routerLinkActive="text-blue-600 border-b-2 border-blue-600" 
-           class="text-gray-600 hover:text-blue-600 px-3 py-2 transition-colors">
-          All Posts
+           routerLinkActive="active" 
+           class="nav-link">
+          <i class="fas fa-newspaper text-sm"></i>
+          <span>All Posts</span>
         </a>
         
         @if (isAuthenticated) {
           <a [routerLink]="['/posts/create']" 
-             routerLinkActive="text-blue-600 border-b-2 border-blue-600" 
-             class="text-gray-600 hover:text-blue-600 px-3 py-2 transition-colors">
-            <i class="fas fa-plus mr-1"></i>Write
+             routerLinkActive="active" 
+             class="nav-link">
+            <i class="fas fa-plus text-sm"></i>
+            <span>Write</span>
           </a>
           
-          <!-- User dropdown -->
-          <div class="relative" [class.open]="showUserMenu">
+          <!-- User Menu -->
+          <div class="relative ml-4" [class.open]="showUserMenu">
             <button (click)="toggleUserMenu()" 
-                    class="flex items-center space-x-2 text-gray-600 hover:text-blue-600 focus:outline-none">
+                    class="flex items-center space-x-3 p-2 rounded-xl hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
               @if (currentUser?.profile_image) {
                 <img [src]="currentUser?.profile_image" 
                      [alt]="currentUser?.username"
-                     class="w-8 h-8 rounded-full object-cover">
+                     class="w-8 h-8 rounded-full object-cover ring-2 ring-gray-700">
               } @else {
-                <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                   {{ currentUser?.username?.charAt(0)?.toUpperCase() }}
                 </div>
               }
-              <span class="hidden sm:block">{{ currentUser?.username }}</span>
-              <i class="fas fa-chevron-down text-xs"></i>
+              <div class="hidden lg:block text-left">
+                <div class="text-sm font-medium text-white">{{ currentUser?.username }}</div>
+                <div class="text-xs text-gray-400">{{ currentUser?.email }}</div>
+              </div>
+              <i class="fas fa-chevron-down text-gray-400 text-xs transition-transform duration-200" 
+                 [class.rotate-180]="showUserMenu"></i>
             </button>
             
+            <!-- Dropdown Menu -->
             @if (showUserMenu) {
-              <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              <div class="absolute right-0 mt-2 w-56 glass-card border border-white/10 rounded-xl py-2 z-50 animate-fade-in">
+                <div class="px-4 py-2 border-b border-gray-800">
+                  <div class="text-sm font-medium text-white">{{ currentUser?.username }}</div>
+                  <div class="text-xs text-gray-400">{{ currentUser?.email }}</div>
+                </div>
+                
                 <a [routerLink]="['/profile']" 
                    (click)="showUserMenu = false"
-                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  <i class="fas fa-user mr-2"></i>Profile
+                   class="flex items-center px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200">
+                  <i class="fas fa-user w-4 mr-3"></i>
+                  <span>Profile Settings</span>
                 </a>
+                
                 <a [routerLink]="['/posts/my-posts']" 
                    (click)="showUserMenu = false"
-                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                  <i class="fas fa-file-alt mr-2"></i>My Posts
+                   class="flex items-center px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200">
+                  <i class="fas fa-file-alt w-4 mr-3"></i>
+                  <span>My Posts</span>
                 </a>
+                
+                <div class="border-t border-gray-800 my-1"></div>
+                
                 <button (click)="logout()" 
-                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
-                  <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        class="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-gray-800 transition-colors duration-200">
+                  <i class="fas fa-sign-out-alt w-4 mr-3"></i>
+                  <span>Sign Out</span>
                 </button>
               </div>
             }
           </div>
         } @else {
           <a [routerLink]="['/auth/login']" 
-             routerLinkActive="text-blue-600" 
-             class="text-gray-600 hover:text-blue-600 px-3 py-2 transition-colors">
-            Login
+             class="btn btn-ghost">
+            Sign In
           </a>
           <a [routerLink]="['/auth/register']" 
-             class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors">
-            Register
+             class="btn btn-primary ml-2">
+            Get Started
           </a>
         }
       </div>
       
-      <!-- Mobile menu button -->
-      <div class="md:hidden flex items-center">
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden">
         <button (click)="toggleMobileMenu()" 
-                class="text-gray-600 hover:text-blue-600 focus:outline-none">
-          <i class="fas" [class.fa-bars]="!showMobileMenu" [class.fa-times]="showMobileMenu"></i>
+                class="p-2 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <i class="fas text-xl" [class.fa-bars]="!showMobileMenu" [class.fa-times]="showMobileMenu"></i>
         </button>
       </div>
     </div>
-    
-    <!-- Mobile menu -->
-    @if (showMobileMenu) {
-      <div class="md:hidden border-t border-gray-200">
-        <div class="px-2 pt-2 pb-3 space-y-1">
-          <a [routerLink]="['/home']" 
+  </div>
+  
+  <!-- Mobile Menu -->
+  @if (showMobileMenu) {
+    <div class="md:hidden border-t border-white/10 animate-slide-in">
+      <div class="px-4 py-4 space-y-2">
+        <a [routerLink]="['/landing']" 
+           (click)="showMobileMenu = false"
+           class="flex items-center px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200">
+          <i class="fas fa-home w-5 mr-3"></i>
+          <span>Home</span>
+        </a>
+        
+        <a [routerLink]="['/posts']" 
+           (click)="showMobileMenu = false"
+           class="flex items-center px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200">
+          <i class="fas fa-newspaper w-5 mr-3"></i>
+          <span>All Posts</span>
+        </a>
+        
+        @if (isAuthenticated) {
+          <a [routerLink]="['/posts/create']" 
              (click)="showMobileMenu = false"
-             class="block px-3 py-2 text-gray-600 hover:text-blue-600">
-            Home
-          </a>
-          <a [routerLink]="['/posts']" 
-             (click)="showMobileMenu = false"
-             class="block px-3 py-2 text-gray-600 hover:text-blue-600">
-            All Posts
+             class="flex items-center px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200">
+            <i class="fas fa-plus w-5 mr-3"></i>
+            <span>Write Post</span>
           </a>
           
-          @if (isAuthenticated) {
-            <a [routerLink]="['/posts/create']" 
-               (click)="showMobileMenu = false"
-               class="block px-3 py-2 text-gray-600 hover:text-blue-600">
-              <i class="fas fa-plus mr-1"></i>Write
-            </a>
-            <a [routerLink]="['/profile']" 
-               (click)="showMobileMenu = false"
-               class="block px-3 py-2 text-gray-600 hover:text-blue-600">
-              Profile
-            </a>
-            <button (click)="logout()" 
-                    class="block w-full text-left px-3 py-2 text-red-600 hover:bg-gray-100">
-              Logout
-            </button>
-          } @else {
-            <a [routerLink]="['/auth/login']" 
-               (click)="showMobileMenu = false"
-               class="block px-3 py-2 text-gray-600 hover:text-blue-600">
-              Login
-            </a>
-            <a [routerLink]="['/auth/register']" 
-               (click)="showMobileMenu = false"
-               class="block px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-              Register
-            </a>
-          }
-        </div>
+          <div class="border-t border-gray-800 my-2"></div>
+          
+          <div class="px-4 py-2">
+            <div class="flex items-center space-x-3 mb-3">
+              @if (currentUser?.profile_image) {
+                <img [src]="currentUser?.profile_image" 
+                     [alt]="currentUser?.username"
+                     class="w-10 h-10 rounded-full object-cover">
+              } @else {
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  {{ currentUser?.username?.charAt(0)?.toUpperCase() }}
+                </div>
+              }
+              <div>
+                <div class="text-sm font-medium text-white">{{ currentUser?.username }}</div>
+                <div class="text-xs text-gray-400">{{ currentUser?.email }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <a [routerLink]="['/profile']" 
+             (click)="showMobileMenu = false"
+             class="flex items-center px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200">
+            <i class="fas fa-user w-5 mr-3"></i>
+            <span>Profile</span>
+          </a>
+          
+          <button (click)="logout()" 
+                  class="flex items-center w-full px-4 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-gray-800 transition-colors duration-200">
+            <i class="fas fa-sign-out-alt w-5 mr-3"></i>
+            <span>Sign Out</span>
+          </button>
+        } @else {
+          <div class="border-t border-gray-800 my-2"></div>
+          
+          <a [routerLink]="['/auth/login']" 
+             (click)="showMobileMenu = false"
+             class="flex items-center px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-gray-800 transition-colors duration-200">
+            <i class="fas fa-sign-in-alt w-5 mr-3"></i>
+            <span>Sign In</span>
+          </a>
+          
+          <a [routerLink]="['/auth/register']" 
+             (click)="showMobileMenu = false"
+             class="flex items-center px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-colors duration-200">
+            <i class="fas fa-user-plus w-5 mr-3"></i>
+            <span>Get Started</span>
+          </a>
+        }
       </div>
-    }
-  </div>
+    </div>
+  }
 </nav>
 
-<main class="min-h-screen bg-gray-50">
+<!-- Main Content -->
+<main [class]="isLandingPage ? 'min-h-screen' : 'pt-16 min-h-screen bg-gray-950'">
   <router-outlet></router-outlet>
 </main>
 
