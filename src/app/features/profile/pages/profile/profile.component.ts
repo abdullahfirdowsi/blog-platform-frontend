@@ -5,10 +5,12 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { AuthService } from '../../../../core/services/auth.service';
 import { User } from '../../../../shared/interfaces';
 import { takeUntil, Subject } from 'rxjs';
+import { HeaderComponent } from '../../../../shared/components/header/header.component';
+import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, HeaderComponent, FooterComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
