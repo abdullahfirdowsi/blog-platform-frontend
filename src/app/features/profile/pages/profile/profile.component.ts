@@ -38,7 +38,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private document: Document
   ) {
     this.profileForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       full_name: ['', [Validators.required, Validators.minLength(2)]],
       bio: [''],
@@ -63,7 +62,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.currentUser = user;
         if (user) {
           this.profileForm.patchValue({
-            username: user.username,
             email: user.email,
             full_name: user.full_name || '',
             bio: user.bio || '',
@@ -93,7 +91,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.errorMessage = '';
 
       const profileData = {
-        username: this.profileForm.value.username,
+        username: this.profileForm.value.email, // Use email as username
         email: this.profileForm.value.email,
         full_name: this.profileForm.value.full_name,
         bio: this.profileForm.value.bio,
@@ -200,7 +198,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   private getFieldDisplayName(fieldName: string): string {
     const displayNames: { [key: string]: string } = {
-      username: 'Username',
       email: 'Email',
       full_name: 'Full name',
       bio: 'Bio',

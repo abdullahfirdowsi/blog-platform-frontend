@@ -1,74 +1,70 @@
-<div class="page-content">
+<div class="profile-page">
   <app-header></app-header>
   
-  <div class="main-content bg-gray-50 py-8">
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-    <!-- Header -->
-    <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
-      <div class="flex items-center space-x-6">
+  <div class="profile-hero">
+    <div class="profile-container">
+      <!-- Profile Header -->
+      <div class="profile-header">
         <!-- Profile Avatar -->
-        <div class="flex-shrink-0">
+        <div class="profile-avatar-section">
           @if (currentUser?.profile_image) {
             <img 
-              class="h-20 w-20 rounded-full object-cover ring-4 ring-blue-100" 
+              class="profile-avatar" 
               [src]="currentUser?.profile_image" 
               [alt]="currentUser?.username"
             >
           } @else {
-            <div class="h-20 w-20 rounded-full bg-blue-500 flex items-center justify-center ring-4 ring-blue-100">
-              <span class="text-2xl font-medium text-white">{{ getUserInitials() }}</span>
+            <div class="profile-avatar-placeholder">
+              <span class="avatar-initials">{{ getUserInitials() }}</span>
             </div>
           }
         </div>
         
         <!-- Profile Info -->
-        <div class="flex-1 min-w-0">
-          <h1 class="text-2xl font-bold text-gray-900 truncate">
+        <div class="profile-info">
+          <h1 class="profile-name">
             {{ currentUser?.full_name || currentUser?.username }}
           </h1>
-          <p class="text-gray-600 truncate">{{ currentUser?.email }}</p>
-          <div class="flex items-center mt-2 text-sm text-gray-500">
-            <i [class]="getProviderIcon() + ' mr-2'"></i>
-            <span>{{ getProviderText() }}</span>
+          <p class="profile-email">{{ currentUser?.email }}</p>
+          <div class="profile-provider">
+            <i [class]="getProviderIcon() + ' provider-icon'"></i>
+            <span class="provider-text">{{ getProviderText() }}</span>
             @if (currentUser?.is_verified) {
-              <i class="fas fa-check-circle text-green-500 ml-2" title="Verified account"></i>
+              <i class="fas fa-check-circle verified-icon" title="Verified account"></i>
             }
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Tab Navigation -->
-    <div class="bg-white rounded-xl shadow-sm mb-8">
-      <div class="border-b border-gray-200">
-        <nav class="-mb-px flex">
+      <!-- Tab Navigation -->
+      <div class="tab-navigation">
+        <nav class="tab-nav">
           <button
             (click)="setActiveTab('profile')"
-            [class]="activeTab === 'profile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors"
+            [class.active]="activeTab === 'profile'"
+            class="tab-button"
           >
-            <i class="fas fa-user mr-2"></i>
-            Profile Information
+            <i class="fas fa-user tab-icon"></i>
+            <span class="tab-text">Profile Information</span>
           </button>
           <button
             (click)="setActiveTab('password')"
-            [class]="activeTab === 'password' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-            class="w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm transition-colors"
+            [class.active]="activeTab === 'password'"
+            class="tab-button"
           >
-            <i class="fas fa-lock mr-2"></i>
-            Change Password
+            <i class="fas fa-lock tab-icon"></i>
+            <span class="tab-text">Change Password</span>
           </button>
         </nav>
       </div>
-    </div>
 
-    <!-- Profile Tab Content -->
-    @if (activeTab === 'profile') {
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <div class="mb-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-2">Profile Information</h3>
-          <p class="text-sm text-gray-600">Update your account's profile information and email address.</p>
-        </div>
+      <!-- Profile Tab Content -->
+      @if (activeTab === 'profile') {
+        <div class="form-section">
+          <div class="form-header">
+            <h3 class="form-title">Profile Information</h3>
+            <p class="form-subtitle">Update your account's profile information and email address.</p>
+          </div>
 
         <!-- Success/Error Messages -->
         @if (successMessage) {
@@ -90,100 +86,67 @@
         }
 
         <!-- Profile Form -->
-        <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()" class="space-y-6">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Username -->
-            <div class="space-y-1">
-              <label for="username" class="block text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-user text-gray-400"></i>
-                </div>
-                <input
-                  id="username"
-                  type="text"
-                  formControlName="username"
-                  class="appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  [class.border-gray-300]="!hasFieldError(profileForm, 'username')"
-                  [class.border-red-500]="hasFieldError(profileForm, 'username')"
-                  placeholder="Your username"
-                >
-              </div>
-              @if (hasFieldError(profileForm, 'username')) {
-                <p class="text-red-500 text-xs mt-1">
-                  <i class="fas fa-exclamation-circle mr-1"></i>
-                  {{ getFieldError(profileForm, 'username') }}
-                </p>
-              }
+        <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()" class="auth-form">
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M2.5 6.667v6.666A1.667 1.667 0 004.167 15h11.666A1.667 1.667 0 0017.5 13.333V6.667m-15 0A1.667 1.667 0 014.167 5h11.666A1.667 1.667 0 0117.5 6.667m-15 0l7.5 5 7.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                class="form-input"
+                [class.input-error]="hasFieldError(profileForm, 'email')"
+                placeholder="your@email.com"
+              >
             </div>
-
-            <!-- Email -->
-            <div class="space-y-1">
-              <label for="email" class="block text-sm font-medium text-gray-700">
-                Email Address
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="fas fa-envelope text-gray-400"></i>
-                </div>
-                <input
-                  id="email"
-                  type="email"
-                  formControlName="email"
-                  class="appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  [class.border-gray-300]="!hasFieldError(profileForm, 'email')"
-                  [class.border-red-500]="hasFieldError(profileForm, 'email')"
-                  placeholder="your@email.com"
-                >
+            @if (hasFieldError(profileForm, 'email')) {
+              <div class="field-error">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+                </svg>
+                {{ getFieldError(profileForm, 'email') }}
               </div>
-              @if (hasFieldError(profileForm, 'email')) {
-                <p class="text-red-500 text-xs mt-1">
-                  <i class="fas fa-exclamation-circle mr-1"></i>
-                  {{ getFieldError(profileForm, 'email') }}
-                </p>
-              }
-            </div>
+            }
           </div>
 
           <!-- Full Name -->
-          <div class="space-y-1">
-            <label for="full_name" class="block text-sm font-medium text-gray-700">
-              Full Name
-            </label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="fas fa-id-card text-gray-400"></i>
-              </div>
+          <div class="form-group">
+            <label for="full_name" class="form-label">Full Name</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" fill="currentColor"/>
+              </svg>
               <input
                 id="full_name"
                 type="text"
                 formControlName="full_name"
-                class="appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                [class.border-gray-300]="!hasFieldError(profileForm, 'full_name')"
-                [class.border-red-500]="hasFieldError(profileForm, 'full_name')"
+                class="form-input"
+                [class.input-error]="hasFieldError(profileForm, 'full_name')"
                 placeholder="Your full name"
               >
             </div>
             @if (hasFieldError(profileForm, 'full_name')) {
-              <p class="text-red-500 text-xs mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>
+              <div class="field-error">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+                </svg>
                 {{ getFieldError(profileForm, 'full_name') }}
-              </p>
+              </div>
             }
           </div>
 
           <!-- Bio -->
-          <div class="space-y-1">
-            <label for="bio" class="block text-sm font-medium text-gray-700">
-              Bio
-            </label>
+          <div class="form-group">
+            <label for="bio" class="form-label">Bio</label>
             <textarea
               id="bio"
               formControlName="bio"
               rows="4"
-              class="appearance-none relative block w-full px-3 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              class="form-input"
               placeholder="Tell us about yourself..."
             ></textarea>
           </div>
@@ -212,13 +175,13 @@
       </div>
     }
 
-    <!-- Password Tab Content -->
-    @if (activeTab === 'password') {
-      <div class="bg-white rounded-xl shadow-sm p-6">
-        <div class="mb-6">
-          <h3 class="text-lg font-medium text-gray-900 mb-2">Change Password</h3>
-          <p class="text-sm text-gray-600">Ensure your account is using a long, random password to stay secure.</p>
-        </div>
+      <!-- Password Tab Content -->
+      @if (activeTab === 'password') {
+        <div class="form-section">
+          <div class="form-header">
+            <h3 class="form-title">Change Password</h3>
+            <p class="form-subtitle">Ensure your account is using a long, random password to stay secure.</p>
+          </div>
 
         <!-- Success/Error Messages -->
         @if (passwordSuccessMessage) {
@@ -240,112 +203,138 @@
         }
 
         <!-- Password Form -->
-        <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="space-y-6">
+        <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="auth-form">
           <!-- Current Password -->
-          <div class="space-y-1">
-            <label for="current_password" class="block text-sm font-medium text-gray-700">
-              Current Password
-            </label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="fas fa-lock text-gray-400"></i>
-              </div>
+          <div class="form-group">
+            <label for="current_password" class="form-label">Current Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 10V7a5 5 0 0110 0v3m-7 0h8a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
               <input
                 id="current_password"
                 [type]="showCurrentPassword ? 'text' : 'password'"
                 formControlName="current_password"
-                class="appearance-none relative block w-full pl-10 pr-10 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                [class.border-gray-300]="!hasFieldError(passwordForm, 'current_password')"
-                [class.border-red-500]="hasFieldError(passwordForm, 'current_password')"
+                class="form-input"
+                [class.input-error]="hasFieldError(passwordForm, 'current_password')"
                 placeholder="Enter current password"
               >
               <button
                 type="button"
                 (click)="togglePasswordVisibility('current')"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                class="password-toggle"
               >
-                <i [class]="showCurrentPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  @if (showCurrentPassword) {
+                    <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2.5 2.5l15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  } @else {
+                    <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  }
+                </svg>
               </button>
             </div>
             @if (hasFieldError(passwordForm, 'current_password')) {
-              <p class="text-red-500 text-xs mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>
+              <div class="field-error">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+                </svg>
                 {{ getFieldError(passwordForm, 'current_password') }}
-              </p>
+              </div>
             }
           </div>
 
           <!-- New Password -->
-          <div class="space-y-1">
-            <label for="new_password" class="block text-sm font-medium text-gray-700">
-              New Password
-            </label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="fas fa-lock text-gray-400"></i>
-              </div>
+          <div class="form-group">
+            <label for="new_password" class="form-label">New Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 10V7a5 5 0 0110 0v3m-7 0h8a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
               <input
                 id="new_password"
                 [type]="showNewPassword ? 'text' : 'password'"
                 formControlName="new_password"
-                class="appearance-none relative block w-full pl-10 pr-10 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                [class.border-gray-300]="!hasFieldError(passwordForm, 'new_password')"
-                [class.border-red-500]="hasFieldError(passwordForm, 'new_password')"
+                class="form-input"
+                [class.input-error]="hasFieldError(passwordForm, 'new_password')"
                 placeholder="Enter new password"
               >
               <button
                 type="button"
                 (click)="togglePasswordVisibility('new')"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                class="password-toggle"
               >
-                <i [class]="showNewPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  @if (showNewPassword) {
+                    <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2.5 2.5l15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  } @else {
+                    <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  }
+                </svg>
               </button>
             </div>
             @if (hasFieldError(passwordForm, 'new_password')) {
-              <p class="text-red-500 text-xs mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>
+              <div class="field-error">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+                </svg>
                 {{ getFieldError(passwordForm, 'new_password') }}
-              </p>
+              </div>
             }
           </div>
 
           <!-- Confirm Password -->
-          <div class="space-y-1">
-            <label for="confirm_password" class="block text-sm font-medium text-gray-700">
-              Confirm New Password
-            </label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <i class="fas fa-lock text-gray-400"></i>
-              </div>
+          <div class="form-group">
+            <label for="confirm_password" class="form-label">Confirm New Password</label>
+            <div class="input-wrapper">
+              <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M5 10V7a5 5 0 0110 0v3m-7 0h8a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
               <input
                 id="confirm_password"
                 [type]="showConfirmPassword ? 'text' : 'password'"
                 formControlName="confirm_password"
-                class="appearance-none relative block w-full pl-10 pr-10 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                [class.border-gray-300]="!hasFieldError(passwordForm, 'confirm_password')"
-                [class.border-red-500]="hasFieldError(passwordForm, 'confirm_password') || (!passwordsMatch() && passwordForm.get('confirm_password')?.touched)"
+                class="form-input"
+                [class.input-error]="hasFieldError(passwordForm, 'confirm_password') || (!passwordsMatch() && passwordForm.get('confirm_password')?.touched)"
                 placeholder="Confirm new password"
               >
               <button
                 type="button"
                 (click)="togglePasswordVisibility('confirm')"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                class="password-toggle"
               >
-                <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  @if (showConfirmPassword) {
+                    <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2.5 2.5l15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  } @else {
+                    <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  }
+                </svg>
               </button>
             </div>
             @if (hasFieldError(passwordForm, 'confirm_password')) {
-              <p class="text-red-500 text-xs mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>
+              <div class="field-error">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+                </svg>
                 {{ getFieldError(passwordForm, 'confirm_password') }}
-              </p>
+              </div>
             }
             @if (!passwordsMatch() && passwordForm.get('confirm_password')?.touched && !hasFieldError(passwordForm, 'confirm_password')) {
-              <p class="text-red-500 text-xs mt-1">
-                <i class="fas fa-exclamation-circle mr-1"></i>
+              <div class="field-error">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+                </svg>
                 Passwords do not match
-              </p>
+              </div>
             }
           </div>
 
@@ -370,9 +359,17 @@
             </button>
           </div>
         </form>
+        </div>
+      }
+      
+      <!-- Decorative Elements -->
+      <div class="decoration-dots">
+        <div class="dot dot-1"></div>
+        <div class="dot dot-2"></div>
+        <div class="dot dot-3"></div>
+        <div class="dot dot-4"></div>
       </div>
-    }
-  </div>
+    </div>
   </div>
   
   <app-footer></app-footer>

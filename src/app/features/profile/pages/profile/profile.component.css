@@ -1,8 +1,409 @@
-/* Animation classes */
-@keyframes fade-in {
+/* Profile Hero Section */
+.profile-hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  padding-top: calc(2rem + 60px); /* Account for fixed header */
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-container {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+/* Profile Avatar Section */
+.profile-avatar-section {
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeInScale 1.2s ease-out 0.2s forwards;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-avatar {
+  height: 120px;
+  width: 120px;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transition: transform 0.3s ease;
+  margin: 0 auto;
+  display: block;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+}
+
+.profile-avatar-placeholder {
+  height: 120px;
+  width: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transition: transform 0.3s ease;
+  margin: 0 auto;
+}
+
+.profile-avatar-placeholder:hover {
+  transform: scale(1.05);
+}
+
+.avatar-initials {
+  font-size: 2rem;
+  color: #fff;
+}
+
+/* Profile Info */
+.profile-info {
+  color: #ffffff;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.4s forwards;
+}
+
+.profile-name {
+  font-size: 2rem;
+  font-weight: 300;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', sans-serif;
+}
+
+.profile-email {
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.profile-provider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.provider-icon {
+  font-size: 1.25rem;
+}
+
+.provider-text {
+  font-size: 1rem;
+}
+
+.verified-icon {
+  color: #10b981;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+  margin: 3rem 0 2rem 0;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.8s forwards;
+}
+
+.tab-nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.tab-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.tab-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.tab-icon {
+  font-size: 1rem;
+}
+
+.tab-text {
+  font-weight: 500;
+}
+
+/* Form Section */
+.form-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 2rem;
+  margin-top: 2rem;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 1s forwards;
+}
+
+.form-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+}
+
+.form-subtitle {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* Form Input Styling */
+.form-section .form-input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  backdrop-filter: blur(8px);
+}
+
+.form-section .form-input::placeholder {
+  color: #6b7280;
+}
+
+.form-section .form-input:focus {
+  background: rgba(31, 41, 55, 0.8);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  transform: translateY(-1px);
+}
+
+.form-section .form-input.input-error {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.form-section .form-label {
+  color: #d1d5db;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.form-section .input-wrapper {
+  position: relative;
+}
+
+.form-section .input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.form-section .password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-section .password-toggle:hover {
+  color: #9ca3af;
+}
+
+.form-section textarea.form-input {
+  padding: 1rem;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-section .field-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fca5a5;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Form Layout */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Submit Button */
+.form-section .submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+  width: 100%;
+}
+
+.form-section .submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.form-section .submit-button:hover::before {
+  opacity: 1;
+}
+
+.form-section .submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.form-section .submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.form-section .submit-button > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Message Styling */
+.form-section .bg-green-50,
+.form-section .bg-red-50 {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.form-section .text-green-700,
+.form-section .text-red-700 {
+  color: #ffffff;
+}
+
+/* Decorative Elements */
+.decoration-dots {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+}
+
+.dot-1 {
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.dot-2 {
+  top: 25%;
+  right: 15%;
+  animation-delay: 1s;
+}
+
+.dot-3 {
+  top: 60%;
+  left: 8%;
+  animation-delay: 2s;
+}
+
+.dot-4 {
+  bottom: 20%;
+  right: 12%;
+  animation-delay: 3s;
+}
+
+/* Animations */
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -10,45 +411,106 @@
   }
 }
 
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(240deg);
+  }
+}
+
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fadeInUp 0.3s ease-out;
 }
 
-/* Input focus effects */
-input:focus, textarea:focus {
-  transform: translateY(-1px);
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-hero {
+    padding: 1rem;
+  }
+  
+  .profile-container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .profile-name {
+    font-size: 1.75rem;
+  }
+  
+  .tab-nav {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .tab-button {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .form-section {
+    padding: 1.5rem;
+  }
 }
 
-/* Button hover effects */
-button:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+@media (max-width: 640px) {
+  .profile-hero {
+    padding: 0.75rem;
+  }
+  
+  .profile-name {
+    font-size: 1.5rem;
+  }
 }
 
-button:not(:disabled):active {
-  transform: translateY(0);
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .profile-hero {
+    background: #000000;
+  }
+  
+  .profile-name {
+    color: #ffffff;
+  }
+  
+  .tab-button {
+    background: #ffffff;
+    color: #000000;
+  }
 }
 
-/* Smooth transitions for form fields */
-input, textarea, button {
-  transition: all 0.2s ease-in-out;
-}
-
-input:focus, textarea:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* Tab transition */
-.tab-content {
-  animation: fade-in 0.3s ease-out;
-}
-
-/* Avatar ring animation */
-.avatar-ring {
-  transition: all 0.3s ease;
-}
-
-.avatar-ring:hover {
-  transform: scale(1.05);
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .profile-avatar-section,
+  .profile-info,
+  .tab-navigation,
+  .form-section {
+    animation: none;
+    opacity: 1;
+  }
+  
+  .dot {
+    animation: none;
+  }
+  
+  .tab-button,
+  button[type="submit"] {
+    transition: none;
+  }
 }
 
