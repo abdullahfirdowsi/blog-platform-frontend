@@ -292,10 +292,11 @@ export class AuthService {
       );
   }
 
-  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+  changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/change-password`, {
       current_password: currentPassword,
-      new_password: newPassword
+      new_password: newPassword,
+      confirm_password: confirmPassword
     });
   }
 

@@ -124,8 +124,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
       const currentPassword = this.passwordForm.value.current_password;
       const newPassword = this.passwordForm.value.new_password;
+      const confirmPassword = this.passwordForm.value.confirm_password;
 
-      this.authService.changePassword(currentPassword, newPassword)
+      this.authService.changePassword(currentPassword, newPassword, confirmPassword)
         .subscribe({
           next: () => {
             this.passwordSuccessMessage = 'Password changed successfully!';
