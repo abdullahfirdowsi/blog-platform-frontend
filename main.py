@@ -21,12 +21,25 @@ async def lifespan(app):
 app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
 
 # CORS middleware configuration
+# Update CORS settings to include all localhost/127.0.0.1 variations for development
+if not settings.BACKEND_CORS_ORIGINS:
+    # Default CORS origins for development
+    cors_origins = [
+        "http://localhost:4200",
+        "http://127.0.0.1:4200",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]
+else:
+    cors_origins = [str(origin) for origin in settings.BACKEND_CORS_ORIGINS]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Router includes

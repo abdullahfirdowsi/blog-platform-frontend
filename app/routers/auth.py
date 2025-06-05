@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from authlib.integrations.httpx_client import AsyncOAuth2Client
@@ -62,7 +62,7 @@ async def register_user(
             value=refresh_token,
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
             httponly=True,
-            secure=True,  # Set to True in production with HTTPS
+            secure=False,  # Set to True in production with HTTPS
             samesite="lax"
         )
         
@@ -124,7 +124,7 @@ async def login_user(
         value=refresh_token,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         httponly=True,
-        secure=True,  # Set to True in production with HTTPS
+        secure=False,  # Set to True in production with HTTPS
         samesite="lax"
     )
     
@@ -209,7 +209,7 @@ async def google_auth(
             value=refresh_token,
             max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
             httponly=True,
-            secure=True,  # Set to True in production with HTTPS
+            secure=False,  # Set to True in production with HTTPS
             samesite="lax"
         )
         
@@ -236,17 +236,25 @@ async def google_auth(
 
 @router.post("/refresh", response_model=Token)
 async def refresh_access_token(
-    refresh_request: RefreshTokenRequest,
+    request: Request,
     response: Response,
     db: AsyncIOMotorDatabase = Depends(get_database)
 ):
     """
-    Refresh access token using refresh token
+    Refresh access token using refresh token from cookie
     """
     user_service = UserService(db)
     
+    # Get refresh token from cookie
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token not found"
+        )
+    
     # Verify refresh token
-    user_id = verify_token(refresh_request.refresh_token, "refresh")
+    user_id = verify_token(refresh_token, "refresh")
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -271,7 +279,7 @@ async def refresh_access_token(
         value=new_refresh_token,
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         httponly=True,
-        secure=True,  # Set to True in production with HTTPS
+        secure=False,  # Set to True in production with HTTPS
         samesite="lax"
     )
     
