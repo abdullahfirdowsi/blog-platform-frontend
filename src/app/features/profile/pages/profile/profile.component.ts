@@ -216,11 +216,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   getProviderIcon(): string {
     if (!this.currentUser) return 'fas fa-user';
-    return this.currentUser.provider === 'google' ? 'fab fa-google' : 'fas fa-envelope';
+    return this.currentUser.google_id ? 'fab fa-google' : 'fas fa-envelope';
   }
 
   getProviderText(): string {
     if (!this.currentUser) return '';
-    return this.currentUser.provider === 'google' ? 'Google Account' : 'Email Account';
+    return this.currentUser.google_id ? 'Google Account' : 'Email Account';
   }
 }

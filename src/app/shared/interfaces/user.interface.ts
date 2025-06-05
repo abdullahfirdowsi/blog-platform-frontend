@@ -6,10 +6,12 @@ export interface User {
   bio?: string;
   profile_picture?: string;
   profile_image?: string; // Alias for profile_picture to support both naming conventions
-  is_active: boolean;
+  is_active?: boolean;
   is_verified?: boolean;
-  role: string;
+  role?: string;
   provider?: string; // Authentication provider (e.g., 'google', 'email')
+  google_id?: string; // Google user ID
+  has_password?: boolean; // Indicates if user can change password
   created_at: string;
   updated_at?: string;
 }
