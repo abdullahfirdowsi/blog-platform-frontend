@@ -1,0 +1,287 @@
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="flex justify-center mb-4">
+        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+          <i class="fas fa-user-plus text-white text-2xl"></i>
+        </div>
+      </div>
+      <h2 class="text-3xl font-bold text-gray-900 mb-2">
+        Join BlogPlatform
+      </h2>
+      <p class="text-gray-600">
+        Create your account to start sharing your stories
+      </p>
+    </div>
+
+    <!-- Auth Card -->
+    <div class="bg-white rounded-xl shadow-xl p-8 space-y-6">
+      <!-- Success/Error Messages -->
+      @if (errorMessage) {
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-md animate-fade-in">
+          <div class="flex items-center">
+            <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+            <span class="text-red-700 text-sm">{{ errorMessage }}</span>
+          </div>
+        </div>
+      }
+      
+      @if (successMessage) {
+        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-md animate-fade-in">
+          <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+            <span class="text-green-700 text-sm">{{ successMessage }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Google Sign Up -->
+      <div class="space-y-4">
+        <div #googleButton class="w-full"></div>
+        
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-4 bg-white text-gray-500">Or sign up with email</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Registration Form -->
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <!-- Username Field -->
+        <div class="space-y-1">
+          <label for="username" class="block text-sm font-medium text-gray-700">
+            Username
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-user text-gray-400"></i>
+            </div>
+            <input 
+              id="username" 
+              name="username" 
+              type="text" 
+              formControlName="username"
+              autocomplete="username"
+              class="appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              [class.border-gray-300]="!hasFieldError('username')"
+              [class.border-red-500]="hasFieldError('username')"
+              placeholder="Choose a username"
+            >
+          </div>
+          @if (hasFieldError('username')) {
+            <p class="text-red-500 text-xs mt-1 animate-fade-in">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              {{ getFieldError('username') }}
+            </p>
+          }
+        </div>
+
+        <!-- Email Field -->
+        <div class="space-y-1">
+          <label for="email" class="block text-sm font-medium text-gray-700">
+            Email Address
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-envelope text-gray-400"></i>
+            </div>
+            <input 
+              id="email" 
+              name="email" 
+              type="email" 
+              formControlName="email"
+              autocomplete="email"
+              class="appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              [class.border-gray-300]="!hasFieldError('email')"
+              [class.border-red-500]="hasFieldError('email')"
+              placeholder="Enter your email"
+            >
+          </div>
+          @if (hasFieldError('email')) {
+            <p class="text-red-500 text-xs mt-1 animate-fade-in">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              {{ getFieldError('email') }}
+            </p>
+          }
+        </div>
+
+        <!-- Full Name Field -->
+        <div class="space-y-1">
+          <label for="full_name" class="block text-sm font-medium text-gray-700">
+            Full Name
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-id-card text-gray-400"></i>
+            </div>
+            <input 
+              id="full_name" 
+              name="full_name" 
+              type="text" 
+              formControlName="full_name"
+              autocomplete="name"
+              class="appearance-none relative block w-full pl-10 pr-3 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              [class.border-gray-300]="!hasFieldError('full_name')"
+              [class.border-red-500]="hasFieldError('full_name')"
+              placeholder="Enter your full name"
+            >
+          </div>
+          @if (hasFieldError('full_name')) {
+            <p class="text-red-500 text-xs mt-1 animate-fade-in">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              {{ getFieldError('full_name') }}
+            </p>
+          }
+        </div>
+
+        <!-- Password Field -->
+        <div class="space-y-1">
+          <label for="password" class="block text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-lock text-gray-400"></i>
+            </div>
+            <input 
+              id="password" 
+              name="password" 
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              class="appearance-none relative block w-full pl-10 pr-10 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              [class.border-gray-300]="!hasFieldError('password')"
+              [class.border-red-500]="hasFieldError('password')"
+              placeholder="Create a strong password"
+            >
+            <button 
+              type="button"
+              (click)="togglePasswordVisibility('password')"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          
+          <!-- Password Strength Indicator -->
+          @if (registerForm.get('password')?.value && registerForm.get('password')?.touched) {
+            <div class="mt-2">
+              <div class="flex items-center justify-between text-xs mb-1">
+                <span class="text-gray-500">Password strength:</span>
+                <span [class]="passwordStrength <= 40 ? 'text-red-500' : passwordStrength <= 60 ? 'text-yellow-500' : passwordStrength <= 80 ? 'text-blue-500' : 'text-green-500'">
+                  {{ getPasswordStrengthText() }}
+                </span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  class="h-2 rounded-full transition-all duration-300" 
+                  [class]="getPasswordStrengthColor()"
+                  [style.width.%]="passwordStrength"
+                ></div>
+              </div>
+            </div>
+          }
+          
+          @if (hasFieldError('password')) {
+            <p class="text-red-500 text-xs mt-1 animate-fade-in">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              {{ getFieldError('password') }}
+            </p>
+          }
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="space-y-1">
+          <label for="confirm_password" class="block text-sm font-medium text-gray-700">
+            Confirm Password
+          </label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fas fa-lock text-gray-400"></i>
+            </div>
+            <input 
+              id="confirm_password" 
+              name="confirm_password" 
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              formControlName="confirm_password"
+              autocomplete="new-password"
+              class="appearance-none relative block w-full pl-10 pr-10 py-3 border rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              [class.border-gray-300]="!hasFieldError('confirm_password')"
+              [class.border-red-500]="hasFieldError('confirm_password')"
+              placeholder="Confirm your password"
+            >
+            <button 
+              type="button"
+              (click)="togglePasswordVisibility('confirm')"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              <i [class]="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          @if (hasFieldError('confirm_password')) {
+            <p class="text-red-500 text-xs mt-1 animate-fade-in">
+              <i class="fas fa-exclamation-circle mr-1"></i>
+              {{ getFieldError('confirm_password') }}
+            </p>
+          }
+        </div>
+
+        <!-- Terms & Conditions -->
+        <div class="flex items-start">
+          <div class="flex items-center h-5">
+            <input 
+              id="terms" 
+              name="terms" 
+              type="checkbox" 
+              required
+              class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+            >
+          </div>
+          <div class="ml-3 text-sm">
+            <label for="terms" class="text-gray-600">
+              I agree to the 
+              <a href="#" class="text-blue-600 hover:text-blue-500">Terms of Service</a> 
+              and 
+              <a href="#" class="text-blue-600 hover:text-blue-500">Privacy Policy</a>
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          [disabled]="registerForm.invalid || isLoading"
+          class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          @if (isLoading) {
+            <div class="flex items-center">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Creating account...
+            </div>
+          } @else {
+            <span class="flex items-center">
+              <i class="fas fa-user-plus mr-2"></i>
+              Create Account
+            </span>
+          }
+        </button>
+      </form>
+
+      <!-- Sign In Link -->
+      <div class="text-center pt-4 border-t border-gray-200">
+        <p class="text-sm text-gray-600">
+          Already have an account?
+          <a [routerLink]="['/auth/login']" 
+             class="font-medium text-blue-600 hover:text-blue-500 transition-colors ml-1">
+            Sign in here
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
