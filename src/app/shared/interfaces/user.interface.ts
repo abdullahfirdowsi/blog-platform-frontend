@@ -1,15 +1,17 @@
 export interface User {
-  id: number;
+  id: string;
   username: string;
   email: string;
   full_name?: string;
   bio?: string;
-  profile_image?: string;
+  profile_picture?: string;
+  profile_image?: string; // Alias for profile_picture to support both naming conventions
   is_active: boolean;
-  is_verified: boolean;
-  provider?: 'email' | 'google';
+  is_verified?: boolean;
+  role: string;
+  provider?: string; // Authentication provider (e.g., 'google', 'email')
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface CreateUserRequest {
@@ -27,22 +29,32 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   access_token: string;
+  refresh_token: string;
   token_type: string;
   user: User;
-  expires_in?: number;
 }
 
 export interface GoogleAuthResponse {
   access_token: string;
+  refresh_token: string;
   token_type: string;
   user: User;
-  expires_in?: number;
 }
 
 export interface UpdateUserRequest {
   full_name?: string;
   bio?: string;
-  profile_image?: string;
+  profile_picture?: string;
+  profile_image?: string; // Alias for profile_picture to support both naming conventions
+  username?: string;
+  email?: string;
+}
+
+export interface UserProfile {
+  user: User;
+  posts_count: number;
+  published_posts_count: number;
+  draft_posts_count: number;
 }
 
 export interface PasswordChangeRequest {

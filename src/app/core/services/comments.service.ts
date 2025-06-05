@@ -17,16 +17,18 @@ export class CommentsService {
 
   constructor(private http: HttpClient) {}
 
-  getPostComments(postId: number, page?: number, perPage?: number): Observable<CommentsResponse> {
+  getPostComments(postId: string, page?: number, limit?: number): Observable<CommentsResponse> {
     let params = new HttpParams();
     
     if (page) params = params.set('page', page.toString());
-    if (perPage) params = params.set('per_page', perPage.toString());
+    if (limit) params = params.set('limit', limit.toString());
+    // Add post_id filter for comments endpoint
+    params = params.set('post_id', postId);
 
-    return this.http.get<CommentsResponse>(`${environment.apiUrl}/posts/${postId}/comments`, { params });
+    return this.http.get<CommentsResponse>(this.apiUrl, { params });
   }
 
-  getComment(id: number): Observable<Comment> {
+  getComment(id: string): Observable<Comment> {
     return this.http.get<Comment>(`${this.apiUrl}/${id}`);
   }
 
@@ -34,15 +36,15 @@ export class CommentsService {
     return this.http.post<Comment>(this.apiUrl, commentData);
   }
 
-  updateComment(id: number, commentData: UpdateCommentRequest): Observable<Comment> {
+  updateComment(id: string, commentData: UpdateCommentRequest): Observable<Comment> {
     return this.http.put<Comment>(`${this.apiUrl}/${id}`, commentData);
   }
 
-  deleteComment(id: number): Observable<void> {
+  deleteComment(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  getCommentReplies(parentId: number): Observable<Comment[]> {
+  getCommentReplies(parentId: string): Observable<Comment[]> {
     return this.http.get<Comment[]>(`${this.apiUrl}/${parentId}/replies`);
   }
 }

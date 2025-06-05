@@ -7,20 +7,14 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Add token to requests (except auth endpoints)
-  let authReq = req;
-  if (token && !isAuthEndpoint(req.url)) {
-    authReq = addTokenToRequest(req, token);
-  }
+  // Always include credentials for cookie-based refresh tokens
+  let authReq = req.clone({
+    withCredentials: true
+  });
 
-  // Always include credentials for refresh token cookie
-  if (req.url.includes('/auth/')) {
-    authReq = authReq.clone({
-      setHeaders: {
-        ...authReq.headers
-      },
-      withCredentials: true
-    });
+  // Add token to requests (except auth endpoints)
+  if (token && !isAuthEndpoint(req.url)) {
+    authReq = addTokenToRequest(authReq, token);
   }
 
   return next(authReq).pipe(
@@ -45,7 +39,8 @@ function addTokenToRequest(req: any, token: string) {
   return req.clone({
     setHeaders: {
       Authorization: `Bearer ${token}`
-    }
+    },
+    withCredentials: true
   });
 }
 

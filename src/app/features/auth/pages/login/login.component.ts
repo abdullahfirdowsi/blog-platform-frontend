@@ -34,8 +34,8 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Get return url from route parameters or default to '/landing'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/landing';
+    // Get return url from route parameters or default to '/home'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
     
     // Redirect if already authenticated
     if (this.authService.isAuthenticated()) {

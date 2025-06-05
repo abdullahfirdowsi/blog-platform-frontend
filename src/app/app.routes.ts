@@ -15,6 +15,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/landing/landing.routes').then(m => m.landingRoutes)
   },
   {
+    path: 'home',
+    loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.dashboardRoutes)
+  },
+  {
     path: 'posts',
     loadChildren: () => import('./features/posts/posts.routes').then(m => m.postsRoutes)
   },

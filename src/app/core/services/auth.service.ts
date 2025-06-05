@@ -69,7 +69,9 @@ export class AuthService {
     this.isLoadingSubject.next(true);
     
     this.http.post<GoogleAuthResponse>(`${this.apiUrl}/google`, {
-      credential: response.credential
+      token: response.credential
+    }, {
+      withCredentials: true // Include cookies for refresh token
     }).pipe(
       catchError(error => {
         this.isLoadingSubject.next(false);
@@ -169,50 +171,54 @@ export class AuthService {
   private clearStoredAuth(): void {
     sessionStorage.removeItem('access_token');
     sessionStorage.removeItem('current_user');
+    sessionStorage.removeItem('refresh_token'); // Clear any existing refresh token
     this.clearRefreshTimer();
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
     this.isLoadingSubject.next(true);
     
-    // Change to email-based authentication
     const loginData = {
       email: credentials.email,
       password: credentials.password
     };
 
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, loginData)
-      .pipe(
-        tap(response => {
-          this.handleAuthSuccess(response);
-          this.isLoadingSubject.next(false);
-        }),
-        catchError(error => {
-          this.isLoadingSubject.next(false);
-          return throwError(() => error);
-        })
-      );
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, loginData, {
+      withCredentials: true // Include cookies for refresh token
+    }).pipe(
+      tap(response => {
+        this.handleAuthSuccess(response);
+        this.isLoadingSubject.next(false);
+      }),
+      catchError(error => {
+        this.isLoadingSubject.next(false);
+        return throwError(() => error);
+      })
+    );
   }
 
   register(userData: CreateUserRequest): Observable<LoginResponse> {
     this.isLoadingSubject.next(true);
     
-    return this.http.post<LoginResponse>(`${this.apiUrl}/register`, userData)
-      .pipe(
-        tap(response => {
-          this.handleAuthSuccess(response);
-          this.isLoadingSubject.next(false);
-        }),
-        catchError(error => {
-          this.isLoadingSubject.next(false);
-          return throwError(() => error);
-        })
-      );
+    return this.http.post<LoginResponse>(`${this.apiUrl}/register`, userData, {
+      withCredentials: true // Include cookies for refresh token
+    }).pipe(
+      tap(response => {
+        this.handleAuthSuccess(response);
+        this.isLoadingSubject.next(false);
+      }),
+      catchError(error => {
+        this.isLoadingSubject.next(false);
+        return throwError(() => error);
+      })
+    );
   }
 
   logout(): void {
     // Call backend logout to clear refresh token cookie
-    this.http.post(`${this.apiUrl}/logout`, {}).subscribe({
+    this.http.post(`${this.apiUrl}/logout`, {}, {
+      withCredentials: true // Include cookies for refresh token
+    }).subscribe({
       next: () => console.log('Successfully logged out from server'),
       error: (error) => console.error('Logout error:', error)
     });
@@ -237,8 +243,9 @@ export class AuthService {
   }
 
   refreshToken(): Observable<LoginResponse> {
+    // Backend uses HTTP-only cookies for refresh tokens
     return this.http.post<LoginResponse>(`${this.apiUrl}/refresh`, {}, {
-      withCredentials: true // Include refresh token cookie
+      withCredentials: true // Include cookies
     }).pipe(
       tap(response => {
         sessionStorage.setItem('access_token', response.access_token);

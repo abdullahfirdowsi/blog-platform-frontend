@@ -6,9 +6,7 @@ import {
   PostsResponse, 
   CreatePostRequest, 
   UpdatePostRequest, 
-  PostFilters,
-  Category,
-  Tag
+  PostFilters
 } from '../../shared/interfaces';
 import { environment } from '../../../environments/environment';
 
@@ -34,7 +32,7 @@ export class PostsService {
     return this.http.get<PostsResponse>(this.apiUrl, { params });
   }
 
-  getPost(id: number): Observable<Post> {
+  getPost(id: string): Observable<Post> {
     return this.http.get<Post>(`${this.apiUrl}/${id}`);
   }
 
@@ -46,23 +44,23 @@ export class PostsService {
     return this.http.post<Post>(this.apiUrl, postData);
   }
 
-  updatePost(id: number, postData: UpdatePostRequest): Observable<Post> {
+  updatePost(id: string, postData: UpdatePostRequest): Observable<Post> {
     return this.http.put<Post>(`${this.apiUrl}/${id}`, postData);
   }
 
-  deletePost(id: number): Observable<void> {
+  deletePost(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  likePost(id: number): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/${id}/like`, {});
+  likePost(id: string): Observable<{message: string}> {
+    return this.http.post<{message: string}>(`${this.apiUrl}/${id}/like`, {});
   }
 
-  unlikePost(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}/like`);
+  unlikePost(id: string): Observable<{message: string}> {
+    return this.http.delete<{message: string}>(`${this.apiUrl}/${id}/like`);
   }
 
-  getUserPosts(userId: number, filters?: PostFilters): Observable<PostsResponse> {
+  getUserPosts(userId: string, filters?: PostFilters): Observable<PostsResponse> {
     let params = new HttpParams();
     
     if (filters) {
@@ -76,12 +74,12 @@ export class PostsService {
     return this.http.get<PostsResponse>(`${environment.apiUrl}/users/${userId}/posts`, { params });
   }
 
-  getCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${environment.apiUrl}/categories`);
+  getCategories(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/categories/`);
   }
 
-  getTags(): Observable<Tag[]> {
-    return this.http.get<Tag[]>(`${environment.apiUrl}/tags`);
+  getTags(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/tags/`);
   }
 
   searchPosts(query: string, filters?: Omit<PostFilters, 'search'>): Observable<PostsResponse> {

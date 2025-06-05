@@ -1,21 +1,21 @@
 import { User } from './user.interface';
 
 export interface Comment {
-  id: number;
+  id: string;
   content: string;
-  post_id: number;
-  author_id: number;
+  author_id: string;
   author: User;
-  parent_id?: number;
+  post_id: string;
+  parent_id?: string;
   replies?: Comment[];
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
+  is_edited: boolean;
 }
-
 export interface CreateCommentRequest {
   content: string;
-  post_id: number;
-  parent_id?: number;
+  post_id: string;
+  parent_id?: string;
 }
 
 export interface UpdateCommentRequest {
@@ -26,7 +26,7 @@ export interface CommentsResponse {
   comments: Comment[];
   total: number;
   page: number;
-  per_page: number;
+  limit: number;
   total_pages: number;
 }
 

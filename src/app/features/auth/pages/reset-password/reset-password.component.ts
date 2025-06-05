@@ -69,7 +69,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
     // Redirect if already authenticated
     if (this.authService.isAuthenticated()) {
-              this.router.navigate(['/landing']);
+      this.router.navigate(['/home']);
     }
 
     // Subscribe to auth loading state
