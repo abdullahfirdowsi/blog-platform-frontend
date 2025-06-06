@@ -50,6 +50,11 @@ export class PostListComponent implements OnInit, OnDestroy {
     this.isAuthenticated = this.authService.isAuthenticated();
     if (this.isAuthenticated) {
       this.currentUser = this.authService.getCurrentUser();
+      // When authenticated, default to show published only
+      this.showPublishedOnly = true;
+    } else {
+      // When not authenticated, always show only published posts
+      this.showPublishedOnly = true;
     }
   }
 
@@ -67,7 +72,7 @@ export class PostListComponent implements OnInit, OnDestroy {
     const filters = {
       page: this.currentPage,
       page_size: this.pageSize,
-      published_only: this.showPublishedOnly,
+      published_only: this.isAuthenticated ? this.showPublishedOnly : true, // Force published only for non-auth users
       tag_id: this.selectedTagId || undefined
     };
 
@@ -130,8 +135,30 @@ export class PostListComponent implements OnInit, OnDestroy {
 
   truncateContent(content: string, maxLength: number = 200): string {
     if (!content) return '';
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
+    
+    // Handle block-based content
+    let textContent = content;
+    
+    try {
+      // Check if content is in JSON block format
+      if (content.trim().startsWith('[')) {
+        const blocks = JSON.parse(content);
+        // Extract text from all content blocks
+        textContent = blocks
+          .filter((block: any) => block.type === 'content' || block.type === 'subtitle')
+          .map((block: any) => block.data || '')
+          .join(' ');
+      }
+    } catch (error) {
+      // If parsing fails, treat as plain text
+      textContent = content;
+    }
+    
+    // Remove any HTML tags that might be present
+    textContent = textContent.replace(/<[^>]*>/g, '');
+    
+    if (textContent.length <= maxLength) return textContent;
+    return textContent.substring(0, maxLength) + '...';
   }
 
   getPages(): number[] {

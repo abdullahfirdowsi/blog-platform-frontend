@@ -147,17 +147,29 @@
                   </div>
                   
                   <!-- Image Block -->
-                  <div *ngIf="block.type === 'image'" class="image-block">
-                    <input 
-                      type="url"
-                      [value]="block.data"
-                      (input)="updateBlockData(i, $any($event.target).value)"
-                      class="image-url-input"
-                      placeholder="Enter image URL here...">
+                  <div *ngIf="block.type === 'imageUrl'" class="image-block">
+                    <div class="image-input-section">
+                      <label class="image-input-label">🖼️ Image URL</label>
+                      <input 
+                        type="url"
+                        [value]="block.data"
+                        (input)="updateBlockData(i, $any($event.target).value)"
+                        class="image-url-input"
+                        placeholder="https://example.com/your-image.jpg"
+                        title="Enter a valid image URL">
+                      <div class="image-input-hint">
+                        💡 Tip: Use image hosting services like Imgur, Cloudinary, or direct links to image files<br>
+                        📷 Supported formats: JPG, PNG, GIF, WebP
+                      </div>
+                    </div>
                     
                     <!-- Image Preview -->
-                    <div *ngIf="block.data" class="image-preview">
-                      <img [src]="block.data" alt="Preview" class="preview-image">
+                    <div *ngIf="block.data && block.data.trim()" class="image-preview">
+                      <div class="preview-label">Preview:</div>
+                      <img 
+                        [src]="block.data" 
+                        alt="Image preview" 
+                        class="preview-image">
                     </div>
                   </div>
                 </div>

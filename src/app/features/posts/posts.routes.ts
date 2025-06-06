@@ -7,8 +7,8 @@ import { authGuard } from '../../core/guards/auth.guard';
 export const postsRoutes: Routes = [
   {
     path: '',
-    component: PostListComponent,
-    canActivate: [authGuard]
+    component: PostListComponent
+    // No auth guard - public access to view posts
   },
   {
     path: 'create',
@@ -22,8 +22,8 @@ export const postsRoutes: Routes = [
   },
   {
     path: ':id',
-    component: PostDetailComponent,
-    canActivate: [authGuard]
+    component: PostDetailComponent
+    // No auth guard - public access to view posts
   },
   {
     path: ':id/edit',
