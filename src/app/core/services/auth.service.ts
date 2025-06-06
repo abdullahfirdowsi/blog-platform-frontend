@@ -141,8 +141,10 @@ export class AuthService {
       window.google.accounts.id.renderButton(element, {
         theme: 'outline',
         size: 'large',
-        width: '320',
-        text: 'signin_with'
+        width: element.offsetWidth || 320,
+        text: 'signin_with',
+        shape: 'rectangular',
+        logo_alignment: 'left'
       });
     }
   }
