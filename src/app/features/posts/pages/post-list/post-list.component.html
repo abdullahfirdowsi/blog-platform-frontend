@@ -3,16 +3,35 @@
   
   <main class="main-content bg-gray-950 pt-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-4xl font-bold text-white">Latest Blogs</h1>
-        <a routerLink="/posts/create" 
-           *ngIf="isAuthenticated" 
-           class="write-blog-button">
-          <span class="button-text">Write New Blog</span>
-          <svg class="button-arrow" width="16" height="16" viewBox="0 0 20 20" fill="none">
-            <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </a>
+      <!-- Hero Section -->
+      <div class="hero-section mb-12">
+        <div class="text-center">
+          <h1 class="text-5xl font-bold text-white mb-4">Welcome to Our Blog</h1>
+          <p class="text-xl text-gray-300 mb-6 max-w-3xl mx-auto">
+            Discover insightful articles, tutorials, and stories from our community. 
+            Stay updated with the latest trends, tips, and knowledge sharing.
+          </p>
+          <div class="hero-stats flex justify-center space-x-8 text-center">
+            <div class="stat-item">
+              <div class="text-2xl font-bold text-blue-400">{{totalCount}}</div>
+              <div class="text-gray-400">Total Posts</div>
+            </div>
+            <div class="stat-item">
+              <div class="text-2xl font-bold text-green-400">{{tags.length}}</div>
+              <div class="text-gray-400">Categories</div>
+            </div>
+            <div class="stat-item">
+              <div class="text-2xl font-bold text-purple-400">{{getActiveAuthors()}}</div>
+              <div class="text-gray-400">Authors</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Page Title -->
+      <div class="mb-8">
+        <h2 class="text-3xl font-bold text-white">Latest Articles</h2>
+        <p class="text-gray-400 mt-2">Explore our most recent blog posts and updates</p>
       </div>
       
       <!-- Filters -->
@@ -83,7 +102,7 @@
             
             <!-- Blog Content Preview -->
             <p class="blog-excerpt">
-              {{truncateContent(blogItem.blog.content)}}
+              {{truncateContent(blogItem.blog.blog_body)}}
             </p>
             
             <!-- Tags -->
@@ -174,6 +193,40 @@
             Next
           </button>
         </nav>
+      </div>
+      
+      <!-- Call to Action Section -->
+      <div *ngIf="isAuthenticated" class="cta-section mt-16 mb-8">
+        <div class="cta-container bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-center">
+          <h3 class="text-2xl font-bold text-white mb-4">Ready to Share Your Story?</h3>
+          <p class="text-blue-100 mb-6 max-w-2xl mx-auto">
+            Join our community of writers and share your insights, experiences, and knowledge with readers around the world.
+          </p>
+          <a routerLink="/posts/create" class="cta-button">
+            <span class="button-text">Write New Blog Post</span>
+            <svg class="button-arrow ml-2" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Newsletter Section -->
+      <div class="newsletter-section mt-12 mb-8">
+        <div class="newsletter-container bg-gray-800 rounded-xl p-8 text-center border border-gray-700">
+          <h3 class="text-2xl font-bold text-white mb-4">Stay Updated</h3>
+          <p class="text-gray-400 mb-6">
+            Subscribe to our newsletter and never miss a new blog post or update.
+          </p>
+          <div class="newsletter-form flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <input type="email" 
+                   placeholder="Enter your email address" 
+                   class="newsletter-input flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+            <button class="newsletter-button px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+              Subscribe
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </main>

@@ -129,6 +129,7 @@ export class PostListComponent implements OnInit, OnDestroy {
   }
 
   truncateContent(content: string, maxLength: number = 200): string {
+    if (!content) return '';
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength) + '...';
   }
@@ -142,5 +143,21 @@ export class PostListComponent implements OnInit, OnDestroy {
       pages.push(i);
     }
     return pages;
+  }
+
+  getActiveAuthors(): number {
+    if (!this.blogs || this.blogs.length === 0) {
+      return 0;
+    }
+    
+    // Count unique authors from the current blogs
+    const uniqueAuthors = new Set();
+    this.blogs.forEach(blogItem => {
+      if (blogItem.blog && blogItem.blog.author) {
+        uniqueAuthors.add(blogItem.blog.author.id || blogItem.blog.author.name);
+      }
+    });
+    
+    return uniqueAuthors.size;
   }
 }

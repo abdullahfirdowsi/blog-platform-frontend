@@ -50,21 +50,141 @@
           </div>
         </div>
 
-        <!-- Content Field -->
+        <!-- Block-based Content Editor -->
         <div class="form-group">
-          <label for="content" class="form-label">Content *</label>
-          <textarea 
-            id="content" 
-            formControlName="content"
-            class="form-textarea"
-            placeholder="Write your blog post content here..."
-            rows="15">
-          </textarea>
-          <div *ngIf="getFieldError('content')" class="field-error">
-            {{getFieldError('content')}}
-          </div>
-          <div class="field-hint">
-            {{blogForm.get('content')?.value?.length || 0}} characters
+          <div class="block-editor-container">
+            <!-- Editor Header -->
+            <div class="block-editor-header">
+              <label class="form-label">Content *</label>
+              <div class="add-block-wrapper">
+                <button 
+                  type="button" 
+                  (click)="toggleBlockMenu()"
+                  class="add-block-button"
+                  title="Add content block">
+                  <span class="add-icon">+</span>
+                  Add Block
+                </button>
+                
+                <!-- Block Menu -->
+                <div *ngIf="showBlockMenu" class="block-menu">
+                  <button 
+                    *ngFor="let blockType of blockTypes"
+                    type="button"
+                    (click)="addBlock(blockType.type)"
+                    class="block-menu-item">
+                    <span class="block-icon">{{blockType.icon}}</span>
+                    <span class="block-label">{{blockType.label}}</span>
+                  </button>
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- Content Blocks -->
+            <div class="content-blocks">
+              <div 
+                *ngFor="let block of contentBlocks; let i = index" 
+                class="content-block"
+                [attr.data-block-type]="block.type">
+                
+                <!-- Block Header -->
+                <div class="block-header">
+                  <div class="block-type-info">
+                    <span class="block-type-icon">{{getBlockTypeIcon(block.type)}}</span>
+                    <span class="block-type-label">{{getBlockTypeLabel(block.type)}}</span>
+                  </div>
+                  
+                  <div class="block-controls">
+                    <button 
+                      *ngIf="i > 0"
+                      type="button" 
+                      (click)="moveBlockUp(i)"
+                      class="block-control-button"
+                      title="Move up">
+                      ↑
+                    </button>
+                    <button 
+                      *ngIf="i < contentBlocks.length - 1"
+                      type="button" 
+                      (click)="moveBlockDown(i)"
+                      class="block-control-button"
+                      title="Move down">
+                      ↓
+                    </button>
+                    <button 
+                      *ngIf="contentBlocks.length > 1"
+                      type="button" 
+                      (click)="removeBlock(i)"
+                      class="block-control-button block-delete"
+                      title="Delete block">
+                      ×
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Block Content -->
+                <div class="block-content">
+                  <!-- Subtitle Block -->
+                  <div *ngIf="block.type === 'subtitle'" class="subtitle-block">
+                    <input 
+                      type="text"
+                      [value]="block.data"
+                      (input)="updateBlockData(i, $any($event.target).value)"
+                      class="subtitle-input"
+                      placeholder="Enter subtitle here...">
+                  </div>
+                  
+                  <!-- Content Block -->
+                  <div *ngIf="block.type === 'content'" class="content-block-wrapper">
+                    <textarea 
+                      [value]="block.data"
+                      (input)="updateBlockData(i, $any($event.target).value)"
+                      class="content-textarea"
+                      placeholder="Write your content here..."
+                      rows="6">
+                    </textarea>
+                  </div>
+                  
+                  <!-- Image Block -->
+                  <div *ngIf="block.type === 'image'" class="image-block">
+                    <input 
+                      type="url"
+                      [value]="block.data"
+                      (input)="updateBlockData(i, $any($event.target).value)"
+                      class="image-url-input"
+                      placeholder="Enter image URL here...">
+                    
+                    <!-- Image Preview -->
+                    <div *ngIf="block.data" class="image-preview">
+                      <img [src]="block.data" alt="Preview" class="preview-image">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            
+
+            <!-- Editor Footer with Stats -->
+            <div class="block-editor-footer">
+              <div class="editor-stats">
+                <span class="block-count">
+                  {{contentBlocks.length}} blocks
+                </span>
+                <span class="word-count">
+                  • {{getWordCount()}} words
+                </span>
+              </div>
+              <div *ngIf="autoSaveStatus" class="auto-save-status">
+                {{autoSaveStatus}}
+              </div>
+            </div>
+            
+            <!-- Error Display -->
+            <div *ngIf="contentBlocks.length === 0" class="field-error">
+              Content is required - please add at least one block
+            </div>
           </div>
         </div>
 
