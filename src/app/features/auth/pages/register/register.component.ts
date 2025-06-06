@@ -82,11 +82,6 @@ export class RegisterComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Redirect if already authenticated
-    if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/home']);
-    }
-
     // Subscribe to auth loading state
     this.authService.isLoading$
       .pipe(takeUntil(this.destroy$))

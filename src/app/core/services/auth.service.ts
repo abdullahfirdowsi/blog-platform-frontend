@@ -41,8 +41,21 @@ export class AuthService {
       
       window.google.accounts.id.initialize({
         client_id: environment.googleClientId,
-        callback: this.handleGoogleAuth.bind(this)
+        callback: this.handleGoogleAuth.bind(this),
+        auto_select: false,
+        cancel_on_tap_outside: false
       });
+      
+      // Also initialize for additional scopes if needed
+      if (window.google?.accounts?.oauth2) {
+        window.google.accounts.oauth2.initTokenClient({
+          client_id: environment.googleClientId,
+          scope: 'openid email profile',
+          callback: (response: any) => {
+            console.log('OAuth2 token response:', response);
+          }
+        });
+      }
     } catch (error) {
       console.error('Failed to initialize Google Auth:', error);
     }
@@ -74,6 +87,20 @@ export class AuthService {
       console.error('Google authentication failed: No token received');
       this.isLoadingSubject.next(false);
       return;
+    }
+    
+    // Debug: Log the credential to see what Google sends
+    console.log('DEBUG: Google credential received:', response.credential);
+    
+    // Try to decode the JWT token to see its contents
+    try {
+      const parts = response.credential.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        console.log('DEBUG: Decoded Google token payload:', payload);
+      }
+    } catch (e) {
+      console.log('DEBUG: Could not decode token:', e);
     }
     
     this.http.post<GoogleAuthResponse>(`${this.apiUrl}/google`, {
