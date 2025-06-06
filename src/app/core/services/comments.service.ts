@@ -17,35 +17,31 @@ export class CommentsService {
 
   constructor(private http: HttpClient) {}
 
-  getPostComments(postId: string, page?: number, limit?: number): Observable<CommentsResponse> {
+  getPostComments(blogId: string, page?: number, limit?: number): Observable<any> {
     let params = new HttpParams();
     
     if (page) params = params.set('page', page.toString());
     if (limit) params = params.set('limit', limit.toString());
-    // Add post_id filter for comments endpoint
-    params = params.set('post_id', postId);
+    // Add blog_id filter for comments endpoint
+    params = params.set('blog_id', blogId);
 
-    return this.http.get<CommentsResponse>(this.apiUrl, { params });
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
-  getComment(id: string): Observable<Comment> {
-    return this.http.get<Comment>(`${this.apiUrl}/${id}`);
+  getComment(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
-  createComment(commentData: CreateCommentRequest): Observable<Comment> {
-    return this.http.post<Comment>(this.apiUrl, commentData);
+  createComment(blogId: string, text: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${blogId}`, { text });
   }
 
-  updateComment(id: string, commentData: UpdateCommentRequest): Observable<Comment> {
-    return this.http.put<Comment>(`${this.apiUrl}/${id}`, commentData);
+  updateComment(id: string, text: string): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, { text });
   }
 
   deleteComment(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  getCommentReplies(parentId: string): Observable<Comment[]> {
-    return this.http.get<Comment[]>(`${this.apiUrl}/${parentId}/replies`);
   }
 }
 

@@ -14,77 +14,86 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class PostsService {
-  private apiUrl = `${environment.apiUrl}/posts`;
+  private apiUrl = `${environment.apiUrl}/blogs`;
+  private tagsUrl = `${environment.apiUrl}/tags`;
+  private likesUrl = `${environment.apiUrl}/likes`;
 
   constructor(private http: HttpClient) {}
 
-  getPosts(filters?: PostFilters): Observable<PostsResponse> {
+  // Get all blogs with pagination and filters
+  getPosts(filters?: any): Observable<any> {
     let params = new HttpParams();
     
     if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params = params.set(key, value.toString());
-        }
-      });
+      if (filters.page) params = params.set('page', filters.page.toString());
+      if (filters.page_size) params = params.set('page_size', filters.page_size.toString());
+      if (filters.published_only !== undefined) params = params.set('published_only', filters.published_only.toString());
+      if (filters.tag_id) params = params.set('tag_id', filters.tag_id);
     }
 
-    return this.http.get<PostsResponse>(this.apiUrl, { params });
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
-  getPost(id: string): Observable<Post> {
-    return this.http.get<Post>(`${this.apiUrl}/${id}`);
+  // Get single blog by ID
+  getPost(id: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
-  getPostBySlug(slug: string): Observable<Post> {
-    return this.http.get<Post>(`${this.apiUrl}/slug/${slug}`);
+  // Create new blog
+  createPost(postData: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, postData);
   }
 
-  createPost(postData: CreatePostRequest): Observable<Post> {
-    return this.http.post<Post>(this.apiUrl, postData);
-  }
-
-  updatePost(id: string, postData: UpdatePostRequest): Observable<Post> {
-    return this.http.put<Post>(`${this.apiUrl}/${id}`, postData);
+  // Update existing blog
+  updatePost(id: string, postData: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, postData);
   }
 
   deletePost(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  likePost(id: string): Observable<{message: string}> {
-    return this.http.post<{message: string}>(`${this.apiUrl}/${id}/like`, {});
+  // Like/Unlike blog posts
+  likePost(blogId: string): Observable<any> {
+    return this.http.post<any>(`${this.likesUrl}/${blogId}`, { isLiked: true });
   }
 
-  unlikePost(id: string): Observable<{message: string}> {
-    return this.http.delete<{message: string}>(`${this.apiUrl}/${id}/like`);
+  unlikePost(blogId: string): Observable<any> {
+    return this.http.delete<any>(`${this.likesUrl}/${blogId}`);
   }
 
-  getUserPosts(userId: string, filters?: PostFilters): Observable<PostsResponse> {
+  // Get likes for a blog
+  getBlogLikes(blogId: string): Observable<any> {
+    return this.http.get<any>(`${this.likesUrl}/${blogId}`);
+  }
+
+  // Get user's blogs
+  getUserPosts(userId: string, filters?: any): Observable<any> {
     let params = new HttpParams();
     
     if (filters) {
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          params = params.set(key, value.toString());
-        }
-      });
+      if (filters.page) params = params.set('page', filters.page.toString());
+      if (filters.page_size) params = params.set('page_size', filters.page_size.toString());
+      if (filters.published_only !== undefined) params = params.set('published_only', filters.published_only.toString());
     }
 
-    return this.http.get<PostsResponse>(`${environment.apiUrl}/users/${userId}/posts`, { params });
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}`, { params });
   }
 
-  getCategories(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/categories/`);
+  // Get all tags
+  getTags(): Observable<any> {
+    return this.http.get<any>(this.tagsUrl);
   }
 
-  getTags(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/tags/`);
+  // Create new tag
+  createTag(name: string): Observable<any> {
+    return this.http.post<any>(this.tagsUrl, { name });
   }
 
-  searchPosts(query: string, filters?: Omit<PostFilters, 'search'>): Observable<PostsResponse> {
-    const searchFilters: PostFilters = { ...filters, search: query };
-    return this.getPosts(searchFilters);
+  // Search blogs (can be implemented using filters)
+  searchPosts(query: string, filters?: any): Observable<any> {
+    // For now, return regular posts - search can be implemented later
+    return this.getPosts(filters);
   }
 }
 
