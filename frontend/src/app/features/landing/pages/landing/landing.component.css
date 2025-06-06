@@ -1,0 +1,342 @@
+/* Minimal Dark Landing Page - Medium Inspired */
+
+/* Main Landing Container */
+.landing-hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-container {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Brand Section */
+.brand-section {
+  margin-bottom: 4rem;
+  animation: fadeInUp 1s ease-out;
+}
+
+.brand-logo {
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeInScale 1.2s ease-out 0.2s forwards;
+}
+
+.brand-title {
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #ffffff;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', sans-serif;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.4s forwards;
+}
+
+.brand-subtitle {
+  font-size: 1.125rem;
+  color: #9ca3af;
+  margin: 0;
+  font-weight: 400;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.6s forwards;
+}
+
+/* Login Section */
+.login-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.8s forwards;
+}
+
+.login-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 500;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.login-button:hover::before {
+  opacity: 1;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.login-text,
+.login-arrow {
+  position: relative;
+  z-index: 1;
+}
+
+.login-arrow {
+  transition: transform 0.3s ease;
+}
+
+.login-button:hover .login-arrow {
+  transform: translateX(4px);
+}
+
+/* Auth Links */
+.auth-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.auth-divider {
+  color: #6b7280;
+}
+
+.register-link {
+  color: #9ca3af;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+.register-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transition: width 0.3s ease;
+}
+
+.register-link:hover {
+  color: #ffffff;
+}
+
+.register-link:hover::after {
+  width: 100%;
+}
+
+/* Decorative Elements */
+.decoration-dots {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+}
+
+.dot-1 {
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.dot-2 {
+  top: 25%;
+  right: 15%;
+  animation-delay: 1s;
+}
+
+.dot-3 {
+  top: 60%;
+  left: 8%;
+  animation-delay: 2s;
+}
+
+.dot-4 {
+  bottom: 20%;
+  right: 12%;
+  animation-delay: 3s;
+}
+
+.dot-5 {
+  top: 40%;
+  left: 50%;
+  animation-delay: 4s;
+  opacity: 0.1;
+}
+
+.dot-6 {
+  bottom: 35%;
+  left: 20%;
+  animation-delay: 5s;
+  opacity: 0.2;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(240deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .landing-hero {
+    padding: 1rem;
+    min-height: 100vh;
+    /* Ensure full height on mobile */
+  }
+  
+  .landing-container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .brand-title {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+  
+  .brand-subtitle {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .login-button {
+    padding: 0.875rem 1.75rem;
+    font-size: 0.9rem;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .auth-links {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .landing-hero {
+    padding: 0.75rem;
+  }
+  
+  .brand-title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .brand-title {
+    font-size: 1.75rem;
+  }
+  
+  .auth-links {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .landing-hero {
+    background: #000000;
+  }
+  
+  .brand-title {
+    color: #ffffff;
+  }
+  
+  .login-button {
+    background: #ffffff;
+    color: #000000;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .brand-logo,
+  .brand-title,
+  .brand-subtitle,
+  .login-section {
+    animation: none;
+    opacity: 1;
+  }
+  
+  .dot {
+    animation: none;
+  }
+  
+  .login-button {
+    transition: none;
+  }
+}
+

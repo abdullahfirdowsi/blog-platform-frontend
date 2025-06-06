@@ -1,0 +1,93 @@
+<header class="header-glass">
+  <div class="header-container">
+    <div class="brand-menu-container">
+      <a [routerLink]="currentUser ? '/home' : '/landing'" class="logo-container">
+        <span class="brand-title-header">BlogPlatform</span>
+      </a>
+      
+      <button 
+        type="button"
+        (click)="toggleMobileMenu()"
+        (mousedown)="$event.stopPropagation()"
+        class="menu-toggle-button"
+        [class.active]="isMobileMenuOpen"
+        [attr.aria-expanded]="isMobileMenuOpen"
+        aria-label="Toggle navigation menu"
+      >
+        <span class="menu-toggle-text">Menu</span>
+        <svg class="menu-toggle-icon" width="16" height="16" viewBox="0 0 20 20" fill="none">
+          <path [class.hidden]="isMobileMenuOpen" d="M3 7h14M3 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path [class.hidden]="!isMobileMenuOpen" d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Collapsible Navigation Menu -->
+  <div class="nav-menu" [class.nav-menu-open]="isMobileMenuOpen">
+    <div class="nav-content">
+      <!-- Navigation Links -->
+      <div class="nav-links" *ngIf="currentUser">
+        <a 
+          routerLink="/home" 
+          routerLinkActive="nav-link-active" 
+          [routerLinkActiveOptions]="{exact: true}"
+          class="nav-link"
+          (click)="closeMenus()"
+        >
+          Dashboard
+        </a>
+        <a 
+          routerLink="/posts" 
+          routerLinkActive="nav-link-active"
+          class="nav-link"
+          (click)="closeMenus()"
+        >
+          Posts
+        </a>
+        <a 
+          routerLink="/profile" 
+          routerLinkActive="nav-link-active"
+          class="nav-link"
+          (click)="closeMenus()"
+        >
+          Profile
+        </a>
+      </div>
+
+      <!-- Auth Section -->
+      <div class="nav-auth">
+        <!-- Logged In User -->
+        <div *ngIf="currentUser" class="user-section">
+          <div class="user-greeting">
+            <span class="user-name">{{ currentUser.full_name || 'User' }}</span>
+          </div>
+          <button 
+            (click)="logout()"
+            class="logout-button"
+          >
+            <svg class="logout-icon" width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path d="M9 3H5a2 2 0 00-2 2v10a2 2 0 002 2h4M15 9l-6 6m0-6l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Logout
+          </button>
+        </div>
+
+        <!-- Guest Menu -->
+        <div *ngIf="!currentUser" class="guest-section">
+          <a 
+            routerLink="/auth/login" 
+            class="get-started-button"
+            (click)="closeMenus()"
+          >
+            <span class="get-started-text">Get Started</span>
+            <svg class="get-started-arrow" width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+

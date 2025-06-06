@@ -1,0 +1,305 @@
+<div class="page-content">
+  <app-header></app-header>
+  
+  <main class="main-content bg-gray-950 pt-20">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Header -->
+      <div class="editor-header">
+        <button (click)="goBack()" class="back-button">
+          <svg class="back-arrow" width="16" height="16" viewBox="0 0 20 20" fill="none">
+            <path d="M15.833 10H4.167M10 4.167L4.167 10l5.833 5.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Back
+        </button>
+        
+        <h1 class="editor-title">{{ isEditMode ? 'Edit Blog Post' : 'Create New Blog Post' }}</h1>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Loading blog post...</p>
+      </div>
+
+      <!-- Error State -->
+      <div *ngIf="error" class="error-state">
+        <p class="error-text">{{error}}</p>
+        <button (click)="goBack()" class="error-retry-button">
+          Go Back
+        </button>
+      </div>
+
+      <!-- Blog Editor Form -->
+      <form *ngIf="!loading && !error" [formGroup]="blogForm" (ngSubmit)="onSubmit()" class="blog-form">
+        
+        <!-- Title Field -->
+        <div class="form-group">
+          <label for="title" class="form-label">Title *</label>
+          <input 
+            type="text" 
+            id="title" 
+            formControlName="title"
+            class="form-input"
+            placeholder="Enter your blog post title..."
+            maxlength="200">
+          <div *ngIf="getFieldError('title')" class="field-error">
+            {{getFieldError('title')}}
+          </div>
+          <div class="field-hint">
+            {{blogForm.get('title')?.value?.length || 0}}/200 characters
+          </div>
+        </div>
+
+        <!-- Block-based Content Editor -->
+        <div class="form-group">
+          <div class="block-editor-container">
+            <!-- Editor Header -->
+            <div class="block-editor-header">
+              <label class="form-label">Content *</label>
+              <div class="add-block-wrapper">
+                <button 
+                  type="button" 
+                  (click)="toggleBlockMenu()"
+                  class="add-block-button"
+                  title="Add content block">
+                  <span class="add-icon">+</span>
+                  Add Block
+                </button>
+                
+                <!-- Block Menu -->
+                <div *ngIf="showBlockMenu" class="block-menu">
+                  <button 
+                    *ngFor="let blockType of blockTypes"
+                    type="button"
+                    (click)="addBlock(blockType.type)"
+                    class="block-menu-item">
+                    <span class="block-icon">{{blockType.icon}}</span>
+                    <span class="block-label">{{blockType.label}}</span>
+                  </button>
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- Content Blocks -->
+            <div class="content-blocks">
+              <div 
+                *ngFor="let block of contentBlocks; let i = index" 
+                class="content-block"
+                [attr.data-block-type]="block.type">
+                
+                <!-- Block Header -->
+                <div class="block-header">
+                  <div class="block-type-info">
+                    <span class="block-type-icon">{{getBlockTypeIcon(block.type)}}</span>
+                    <span class="block-type-label">{{getBlockTypeLabel(block.type)}}</span>
+                  </div>
+                  
+                  <div class="block-controls">
+                    <button 
+                      *ngIf="i > 0"
+                      type="button" 
+                      (click)="moveBlockUp(i)"
+                      class="block-control-button"
+                      title="Move up">
+                      ↑
+                    </button>
+                    <button 
+                      *ngIf="i < contentBlocks.length - 1"
+                      type="button" 
+                      (click)="moveBlockDown(i)"
+                      class="block-control-button"
+                      title="Move down">
+                      ↓
+                    </button>
+                    <button 
+                      *ngIf="contentBlocks.length > 1"
+                      type="button" 
+                      (click)="removeBlock(i)"
+                      class="block-control-button block-delete"
+                      title="Delete block">
+                      ×
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Block Content -->
+                <div class="block-content">
+                  <!-- Subtitle Block -->
+                  <div *ngIf="block.type === 'subtitle'" class="subtitle-block">
+                    <input 
+                      type="text"
+                      [value]="block.data"
+                      (input)="updateBlockData(i, $any($event.target).value)"
+                      class="subtitle-input"
+                      placeholder="Enter subtitle here...">
+                  </div>
+                  
+                  <!-- Content Block -->
+                  <div *ngIf="block.type === 'content'" class="content-block-wrapper">
+                    <textarea 
+                      [value]="block.data"
+                      (input)="updateBlockData(i, $any($event.target).value)"
+                      class="content-textarea"
+                      placeholder="Write your content here..."
+                      rows="6">
+                    </textarea>
+                  </div>
+                  
+                  <!-- Image Block -->
+                  <div *ngIf="block.type === 'image'" class="image-block">
+                    <input 
+                      type="url"
+                      [value]="block.data"
+                      (input)="updateBlockData(i, $any($event.target).value)"
+                      class="image-url-input"
+                      placeholder="Enter image URL here...">
+                    
+                    <!-- Image Preview -->
+                    <div *ngIf="block.data" class="image-preview">
+                      <img [src]="block.data" alt="Preview" class="preview-image">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            
+
+            <!-- Editor Footer with Stats -->
+            <div class="block-editor-footer">
+              <div class="editor-stats">
+                <span class="block-count">
+                  {{contentBlocks.length}} blocks
+                </span>
+                <span class="word-count">
+                  • {{getWordCount()}} words
+                </span>
+              </div>
+              <div *ngIf="autoSaveStatus" class="auto-save-status">
+                {{autoSaveStatus}}
+              </div>
+            </div>
+            
+            <!-- Error Display -->
+            <div *ngIf="contentBlocks.length === 0" class="field-error">
+              Content is required - please add at least one block
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured Image Field -->
+        <div class="form-group">
+          <label for="main_image_url" class="form-label">Featured Image URL</label>
+          <input 
+            type="url" 
+            id="main_image_url" 
+            formControlName="main_image_url"
+            class="form-input"
+            placeholder="https://example.com/image.jpg">
+          <div class="field-hint">
+            Optional: Enter a URL for the featured image of your blog post
+          </div>
+        </div>
+
+        <!-- Tags Section -->
+        <div class="form-group">
+          <label class="form-label">Tags</label>
+          
+          <!-- Selected Tags -->
+          <div *ngIf="selectedTags.length > 0" class="selected-tags">
+            <span *ngFor="let tagId of selectedTags" class="selected-tag">
+              {{getTagName(tagId)}}
+              <button type="button" (click)="toggleTag(tagId)" class="remove-tag">
+                ×
+              </button>
+            </span>
+          </div>
+          
+          <!-- Available Tags -->
+          <div class="available-tags">
+            <button 
+              *ngFor="let tag of tags" 
+              type="button"
+              (click)="toggleTag(tag.id)"
+              [class]="'tag-button ' + (isTagSelected(tag.id) ? 'tag-selected' : '')">
+              {{tag.name}}
+            </button>
+            
+            <!-- Add New Tag Button -->
+            <button 
+              type="button" 
+              (click)="showTagInput = !showTagInput" 
+              class="add-tag-button">
+              + Add Tag
+            </button>
+          </div>
+          
+          <!-- New Tag Input -->
+          <div *ngIf="showTagInput" class="new-tag-container">
+            <input 
+              type="text" 
+              [(ngModel)]="newTagName" 
+              [ngModelOptions]="{standalone: true}"
+              class="new-tag-input"
+              placeholder="Enter new tag name"
+              maxlength="50"
+              (keyup.enter)="createTag()">
+            <div class="new-tag-actions">
+              <button type="button" (click)="createTag()" class="create-tag-button">
+                Create
+              </button>
+              <button type="button" (click)="showTagInput = false; newTagName = ''" class="cancel-tag-button">
+                Cancel
+              </button>
+            </div>
+          </div>
+          
+          <div class="field-hint">
+            Select existing tags or create new ones to categorize your blog post
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <div class="action-buttons">
+            <!-- Save Draft Button -->
+            <button 
+              type="button" 
+              (click)="saveDraft()" 
+              [disabled]="saving || blogForm.get('title')?.invalid || blogForm.get('content')?.invalid"
+              class="draft-button">
+              <svg *ngIf="saving" class="button-spinner" width="16" height="16" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/>
+                <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+              <span *ngIf="!saving">Save Draft</span>
+              <span *ngIf="saving">Saving...</span>
+            </button>
+            
+            <!-- Publish Button -->
+            <button 
+              type="button" 
+              (click)="publish()" 
+              [disabled]="saving || blogForm.invalid"
+              class="publish-button">
+              <svg *ngIf="saving" class="button-spinner" width="16" height="16" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" opacity="0.3"/>
+                <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+              <span *ngIf="!saving">{{ isEditMode ? 'Update & Publish' : 'Publish' }}</span>
+              <span *ngIf="saving">{{ isEditMode ? 'Updating...' : 'Publishing...' }}</span>
+            </button>
+          </div>
+          
+          <!-- Cancel Button -->
+          <button type="button" (click)="goBack()" class="cancel-button">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+  
+  <app-footer></app-footer>
+</div>
