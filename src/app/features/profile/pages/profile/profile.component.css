@@ -83,6 +83,7 @@
   margin: 0 0 0.75rem 0;
   letter-spacing: -0.02em;
   font-family: 'Inter', sans-serif;
+  color: #ffffff !important;
 }
 
 .profile-email {
@@ -294,7 +295,66 @@
   gap: 0.5rem;
 }
 
-/* Submit Button */
+/* Submit Button - Landing Page Style */
+.form-section button[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 50px !important;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+  width: auto !important;
+  min-width: 200px;
+}
+
+.form-section button[type="submit"]::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.form-section button[type="submit"]:hover::before {
+  opacity: 1;
+}
+
+.form-section button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.form-section button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.form-section button[type="submit"]:disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.form-section button[type="submit"] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Legacy submit button class - keep for compatibility */
 .form-section .submit-button {
   display: inline-flex;
   align-items: center;
@@ -304,7 +364,7 @@
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 50px;
   font-weight: 500;
   font-size: 1rem;
   cursor: pointer;
@@ -312,7 +372,8 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
-  width: 100%;
+  width: auto;
+  min-width: 200px;
 }
 
 .form-section .submit-button::before {
