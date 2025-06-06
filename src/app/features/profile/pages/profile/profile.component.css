@@ -1,3 +1,10 @@
+/* Profile Page Container */
+.profile-page {
+  position: relative;
+  z-index: 1;
+  overflow-x: hidden;
+}
+
 /* Profile Hero Section */
 .profile-hero {
   min-height: 100vh;

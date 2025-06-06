@@ -2,23 +2,33 @@ import { Routes } from '@angular/router';
 import { PostListComponent } from './pages/post-list/post-list.component';
 import { PostDetailComponent } from './pages/post-detail/post-detail.component';
 import { PostEditComponent } from './pages/post-edit/post-edit.component';
+import { authGuard } from '../../core/guards/auth.guard';
 
 export const postsRoutes: Routes = [
   {
     path: '',
-    component: PostListComponent
+    component: PostListComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'create',
+    component: PostEditComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'new',
-    component: PostEditComponent
+    redirectTo: 'create',
+    pathMatch: 'full'
   },
   {
     path: ':id',
-    component: PostDetailComponent
+    component: PostDetailComponent,
+    canActivate: [authGuard]
   },
   {
     path: ':id/edit',
-    component: PostEditComponent
+    component: PostEditComponent,
+    canActivate: [authGuard]
   }
 ];
 

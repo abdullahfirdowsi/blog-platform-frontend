@@ -1,14 +1,18 @@
 <header class="header-glass">
   <div class="header-container">
     <div class="brand-menu-container">
-      <a routerLink="/landing" class="logo-container">
+      <a [routerLink]="currentUser ? '/home' : '/landing'" class="logo-container">
         <span class="brand-title-header">BlogPlatform</span>
       </a>
       
       <button 
-        (click)="toggleMobileMenu()" 
+        type="button"
+        (click)="toggleMobileMenu()"
+        (mousedown)="$event.stopPropagation()"
         class="menu-toggle-button"
         [class.active]="isMobileMenuOpen"
+        [attr.aria-expanded]="isMobileMenuOpen"
+        aria-label="Toggle navigation menu"
       >
         <span class="menu-toggle-text">Menu</span>
         <svg class="menu-toggle-icon" width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -25,13 +29,13 @@
       <!-- Navigation Links -->
       <div class="nav-links" *ngIf="currentUser">
         <a 
-          routerLink="/landing" 
+          routerLink="/home" 
           routerLinkActive="nav-link-active" 
           [routerLinkActiveOptions]="{exact: true}"
           class="nav-link"
           (click)="closeMenus()"
         >
-          Home
+          Dashboard
         </a>
         <a 
           routerLink="/posts" 
@@ -40,14 +44,6 @@
           (click)="closeMenus()"
         >
           Posts
-        </a>
-        <a 
-          routerLink="/home" 
-          routerLinkActive="nav-link-active"
-          class="nav-link"
-          (click)="closeMenus()"
-        >
-          Dashboard
         </a>
         <a 
           routerLink="/profile" 

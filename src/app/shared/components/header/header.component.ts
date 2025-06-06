@@ -51,16 +51,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   toggleMobileMenu(): void {
+    console.log('Mobile menu toggle clicked');
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
     this.isUserMenuOpen = false;
+    
+    // Ensure proper event handling
+    setTimeout(() => {
+      console.log('Mobile menu state:', this.isMobileMenuOpen);
+    }, 0);
   }
 
   toggleUserMenu(): void {
+    console.log('User menu toggle clicked');
     this.isUserMenuOpen = !this.isUserMenuOpen;
     this.isMobileMenuOpen = false;
   }
 
   closeMenus(): void {
+    console.log('Closing menus');
     this.isMobileMenuOpen = false;
     this.isUserMenuOpen = false;
   }
