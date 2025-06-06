@@ -99,21 +99,103 @@
 .google-button {
   width: 100%;
   margin-bottom: 1.5rem;
+  position: relative;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Custom Google button styling */
 ::ng-deep .gsi-material-button {
   width: 100% !important;
+  min-width: 280px !important;
+  max-width: 100% !important;
   height: 48px !important;
   border-radius: 12px !important;
   border: 1px solid rgba(75, 85, 99, 0.3) !important;
   background: rgba(31, 41, 55, 0.5) !important;
   transition: all 0.3s ease !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 ::ng-deep .gsi-material-button:hover {
   background: rgba(31, 41, 55, 0.7) !important;
   transform: translateY(-1px) !important;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1) !important;
+}
+
+::ng-deep .gsi-material-button:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* Fix for Google button icon and text alignment */
+::ng-deep .gsi-material-button .gsi-material-button-icon {
+  margin-right: 12px !important;
+}
+
+::ng-deep .gsi-material-button .gsi-material-button-contents {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  color: #d1d5db !important;
+  font-weight: 500 !important;
+}
+
+/* Loading state for Google button */
+.google-button.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.google-button.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid transparent;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Fallback when Google button fails to load */
+.google-button:empty {
+  min-height: 48px;
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.google-button:empty::before {
+  content: 'Loading Google Sign In...';
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+/* Hide fallback when button is successfully rendered */
+.google-button:not(:empty)::before {
+  display: none;
+}
+
+/* Ensure smooth transitions */
+.google-section {
+  transition: opacity 0.3s ease, height 0.3s ease;
+}
+
+.google-section[style*="display: none"] {
+  display: none !important;
 }
 
 .divider {
@@ -543,6 +625,11 @@
     flex-direction: column;
     gap: 1rem;
     align-items: flex-start;
+  }
+  
+  /* Smaller Google button on mobile */
+  ::ng-deep .gsi-material-button {
+    min-width: 260px !important;
   }
 }
 

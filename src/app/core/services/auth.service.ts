@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, tap, catchError, throwError, timer, switch
 import { Router } from '@angular/router';
 import { User, LoginRequest, LoginResponse, CreateUserRequest, GoogleAuthResponse } from '../../shared/interfaces';
 import { environment } from '../../../environments/environment';
+import { AnalyticsService } from './analytics.service';
 
 declare global {
   interface Window {
@@ -21,6 +22,7 @@ export class AuthService {
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   private refreshTokenTimer: any;
   private router = inject(Router);
+  private analytics = inject(AnalyticsService);
   private googleAuthReturnUrl: string = '/home';
 
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -30,24 +32,54 @@ export class AuthService {
   constructor(private http: HttpClient) {
     this.loadStoredAuth();
     this.initGoogleAuth();
+    this.logGoogleAuthStatus();
   }
 
   private async initGoogleAuth(): Promise<void> {
+    console.log('AuthService: Starting Google Auth initialization');
+    const startTime = Date.now();
+    
     try {
       // Load Google Identity Services script
       if (!window.google) {
+        console.log('AuthService: Loading Google script...');
         await this.loadGoogleScript();
+        console.log('AuthService: Google script loaded successfully');
+        this.analytics.trackScriptLoading(true, Date.now() - startTime);
+      } else {
+        console.log('AuthService: Google script already loaded');
+        this.analytics.trackScriptLoading(true, 0);
       }
       
-      window.google.accounts.id.initialize({
+      // Wait a bit for the script to fully initialize
+      console.log('AuthService: Waiting for script initialization...');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (!window.google?.accounts?.id) {
+        console.error('AuthService: Google Identity Services not properly loaded');
+        this.analytics.trackScriptLoading(false, Date.now() - startTime);
+        throw new Error('Google Identity Services not properly loaded');
+      }
+      
+      console.log('AuthService: Initializing Google Identity Services...');
+      
+      const initConfig = {
         client_id: environment.googleClientId,
         callback: this.handleGoogleAuth.bind(this),
         auto_select: false,
-        cancel_on_tap_outside: false
-      });
+        cancel_on_tap_outside: false,
+        use_fedcm_for_prompt: false
+      };
+      
+      console.log('AuthService: Google init config:', { ...initConfig, callback: '[Function]' });
+      
+      window.google.accounts.id.initialize(initConfig);
+      
+      console.log('AuthService: Google Identity Services initialized successfully');
       
       // Also initialize for additional scopes if needed
       if (window.google?.accounts?.oauth2) {
+        console.log('AuthService: Initializing OAuth2 token client...');
         window.google.accounts.oauth2.initTokenClient({
           client_id: environment.googleClientId,
           scope: 'openid email profile',
@@ -55,9 +87,12 @@ export class AuthService {
             console.log('OAuth2 token response:', response);
           }
         });
+        console.log('AuthService: OAuth2 token client initialized');
       }
     } catch (error) {
-      console.error('Failed to initialize Google Auth:', error);
+      console.error('AuthService: Failed to initialize Google Auth:', error);
+      this.analytics.trackScriptLoading(false, Date.now() - startTime);
+      throw error;
     }
   }
 
@@ -73,9 +108,18 @@ export class AuthService {
       script.src = 'https://accounts.google.com/gsi/client';
       script.async = true;
       script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Google Auth script'));
+      script.onload = () => {
+        console.log('AuthService: Google script loaded successfully');
+        resolve();
+      };
+      
+      script.onerror = (error) => {
+        console.error('AuthService: Failed to load Google script:', error);
+        reject(new Error('Failed to load Google Auth script'));
+      };
+      
       document.head.appendChild(script);
+      console.log('AuthService: Google script added to DOM');
     });
   }
 
@@ -117,12 +161,14 @@ export class AuthService {
       next: (authResponse) => {
         this.handleAuthSuccess(authResponse);
         this.isLoadingSubject.next(false);
+        this.analytics.trackAuthAttempt('google', true);
         
         // Navigate to the stored return URL
         this.router.navigate([this.googleAuthReturnUrl]);
       },
       error: (error) => {
         console.error('Google authentication failed:', error);
+        this.analytics.trackAuthAttempt('google', false, error?.message);
         this.isLoadingSubject.next(false);
       }
     });
@@ -133,18 +179,85 @@ export class AuthService {
   }
 
   renderGoogleButton(element: HTMLElement, returnUrl?: string): void {
+    console.log('AuthService: Attempting to render Google button');
+    
     if (returnUrl) {
       this.setGoogleAuthReturnUrl(returnUrl);
+      console.log('AuthService: Return URL set to:', returnUrl);
     }
     
-    if (window.google) {
-      window.google.accounts.id.renderButton(element, {
+    if (!window.google?.accounts?.id) {
+      console.error('AuthService: Google Identity Services not available');
+      this.analytics.trackButtonRender(false, undefined, 'Google Identity Services not available');
+      throw new Error('Google Identity Services not available');
+    }
+    
+    console.log('AuthService: Google Identity Services available, proceeding with render');
+    
+    // Clear any existing content first
+    element.innerHTML = '';
+    
+    // Get the container width for responsive sizing
+    const containerWidth = element.offsetWidth || element.parentElement?.offsetWidth || 320;
+    const buttonWidth = Math.min(containerWidth, 400); // Max width of 400px
+    
+    console.log('AuthService: Container width:', containerWidth, 'Button width:', buttonWidth);
+    
+    try {
+      const buttonConfig = {
         theme: 'outline',
         size: 'large',
-        width: '320',
-        text: 'signin_with'
-      });
+        width: buttonWidth.toString(),
+        text: 'signin_with',
+        shape: 'rectangular',
+        logo_alignment: 'left'
+      };
+      
+      console.log('AuthService: Rendering button with config:', buttonConfig);
+      
+      window.google.accounts.id.renderButton(element, buttonConfig);
+      
+      console.log('AuthService: Google button rendered successfully');
+      this.analytics.trackButtonRender(true, containerWidth);
+      
+      // Apply additional styling for better integration
+      setTimeout(() => {
+        const googleBtn = element.querySelector('.gsi-material-button') as HTMLElement;
+        if (googleBtn) {
+          googleBtn.style.width = '100%';
+          googleBtn.style.maxWidth = 'none';
+          console.log('AuthService: Applied custom styling to Google button');
+        } else {
+          console.warn('AuthService: Could not find rendered Google button for styling');
+        }
+      }, 50);
+    } catch (error) {
+      console.error('AuthService: Failed to render Google button:', error);
+      this.analytics.trackButtonRender(false, containerWidth, String(error));
+      throw error;
     }
+  }
+
+  // Method to check Google Auth status
+  getGoogleAuthStatus(): {
+    scriptLoaded: boolean;
+    identityServicesAvailable: boolean;
+    oauth2Available: boolean;
+  } {
+    return {
+      scriptLoaded: !!window.google,
+      identityServicesAvailable: !!(window.google?.accounts?.id),
+      oauth2Available: !!(window.google?.accounts?.oauth2)
+    };
+  }
+
+  // Method to log current Google Auth status
+  private logGoogleAuthStatus(): void {
+    setTimeout(() => {
+      const status = this.getGoogleAuthStatus();
+      console.log('AuthService: Google Auth Status:', status);
+      console.log('AuthService: Environment Google Client ID:', environment.googleClientId);
+    }, 1000); // Wait 1 second after service initialization
   }
 
   private loadStoredAuth(): void {

@@ -1,9 +1,15 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
 import { finalize, takeUntil, Subject } from 'rxjs';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 @Component({
   selector: 'app-login',
@@ -11,7 +17,7 @@ import { finalize, takeUntil, Subject } from 'rxjs';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent implements OnInit, AfterViewInit {
+export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('googleButton', { static: false }) googleButton!: ElementRef;
   
   loginForm: FormGroup;
@@ -51,11 +57,64 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Initialize Google Sign-In button
-    if (this.googleButton) {
+    // Initialize Google Sign-In button with proper timing and error handling
+    this.initializeGoogleButton();
+  }
+
+  private initializeGoogleButton(): void {
+    if (!this.googleButton) return;
+
+    // Wait for Google script to be loaded with retry mechanism
+    this.waitForGoogleScript().then(() => {
+      this.renderGoogleButtonWithRetry();
+    }).catch(error => {
+      console.error('Failed to load Google Sign-In:', error);
+      // Hide the Google section if it fails to load
+      const googleSection = this.googleButton.nativeElement.closest('.google-section');
+      if (googleSection) {
+        googleSection.style.display = 'none';
+      }
+    });
+  }
+
+  private waitForGoogleScript(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      
+      const checkGoogle = () => {
+        if (window.google && window.google.accounts && window.google.accounts.id) {
+          resolve();
+        } else if (attempts < maxAttempts) {
+          attempts++;
+          setTimeout(checkGoogle, 100);
+        } else {
+          reject(new Error('Google Sign-In script failed to load'));
+        }
+      };
+      
+      checkGoogle();
+    });
+  }
+
+  private renderGoogleButtonWithRetry(): void {
+    try {
+      this.authService.renderGoogleButton(this.googleButton.nativeElement, this.returnUrl);
+    } catch (error) {
+      console.error('Failed to render Google button:', error);
+      // Retry once after a short delay
       setTimeout(() => {
-        this.authService.renderGoogleButton(this.googleButton.nativeElement, this.returnUrl);
-      }, 100);
+        try {
+          this.authService.renderGoogleButton(this.googleButton.nativeElement, this.returnUrl);
+        } catch (retryError) {
+          console.error('Failed to render Google button on retry:', retryError);
+          // Hide the Google section if rendering fails
+          const googleSection = this.googleButton.nativeElement.closest('.google-section');
+          if (googleSection) {
+            googleSection.style.display = 'none';
+          }
+        }
+      }, 500);
     }
   }
 

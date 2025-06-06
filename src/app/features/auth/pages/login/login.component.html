@@ -158,6 +158,13 @@
         <span class="footer-text">New to BlogPlatform?</span>
         <a [routerLink]="['/auth/register']" class="register-link">Create account</a>
       </div>
+      
+      <!-- Debug Link (only in development) -->
+      <div class="auth-footer" style="border-top: none; padding-top: 0.5rem;">
+        <a [routerLink]="['/auth/google-test']" class="register-link" style="font-size: 0.75rem; opacity: 0.7;">
+          🔧 Test Google Sign-In
+        </a>
+      </div>
     </div>
 
     <!-- Decorative Elements -->
