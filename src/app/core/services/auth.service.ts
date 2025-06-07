@@ -34,9 +34,14 @@ export class AuthService {
 
   private async initGoogleAuth(): Promise<void> {
     try {
+      console.log('DEBUG: Initializing Google Auth...');
       // Load Google Identity Services script
       if (!window.google) {
+        console.log('DEBUG: Google script not found, loading...');
         await this.loadGoogleScript();
+        console.log('DEBUG: Google script loaded successfully');
+      } else {
+        console.log('DEBUG: Google script already available');
       }
       
       window.google.accounts.id.initialize({
@@ -133,11 +138,13 @@ export class AuthService {
   }
 
   renderGoogleButton(element: HTMLElement, returnUrl?: string): void {
+    console.log('DEBUG: Attempting to render Google button');
     if (returnUrl) {
       this.setGoogleAuthReturnUrl(returnUrl);
     }
     
     if (window.google) {
+      console.log('DEBUG: Google object available, rendering button');
       window.google.accounts.id.renderButton(element, {
         theme: 'outline',
         size: 'large',
@@ -146,6 +153,9 @@ export class AuthService {
         shape: 'rectangular',
         logo_alignment: 'left'
       });
+      console.log('DEBUG: Google button rendered successfully');
+    } else {
+      console.error('DEBUG: Google object not available when trying to render button');
     }
   }
 
