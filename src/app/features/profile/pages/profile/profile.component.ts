@@ -217,4 +217,28 @@ export class ProfileComponent implements OnInit, OnDestroy {
     if (!this.currentUser) return '';
     return this.currentUser.google_id ? 'Google Account' : 'Email Account';
   }
+
+  isGoogleUser(): boolean {
+    return !!(this.currentUser?.google_id);
+  }
+
+  canChangePassword(): boolean {
+    return !this.isGoogleUser() && (this.currentUser?.has_password ?? false);
+  }
+
+  onPasswordTabClick(): void {
+    if (this.isGoogleUser()) {
+      // Show modal or alert for Google users
+      this.showGooglePasswordAlert();
+      return;
+    }
+    this.setActiveTab('password');
+  }
+
+  showGooglePasswordAlert(): void {
+    this.passwordErrorMessage = 'Password change is not available for Google accounts. Your account is secured through Google\'s authentication system.';
+    setTimeout(() => {
+      this.passwordErrorMessage = '';
+    }, 5000);
+  }
 }

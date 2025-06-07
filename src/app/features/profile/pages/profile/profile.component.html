@@ -48,12 +48,17 @@
             <span class="tab-text">Profile Information</span>
           </button>
           <button
-            (click)="setActiveTab('password')"
+            (click)="onPasswordTabClick()"
             [class.active]="activeTab === 'password'"
+            [class.disabled]="isGoogleUser()"
+            [class.blurred]="isGoogleUser()"
             class="tab-button"
+            [disabled]="isGoogleUser()"
+            [title]="isGoogleUser() ? 'Password change not available for Google accounts' : 'Change your password'"
           >
             <i class="fas fa-lock tab-icon"></i>
             <span class="tab-text">Change Password</span>
+            <i *ngIf="isGoogleUser()" class="fas fa-ban disabled-icon"></i>
           </button>
         </nav>
       </div>
@@ -182,6 +187,19 @@
             <p class="form-subtitle">Ensure your account is using a long, random password to stay secure.</p>
           </div>
 
+        <!-- Google OAuth User Warning -->
+        @if (isGoogleUser()) {
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md mb-6">
+            <div class="flex items-center">
+              <i class="fab fa-google text-blue-500 mr-3"></i>
+              <div>
+                <h4 class="text-blue-700 font-medium mb-1">Google Account Detected</h4>
+                <p class="text-blue-600 text-sm">Password changes are not available for Google-authenticated accounts. Your account security is managed by Google's authentication system.</p>
+              </div>
+            </div>
+          </div>
+        }
+
         <!-- Success/Error Messages -->
         @if (passwordSuccessMessage) {
           <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-md mb-6 animate-fade-in">
@@ -201,7 +219,8 @@
           </div>
         }
 
-        <!-- Password Form -->
+        <!-- Password Form - Only for non-Google users -->
+        @if (!isGoogleUser()) {
         <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="auth-form">
           <!-- Current Password -->
           <div class="form-group">
@@ -357,6 +376,7 @@
             </button>
           </div>
         </form>
+        }
         </div>
       }
       
