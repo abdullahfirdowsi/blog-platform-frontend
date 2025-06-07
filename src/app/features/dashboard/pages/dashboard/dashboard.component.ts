@@ -5,6 +5,7 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [CommonModule, RouterLink, FooterComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
