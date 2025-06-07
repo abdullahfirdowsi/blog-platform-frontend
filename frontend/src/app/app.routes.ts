@@ -16,7 +16,15 @@ export const routes: Routes = [
   },
   {
     path: 'home',
+    loadChildren: () => import('./features/home/home.routes').then(m => m.homeRoutes)
+  },
+  {
+    path: 'dashboard',
     loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.dashboardRoutes)
+  },
+  {
+    path: 'write',
+    loadChildren: () => import('./features/blog-editor/blog-editor.routes').then(m => m.blogEditorRoutes)
   },
   {
     path: 'posts',

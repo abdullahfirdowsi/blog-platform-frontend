@@ -1,5 +1,6 @@
 export interface User {
-  id: string;
+  _id?: string; // MongoDB _id
+  id?: string;  // Legacy id for compatibility
   username: string;
   email: string;
   full_name?: string;

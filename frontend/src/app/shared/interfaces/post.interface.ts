@@ -1,6 +1,35 @@
 import { User } from './user.interface';
 import { Comment } from './comment.interface';
 
+// MongoDB Blog Structure
+export interface Blog {
+  _id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  tag_ids: string[];
+  main_image_url?: string;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+  // Populated fields
+  user?: User;
+  tags?: Tag[];
+  views?: number;
+  likes_count?: number;
+  comments_count?: number;
+  is_liked?: boolean;
+}
+
+// Tag structure
+export interface Tag {
+  _id: string;
+  name: string;
+  description?: string;
+  created_at: string;
+}
+
+// Legacy Post interface for compatibility
 export interface Post {
   id: string;
   title: string;
@@ -50,6 +79,71 @@ export interface UpdatePostRequest {
   meta_keywords?: string;
 }
 
+// Blog response interfaces for MongoDB
+export interface BlogSummary {
+  _id: string;
+  title: string;
+  content?: string;
+  tag_ids: string[];
+  main_image_url?: string;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  // Populated fields
+  user?: Pick<User, '_id' | 'username' | 'profile_picture'>;
+  tags?: Pick<Tag, '_id' | 'name'>[];
+  views?: number;
+  likes_count?: number;
+  comments_count?: number;
+  is_liked?: boolean;
+  excerpt?: string;
+}
+
+export interface BlogsResponse {
+  blogs: BlogSummary[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+}
+
+export interface CreateBlogRequest {
+  title: string;
+  content: string;
+  tag_ids?: string[];
+  main_image_url?: string;
+  published?: boolean;
+}
+
+export interface UpdateBlogRequest {
+  title?: string;
+  content?: string;
+  tag_ids?: string[];
+  main_image_url?: string;
+  published?: boolean;
+}
+
+export interface BlogFilters {
+  page?: number;
+  limit?: number;
+  published?: boolean;
+  tag_ids?: string;
+  search?: string;
+  user_id?: string;
+}
+
+// Legacy filters for compatibility
+export interface PostFilters {
+  page?: number;
+  limit?: number;
+  status?: 'draft' | 'published' | 'all';
+  category?: string;
+  tags?: string;
+  search?: string;
+  author_id?: string;
+}
+
 export interface PostSummary {
   id: string;
   title: string;
@@ -76,15 +170,5 @@ export interface PostsResponse {
   page: number;
   limit: number;
   total_pages: number;
-}
-
-export interface PostFilters {
-  page?: number;
-  limit?: number;
-  status?: 'draft' | 'published' | 'all';
-  category?: string;
-  tags?: string;
-  search?: string;
-  author_id?: string;
 }
 

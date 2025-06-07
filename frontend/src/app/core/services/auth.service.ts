@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, catchError, throwError, timer, switchMap, of } from 'rxjs';
+import { BehaviorSubject, Observable, tap, catchError, throwError, timer, switchMap, of, map } from 'rxjs';
 import { Router } from '@angular/router';
 import { User, LoginRequest, LoginResponse, CreateUserRequest, GoogleAuthResponse } from '../../shared/interfaces';
 import { environment } from '../../../environments/environment';
@@ -26,6 +26,9 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   public token$ = this.tokenSubject.asObservable();
   public isLoading$ = this.isLoadingSubject.asObservable();
+  public isAuthenticated$ = this.token$.pipe(
+    map(token => !!token && this.isTokenValid(token))
+  );
 
   constructor(private http: HttpClient) {
     this.loadStoredAuth();
