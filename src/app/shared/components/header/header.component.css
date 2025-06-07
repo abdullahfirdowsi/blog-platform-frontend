@@ -79,20 +79,28 @@
 
 /* Collapsible Navigation Menu */
 .nav-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 320px;
+  max-width: 400px;
   max-height: 0;
   overflow: hidden;
   background: #0a0a0a;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
-  position: relative;
+  transform: translateY(-10px);
   z-index: 9998;
 }
 
 .nav-menu-open {
-  max-height: 500px;
+  max-height: 400px;
   opacity: 1;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   z-index: 9998 !important;
 }
 
@@ -274,12 +282,24 @@
   .nav-content {
     padding: 1rem 0;
   }
+  
+  .nav-menu {
+    right: 1rem;
+    left: 1rem;
+    min-width: auto;
+    max-width: none;
+  }
 }
 
 /* Desktop styles for larger screens */
 @media (min-width: 1024px) {
+  .nav-menu {
+    min-width: 450px;
+    max-width: 500px;
+  }
+  
   .nav-menu-open {
-    max-height: 400px;
+    max-height: 350px;
   }
   
   .nav-links {
@@ -300,7 +320,7 @@
     border-left: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 0;
     padding-left: 1.5rem;
-    min-width: 250px;
+    min-width: 200px;
   }
   
   /* Center guest section when no nav links */
@@ -324,6 +344,7 @@
   margin: 0 auto;
   padding: 0 1rem;
   box-sizing: border-box;
+  position: relative;
 }
 
 .brand-menu-container {
@@ -433,6 +454,43 @@
   color: #e5e7eb;
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+/* User Name Link for Profile Navigation */
+.user-name-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 0.25rem;
+  border-radius: 6px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.user-name-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 6px;
+}
+
+.user-name-link:hover::before {
+  opacity: 1;
+}
+
+.user-name-link:hover {
+  transform: translateY(-1px);
+}
+
+.user-name-link:hover .user-name {
+  color: #ffffff;
 }
 
 /* Auth Buttons */

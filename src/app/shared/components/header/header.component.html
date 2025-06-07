@@ -45,14 +45,6 @@
         >
           Posts
         </a>
-        <a 
-          routerLink="/profile" 
-          routerLinkActive="nav-link-active"
-          class="nav-link"
-          (click)="closeMenus()"
-        >
-          Profile
-        </a>
       </div>
 
       <!-- Auth Section -->
@@ -60,7 +52,14 @@
         <!-- Logged In User -->
         <div *ngIf="currentUser" class="user-section">
           <div class="user-greeting">
-            <span class="user-name">{{ currentUser.full_name || 'User' }}</span>
+            <a 
+              routerLink="/profile" 
+              class="user-name-link"
+              (click)="closeMenus()"
+              title="Go to Profile"
+            >
+              <span class="user-name">{{ currentUser.full_name || 'User' }}</span>
+            </a>
           </div>
           <button 
             (click)="logout()"
