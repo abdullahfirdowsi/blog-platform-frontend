@@ -28,8 +28,8 @@ export class AppComponent implements OnInit, OnDestroy {
       )
       .subscribe((event: NavigationEnd) => {
         // Hide header on landing, login, register, forgot-password, reset-password pages
-        const hideHeaderRoutes = ['/landing', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/'];
-        this.shouldShowHeader = !hideHeaderRoutes.includes(event.url);
+        const hideHeaderRoutes = ['/landing', '/auth'];
+        this.shouldShowHeader = !hideHeaderRoutes.some(route => event.url.startsWith(route));
         
         // Manage body class for header spacing
         if (this.shouldShowHeader) {
@@ -41,8 +41,8 @@ export class AppComponent implements OnInit, OnDestroy {
     
     // Set initial state
     const currentUrl = this.router.url;
-    const hideHeaderRoutes = ['/landing', '/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/'];
-    this.shouldShowHeader = !hideHeaderRoutes.includes(currentUrl);
+    const hideHeaderRoutes = ['/landing', '/auth', '/'];
+    this.shouldShowHeader = !hideHeaderRoutes.some(route => currentUrl.startsWith(route));
     
     // Set initial body class
     if (this.shouldShowHeader) {
