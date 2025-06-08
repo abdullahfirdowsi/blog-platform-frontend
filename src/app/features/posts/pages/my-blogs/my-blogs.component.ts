@@ -120,20 +120,31 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
     try {
       // Parse JSON string content (block-based content)
       const blocks = JSON.parse(content);
-      if (Array.isArray(blocks)) {
+      if (Array.isArray(blocks) && blocks.length > 0) {
         const textBlocks = blocks
-          .filter(block => block.type === 'content' && block.data)
-          .map(block => block.data)
+          .filter(block => (block.type === 'content' || block.type === 'subtitle') && block.data)
+          .map(block => {
+            // Clean HTML tags and get plain text
+            const cleanText = block.data.replace(/<[^>]*>/g, '').trim();
+            return cleanText;
+          })
+          .filter(text => text.length > 0)
           .join(' ');
-        return textBlocks.length > 150 ? textBlocks.substring(0, 150) + '...' : textBlocks || 'No content';
+        
+        if (textBlocks.length > 0) {
+          return textBlocks.length > 150 ? textBlocks.substring(0, 150) + '...' : textBlocks;
+        }
       }
-    } catch {
+    } catch (error) {
+      console.log('Content is not JSON, treating as plain text:', error);
       // If not valid JSON, treat as plain text
-      const plainText = content.replace(/<[^>]*>/g, ''); // Remove HTML tags
-      return plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+      const plainText = content.replace(/<[^>]*>/g, '').trim(); // Remove HTML tags
+      if (plainText) {
+        return plainText.length > 150 ? plainText.substring(0, 150) + '...' : plainText;
+      }
     }
     
-    return 'No content';
+    return 'No content available';
   }
 
   onViewBlog(blog: Blog): void {

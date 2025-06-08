@@ -119,15 +119,25 @@
           <div class="blog-content">
             <!-- Content Blocks -->
             <div *ngFor="let block of getContentBlocks()" class="content-block">
+              <!-- Subtitle Block -->
+              <h2 *ngIf="block.type === 'subtitle'" class="content-subtitle">{{ block.data }}</h2>
+              
+              <!-- Content Block -->
               <div *ngIf="block.type === 'content'" class="text-content" [innerHTML]="block.data"></div>
+              
+              <!-- Image Block -->
               <div *ngIf="block.type === 'image'" class="image-content">
                 <img [src]="block.data" [alt]="block.caption || 'Blog image'" class="content-image" />
                 <p *ngIf="block.caption" class="image-caption">{{ block.caption }}</p>
               </div>
+              
+              <!-- Quote Block -->
               <div *ngIf="block.type === 'quote'" class="quote-content">
                 <blockquote>{{ block.data }}</blockquote>
                 <cite *ngIf="block.author">- {{ block.author }}</cite>
               </div>
+              
+              <!-- Code Block -->
               <div *ngIf="block.type === 'code'" class="code-content">
                 <pre><code>{{ block.data }}</code></pre>
               </div>
@@ -139,6 +149,99 @@
             </div>
           </div>
         </div>
+        
+        <!-- AI Summary Section -->
+        <section *ngIf="blog?.published" class="ai-summary-section">
+          <div class="summary-header">
+            <div class="summary-title-container">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="ai-icon">
+                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 003.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 00-3.09 3.091zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423L16.5 15.75l.394 1.183a2.25 2.25 0 001.423 1.423L19.5 18.75l-1.183.394a2.25 2.25 0 00-1.423 1.423z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <h2>AI Summary</h2>
+            </div>
+            <p class="summary-description">Get a quick AI-generated summary of this blog post</p>
+          </div>
+          
+          <!-- Existing Summary -->
+          <div *ngIf="aiSummary && !summaryLoading" class="summary-content">
+            <div class="summary-text">
+              <p>{{ aiSummary.summary }}</p>
+              <!-- Key Points -->
+              <div *ngIf="aiSummary.key_points && aiSummary.key_points.length > 0" class="key-points">
+                <h4>Key Points:</h4>
+                <ul>
+                  <li *ngFor="let point of aiSummary.key_points">{{ point }}</li>
+                </ul>
+              </div>
+            </div>
+            <div class="summary-meta">
+              <span class="summary-date">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                  <path d="M6 2v2M14 2v2M3 8h14M5 4h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Generated: {{ formatDate(aiSummary.created_at) }}
+              </span>
+              <div class="summary-actions" *ngIf="canManageSummary()">
+                <button 
+                  class="regenerate-btn"
+                  (click)="generateAiSummary()"
+                  [disabled]="summaryLoading"
+                  title="Regenerate summary"
+                >
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m-15.357-2A8.001 8.001 0 0015.419 15M15 15H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Regenerate
+                </button>
+                <button 
+                  class="delete-summary-btn"
+                  (click)="deleteAiSummary()"
+                  [disabled]="summaryLoading"
+                  title="Delete summary"
+                >
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 102 0v3a1 1 0 11-2 0V9zm4 0a1 1 0 10-2 0v3a1 1 0 102 0V9z" clip-rule="evenodd" fill="currentColor"/>
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Generate Summary Button -->
+          <div *ngIf="!aiSummary && !summaryLoading" class="generate-summary">
+            <button 
+              class="generate-btn"
+              (click)="generateAiSummary()"
+              [disabled]="!canManageSummary()"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 003.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 00-3.09 3.091zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423L16.5 15.75l.394 1.183a2.25 2.25 0 001.423 1.423L19.5 18.75l-1.183.394a2.25 2.25 0 00-1.423 1.423z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Generate AI Summary
+            </button>
+            <p *ngIf="!canManageSummary()" class="auth-message">
+              <em>Please log in to generate summaries</em>
+            </p>
+          </div>
+          
+          <!-- Loading State -->
+          <div *ngIf="summaryLoading" class="summary-loading">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Generating AI summary...</p>
+          </div>
+          
+          <!-- Error State -->
+          <div *ngIf="summaryError" class="summary-error">
+            <div class="error-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 9v4M12 17h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p class="error-message">{{ summaryError }}</p>
+            <button class="retry-btn" (click)="generateAiSummary()">Try Again</button>
+          </div>
+        </section>
       </article>
     </div>
   </main>

@@ -114,9 +114,10 @@ export class EditBlogComponent implements OnInit, OnDestroy {
     try {
       // Parse JSON content into blocks
       const blocks = JSON.parse(blog.content);
-      if (Array.isArray(blocks)) {
+      if (Array.isArray(blocks) && blocks.length > 0) {
         this.blogBlocks = blocks.map(block => ({
           ...block,
+          id: block.id || this.generateId(),
           placeholder: this.getPlaceholder(block.type)
         }));
       } else {
@@ -124,16 +125,17 @@ export class EditBlogComponent implements OnInit, OnDestroy {
         this.blogBlocks = [{
           id: this.generateId(),
           type: 'content',
-          data: blog.content,
+          data: blog.content || '',
           placeholder: 'Enter your content...'
         }];
       }
-    } catch {
+    } catch (error) {
+      console.log('Content is not JSON, treating as plain text:', error);
       // If content is not valid JSON, create a single content block
       this.blogBlocks = [{
         id: this.generateId(),
         type: 'content',
-        data: blog.content,
+        data: blog.content || '',
         placeholder: 'Enter your content...'
       }];
     }

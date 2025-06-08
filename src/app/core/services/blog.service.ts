@@ -208,5 +208,18 @@ export class BlogService {
     
     return this.http.get<Blog[]>(`${this.apiUrl}/blogs/my-blogs`, { params });
   }
+
+  // AI Summary methods
+  generateAISummary(blogId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/blog-summaries/${blogId}/generate`, {});
+  }
+
+  getAISummary(blogId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/blog-summaries/${blogId}`);
+  }
+
+  deleteAISummary(blogId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/blog-summaries/${blogId}`);
+  }
 }
 

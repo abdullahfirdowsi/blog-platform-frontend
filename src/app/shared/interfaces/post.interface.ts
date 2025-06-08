@@ -172,3 +172,12 @@ export interface PostsResponse {
   total_pages: number;
 }
 
+// AI Summary interface
+export interface AiSummary {
+  id: string; // Corresponds to backend 'id' field (aliased from _id)
+  blog_id: string;
+  summary: string;
+  key_points?: string[]; // Optional array of key points
+  created_at: string;
+}
+

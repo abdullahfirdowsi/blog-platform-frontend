@@ -179,16 +179,53 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     target.style.height = target.scrollHeight + 'px';
   }
 
+  // Preview modal state
+  showPreviewModal = false;
+  
   // Preview blog content
   previewBlog(): void {
-    const blogData = {
-      title: this.blogTitle,
-      blocks: this.blogBlocks
-    };
-    console.log('Blog Preview:', blogData);
+    if (!this.blogTitle.trim()) {
+      alert('Please enter a blog title');
+      return;
+    }
+
+    if (this.blogBlocks.length === 0) {
+      alert('Please add some content blocks');
+      return;
+    }
     
-    // Here you could open a preview modal or navigate to preview page
-    alert('Preview feature will be implemented. Check console for blog data.');
+    this.showPreviewModal = true;
+  }
+  
+  // Close preview modal
+  closePreviewModal(): void {
+    this.showPreviewModal = false;
+  }
+  
+  // Get formatted date for preview
+  getFormattedDate(): string {
+    return new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+  
+  // Get content blocks for preview
+  getPreviewBlocks(): any[] {
+    return this.blogBlocks.map(block => ({
+      ...block,
+      data: this.formatBlockDataForPreview(block)
+    }));
+  }
+  
+  // Format block data for preview display
+  private formatBlockDataForPreview(block: BlogBlock): string {
+    if (block.type === 'content') {
+      // Convert line breaks to HTML paragraphs
+      return block.data.split('\n').filter(line => line.trim()).map(line => `<p>${line}</p>`).join('');
+    }
+    return block.data;
   }
 
   // Save blog as draft

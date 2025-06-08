@@ -353,4 +353,61 @@
   </div>
 </div>
 
+<!-- Preview Modal -->
+<div *ngIf="showPreviewModal" class="preview-modal-overlay">
+  <div class="preview-modal">
+    <div class="modal-header">
+      <h2>Blog Preview</h2>
+      <button class="close-btn" (click)="closePreviewModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <article class="preview-article">
+        <!-- Preview Header -->
+        <header class="preview-header">
+          <h1 class="preview-title">{{ blogTitle }}</h1>
+          <div class="preview-meta">
+            <span class="preview-date">{{ getFormattedDate() }}</span>
+            <span class="preview-status">Draft</span>
+          </div>
+        </header>
+        
+        <!-- Preview Content -->
+        <div class="preview-content">
+          <div *ngFor="let block of getPreviewBlocks()" class="preview-block">
+            <!-- Subtitle Block -->
+            <h2 *ngIf="block.type === 'subtitle'" class="preview-subtitle">
+              {{ block.data || 'Untitled Subtitle' }}
+            </h2>
+            
+            <!-- Content Block -->
+            <div *ngIf="block.type === 'content'" class="preview-text" [innerHTML]="block.data || 'No content added yet.'"></div>
+            
+            <!-- Image Block -->
+            <div *ngIf="block.type === 'image'" class="preview-image">
+              <img [src]="block.data" [alt]="'Blog image'" *ngIf="block.data" />
+              <div *ngIf="!block.data" class="preview-image-placeholder">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/>
+                </svg>
+                <p>No image added</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Empty content message -->
+          <div *ngIf="blogBlocks.length === 0" class="preview-empty">
+            <p>No content blocks added yet.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn secondary" (click)="closePreviewModal()">Close</button>
+      <button type="button" class="btn primary" (click)="closePreviewModal(); openPublishModal()">Publish</button>
+    </div>
+  </div>
+</div>
+
 <app-footer></app-footer>
