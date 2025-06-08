@@ -6,7 +6,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { BlogService } from '../../../../core/services/blog.service';
 import { FooterComponent } from "../../../../shared/components/footer/footer.component";
-import { Tag } from '../../../../shared/interfaces/post.interface';
+import { Tag, CreateBlogRequest } from '../../../../shared/interfaces/post.interface';
 
 export interface BlogBlock {
   id: string;
@@ -208,30 +208,51 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     // Convert blocks to JSON string for storage
     const contentJsonString = JSON.stringify(this.blogBlocks);
 
-    // Create minimal blog data - only title and content
-    const blogData = {
-      _id: this.generateBlogId(),
+    // Create blog data for MongoDB API
+    const blogData: CreateBlogRequest = {
       title: this.blogTitle,
       content: contentJsonString, // JSON stringified blocks
+      tag_ids: [], // Empty for draft
+      main_image_url: undefined,
       published: false // Save as draft
     };
 
-    console.log('Saving blog draft to localStorage:', blogData);
-    console.log('Content (JSON string):', contentJsonString);
+    console.log('Saving blog draft to MongoDB:', blogData);
 
-    try {
-      // Save to localStorage
-      this.saveBlogToLocalStorage(blogData);
-      
-      setTimeout(() => {
+    // Save to MongoDB via API
+    this.blogService.createBlog(blogData).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (createdBlog) => {
+        console.log('Blog draft saved successfully to MongoDB:', createdBlog);
         this.isSaving = false;
         alert('Blog draft saved successfully!');
-      }, 1000);
-    } catch (error) {
-      console.error('Error saving blog:', error);
-      this.isSaving = false;
-      alert('Error saving blog. Please try again.');
-    }
+      },
+      error: (error) => {
+        console.error('Error saving blog to MongoDB:', error);
+        this.isSaving = false;
+        
+        // Fallback to localStorage if API fails
+        if (error.status === 0) {
+          console.log('Server unreachable, saving to localStorage as fallback');
+          try {
+            const localBlogData = {
+              _id: this.generateBlogId(),
+              ...blogData,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+            this.saveBlogToLocalStorage(localBlogData);
+            alert('Blog draft saved locally (offline mode). Will sync when online.');
+          } catch (localError) {
+            console.error('Error saving to localStorage:', localError);
+            alert('Error saving blog. Please try again.');
+          }
+        } else {
+          alert('Error saving blog. Please try again.');
+        }
+      }
+    });
   }
 
   // Open publish modal
@@ -521,39 +542,59 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     // Convert blocks to content string
     const contentJsonString = JSON.stringify(this.blogBlocks);
 
-    // Create blog data for saving
-    const blogData = {
-      _id: this.generateBlogId(),
-      user_id: this.getCurrentUserId(),
+    // Create blog data for MongoDB API
+    const blogData: CreateBlogRequest = {
       title: this.blogTitle,
       content: contentJsonString,
-      tags: this.selectedTags,
-      main_image_url: this.mainImageUrl,
-      published: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      tag_ids: this.selectedTags, // Convert to tag IDs if needed
+      main_image_url: this.mainImageUrl || undefined,
+      published: true
     };
 
-    console.log('Publishing blog:', blogData);
+    console.log('Publishing blog to MongoDB:', blogData);
 
-    // Simulate API call
-    setTimeout(() => {
-      try {
-        // Save to localStorage
-        this.saveBlogToLocalStorage(blogData);
-        
+    // Publish to MongoDB via API
+    this.blogService.createBlog(blogData).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (publishedBlog) => {
+        console.log('Blog published successfully to MongoDB:', publishedBlog);
         this.isPublishing = false;
         this.closePublishModal();
         alert('Blog published successfully!');
         
         // Navigate to home or blog list
         this.router.navigate(['/home']);
-      } catch (error) {
-        console.error('Error publishing blog:', error);
+      },
+      error: (error) => {
+        console.error('Error publishing blog to MongoDB:', error);
         this.isPublishing = false;
-        alert('Error publishing blog. Please try again.');
+        
+        // Fallback to localStorage if API fails
+        if (error.status === 0) {
+          console.log('Server unreachable, saving to localStorage as fallback');
+          try {
+            const localBlogData = {
+              _id: this.generateBlogId(),
+              user_id: this.getCurrentUserId(),
+              ...blogData,
+              tags: this.selectedTags,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            };
+            this.saveBlogToLocalStorage(localBlogData);
+            this.closePublishModal();
+            alert('Blog published locally (offline mode). Will sync when online.');
+            this.router.navigate(['/home']);
+          } catch (localError) {
+            console.error('Error saving to localStorage:', localError);
+            alert('Error publishing blog. Please try again.');
+          }
+        } else {
+          alert('Error publishing blog. Please try again.');
+        }
       }
-    }, 2000);
+    });
   }
 
   // Track by function for ngFor optimization

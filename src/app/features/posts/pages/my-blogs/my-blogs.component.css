@@ -414,6 +414,18 @@
   border: 1px solid;
 }
 
+.action-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
+.action-btn.primary:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
 .action-btn.secondary {
   background: rgba(31, 41, 55, 0.8);
   color: #e5e7eb;

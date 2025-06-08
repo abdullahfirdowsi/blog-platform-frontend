@@ -136,6 +136,10 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
     return 'No content';
   }
 
+  onViewBlog(blog: Blog): void {
+    this.router.navigate(['/posts/view', blog._id]);
+  }
+
   navigateToWrite(): void {
     this.router.navigate(['/write']);
   }

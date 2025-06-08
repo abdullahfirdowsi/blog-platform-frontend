@@ -62,22 +62,31 @@ export class BlogStateService {
   loadMyBlogs(): Observable<Blog[]> {
     this.updateState({ loading: true, error: null });
     
-    // Only fetch from API (MongoDB)
+    // Primary fetch from MongoDB API
     return this.blogService.getMyBlogs(1, 100).pipe(
       tap(blogs => {
-        console.log('Successfully loaded blogs from API:', blogs);
+        console.log('Successfully loaded blogs from MongoDB:', blogs);
         this.updateState({ blogs, loading: false });
-        // Save to localStorage as cache after successful API call
+        // Cache in localStorage after successful MongoDB call
         this.saveBlogsToLocalStorage(blogs);
       }),
       catchError(error => {
-        console.error('Failed to load blogs from API:', error);
+        console.error('Failed to load blogs from MongoDB:', error);
         let errorMessage = 'Failed to load blogs';
         
         if (error.status === 401) {
           errorMessage = 'Please log in to view your blogs';
         } else if (error.status === 0) {
-          errorMessage = 'Cannot connect to server. Please check your connection.';
+          errorMessage = 'Cannot connect to server. Showing cached blogs if available.';
+          // Fallback to localStorage only if server is unreachable
+          const cachedBlogs = this.getBlogsFromLocalStorage();
+          if (cachedBlogs.length > 0) {
+            console.log('Using cached blogs from localStorage (offline mode)');
+            this.updateState({ blogs: cachedBlogs, loading: false, error: 'Showing cached blogs (offline mode)' });
+            return of(cachedBlogs);
+          } else {
+            errorMessage = 'No connection to server and no cached blogs available';
+          }
         } else if (error.error?.detail) {
           errorMessage = error.error.detail;
         }
@@ -92,33 +101,42 @@ export class BlogStateService {
   getBlogById(id: string): Observable<Blog | null> {
     this.updateState({ loading: true, error: null });
     
-    // First check localStorage
-    const localBlog = this.getBlogFromLocalStorage(id);
-    if (localBlog) {
-      this.updateState({ 
-        selectedBlog: localBlog, 
-        loading: false,
-        originalContent: localBlog.content,
-        hasChanges: false
-      });
-      return of(localBlog);
-    }
-
-    // Try API as fallback
+    // Primary fetch from MongoDB API
     return this.blogService.getBlogById(id).pipe(
       map(blogSummary => this.convertSummaryToBlog(blogSummary)),
       tap(blog => {
         if (blog) {
+          console.log('Successfully loaded blog from MongoDB:', blog);
           this.updateState({ 
             selectedBlog: blog, 
             loading: false,
             originalContent: blog.content,
             hasChanges: false
           });
+          // Cache the blog in localStorage
+          this.saveSingleBlogToLocalStorage(blog);
         }
       }),
       catchError(error => {
-        console.error('Error fetching blog:', error);
+        console.error('Error fetching blog from MongoDB:', error);
+        
+        // Fallback to localStorage only if API fails
+        if (error.status === 0) {
+          console.log('Server unreachable, checking localStorage for blog:', id);
+          const localBlog = this.getBlogFromLocalStorage(id);
+          if (localBlog) {
+            console.log('Found cached blog in localStorage');
+            this.updateState({ 
+              selectedBlog: localBlog, 
+              loading: false,
+              originalContent: localBlog.content,
+              hasChanges: false,
+              error: 'Showing cached blog (offline mode)'
+            });
+            return of(localBlog);
+          }
+        }
+        
         this.updateState({ 
           selectedBlog: null, 
           loading: false, 
@@ -133,30 +151,11 @@ export class BlogStateService {
   updateBlog(id: string, updateData: UpdateBlogRequest): Observable<Blog> {
     this.updateState({ loading: true, error: null });
     
-    // Update localStorage first for immediate response
-    const updatedBlog = this.updateBlogInLocalStorage(id, updateData);
-    if (updatedBlog) {
-      // Update the blogs array
-      const currentBlogs = this.stateSubject.value.blogs;
-      const updatedBlogs = currentBlogs.map(blog => 
-        blog._id === id ? updatedBlog : blog
-      );
-      
-      this.updateState({ 
-        blogs: updatedBlogs,
-        selectedBlog: updatedBlog,
-        loading: false,
-        originalContent: updatedBlog.content,
-        hasChanges: false
-      });
-      
-      return of(updatedBlog);
-    }
-
-    // API call as fallback
+    // Primary update via MongoDB API
     return this.blogService.updateBlog(id, updateData).pipe(
       map(blogResponse => this.convertApiResponseToBlog(blogResponse)),
       tap(blog => {
+        console.log('Successfully updated blog in MongoDB:', blog);
         const currentBlogs = this.stateSubject.value.blogs;
         const updatedBlogs = currentBlogs.map(b => b._id === id ? blog : b);
         this.updateState({ 
@@ -166,9 +165,35 @@ export class BlogStateService {
           originalContent: blog.content,
           hasChanges: false
         });
+        // Update localStorage cache after successful MongoDB update
+        this.updateBlogInLocalStorage(id, updateData);
       }),
       catchError(error => {
-        console.error('Error updating blog:', error);
+        console.error('Error updating blog in MongoDB:', error);
+        
+        // Fallback to localStorage only if server is unreachable
+        if (error.status === 0) {
+          console.log('Server unreachable, updating localStorage only');
+          const updatedBlog = this.updateBlogInLocalStorage(id, updateData);
+          if (updatedBlog) {
+            const currentBlogs = this.stateSubject.value.blogs;
+            const updatedBlogs = currentBlogs.map(blog => 
+              blog._id === id ? updatedBlog : blog
+            );
+            
+            this.updateState({ 
+              blogs: updatedBlogs,
+              selectedBlog: updatedBlog,
+              loading: false,
+              originalContent: updatedBlog.content,
+              hasChanges: false,
+              error: 'Updated locally (offline mode). Will sync when online.'
+            });
+            
+            return of(updatedBlog);
+          }
+        }
+        
         this.updateState({ loading: false, error: 'Failed to update blog' });
         return throwError(() => error);
       })
@@ -179,22 +204,36 @@ export class BlogStateService {
   deleteBlog(id: string): Observable<void> {
     this.updateState({ loading: true, error: null });
     
-    // Delete from localStorage first
-    this.deleteBlogFromLocalStorage(id);
-    
-    // Update state immediately
-    const currentBlogs = this.stateSubject.value.blogs;
-    const updatedBlogs = currentBlogs.filter(blog => blog._id !== id);
-    this.updateState({ blogs: updatedBlogs, loading: false });
-    
-    // Try API call as well (will fail silently if not available)
+    // Primary delete from MongoDB API
     return this.blogService.deleteBlog(id).pipe(
       tap(() => {
-        console.log('Blog deleted from API as well');
+        console.log('Successfully deleted blog from MongoDB');
+        // Update state after successful MongoDB deletion
+        const currentBlogs = this.stateSubject.value.blogs;
+        const updatedBlogs = currentBlogs.filter(blog => blog._id !== id);
+        this.updateState({ blogs: updatedBlogs, loading: false });
+        // Also delete from localStorage cache
+        this.deleteBlogFromLocalStorage(id);
       }),
       catchError(error => {
-        console.warn('API delete failed, but localStorage already updated:', error);
-        return of(void 0);
+        console.error('Error deleting blog from MongoDB:', error);
+        
+        // Fallback to localStorage only if server is unreachable
+        if (error.status === 0) {
+          console.log('Server unreachable, deleting from localStorage only');
+          this.deleteBlogFromLocalStorage(id);
+          const currentBlogs = this.stateSubject.value.blogs;
+          const updatedBlogs = currentBlogs.filter(blog => blog._id !== id);
+          this.updateState({ 
+            blogs: updatedBlogs, 
+            loading: false,
+            error: 'Deleted locally (offline mode). Will sync when online.'
+          });
+          return of(void 0);
+        }
+        
+        this.updateState({ loading: false, error: 'Failed to delete blog' });
+        return throwError(() => error);
       })
     );
   }
@@ -283,8 +322,28 @@ export class BlogStateService {
     try {
       const blogsToStore = blogs.map(blog => this.convertBlogToLocalStorage(blog));
       localStorage.setItem('user_blogs', JSON.stringify(blogsToStore));
+      console.log('Cached blogs to localStorage for offline access');
     } catch (error) {
       console.error('Error saving blogs to localStorage:', error);
+    }
+  }
+
+  private saveSingleBlogToLocalStorage(blog: Blog): void {
+    try {
+      const existingBlogs = this.getBlogsFromLocalStorage();
+      const blogIndex = existingBlogs.findIndex(b => b._id === blog._id);
+      
+      if (blogIndex !== -1) {
+        existingBlogs[blogIndex] = blog;
+      } else {
+        existingBlogs.push(blog);
+      }
+      
+      const blogsToStore = existingBlogs.map(b => this.convertBlogToLocalStorage(b));
+      localStorage.setItem('user_blogs', JSON.stringify(blogsToStore));
+      console.log('Cached single blog to localStorage for offline access');
+    } catch (error) {
+      console.error('Error saving single blog to localStorage:', error);
     }
   }
 
