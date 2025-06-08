@@ -159,11 +159,10 @@ export class RegisterComponent implements OnInit, AfterViewInit {
       this.authService.register(userData)
         .subscribe({
           next: (response) => {
-            this.successMessage = 'Registration successful! You have been automatically logged in.';
-            
-            // Redirect to home after successful registration and auto-login
+            this.successMessage = 'Registration successful! Please log in with your credentials.';
+            // Wait a moment to show the success message, then redirect to login
             setTimeout(() => {
-              this.router.navigate(['/home']);
+              this.router.navigate(['/auth/login']);
             }, 2000);
           },
           error: (error) => {
