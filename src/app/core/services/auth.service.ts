@@ -2,14 +2,9 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap, catchError, throwError, timer, switchMap, of, map } from 'rxjs';
 import { Router } from '@angular/router';
-import { User, LoginRequest, LoginResponse, CreateUserRequest, GoogleAuthResponse } from '../../shared/interfaces';
+import { User, LoginRequest, LoginResponse, CreateUserRequest } from '../../shared/interfaces';
 import { environment } from '../../../environments/environment';
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +16,6 @@ export class AuthService {
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   private refreshTokenTimer: any;
   private router = inject(Router);
-  private googleAuthReturnUrl = '/home';
 
   public currentUser$ = this.currentUserSubject.asObservable();
   public token$ = this.tokenSubject.asObservable();
@@ -32,125 +26,8 @@ export class AuthService {
 
   constructor(private http: HttpClient) {
     this.loadStoredAuth();
-    this.initGoogleAuth();
   }
 
-  private async initGoogleAuth(): Promise<void> {
-    try {
-      // Load Google Identity Services script
-      if (!window.google) {
-        await this.loadGoogleScript();
-      }
-      
-      window.google.accounts.id.initialize({
-        client_id: environment.googleClientId,
-        callback: this.handleGoogleAuth.bind(this),
-        auto_select: false,
-        cancel_on_tap_outside: false
-      });
-      
-      // Also initialize for additional scopes if needed
-      if (window.google?.accounts?.oauth2) {
-        window.google.accounts.oauth2.initTokenClient({
-          client_id: environment.googleClientId,
-          scope: 'openid email profile',
-          callback: (response: any) => {
-            console.log('OAuth2 token response:', response);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Failed to initialize Google Auth:', error);
-    }
-  }
-
-  private loadGoogleScript(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (document.getElementById('google-auth-script')) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.id = 'google-auth-script';
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Failed to load Google Auth script'));
-      document.head.appendChild(script);
-    });
-  }
-
-  private handleGoogleAuth(response: any): void {
-    this.isLoadingSubject.next(true);
-    
-    // Validate that we received a token from Google
-    if (!response?.credential) {
-      console.error('Google authentication failed: No token received');
-      this.isLoadingSubject.next(false);
-      return;
-    }
-    
-    // Debug: Log the credential to see what Google sends
-    console.log('DEBUG: Google credential received:', response.credential);
-    
-    // Try to decode the JWT token to see its contents
-    try {
-      const parts = response.credential.split('.');
-      if (parts.length === 3) {
-        const payload = JSON.parse(atob(parts[1]));
-        console.log('DEBUG: Decoded Google token payload:', payload);
-      }
-    } catch (e) {
-      console.log('DEBUG: Could not decode token:', e);
-    }
-    
-    this.http.post<GoogleAuthResponse>(`${this.apiUrl}/google`, {
-      token: response.credential
-    }, {
-      withCredentials: true // Include cookies for refresh token
-    }).pipe(
-      catchError(error => {
-        this.isLoadingSubject.next(false);
-        console.error('Google authentication failed:', error);
-        return throwError(() => error);
-      })
-    ).subscribe({
-      next: (authResponse) => {
-        this.handleAuthSuccess(authResponse);
-        this.isLoadingSubject.next(false);
-        
-        // Navigate to the stored return URL
-        this.router.navigate([this.googleAuthReturnUrl]);
-      },
-      error: (error) => {
-        console.error('Google authentication failed:', error);
-        this.isLoadingSubject.next(false);
-      }
-    });
-  }
-
-  setGoogleAuthReturnUrl(returnUrl: string): void {
-    this.googleAuthReturnUrl = returnUrl;
-  }
-
-  renderGoogleButton(element: HTMLElement, returnUrl?: string): void {
-    if (returnUrl) {
-      this.setGoogleAuthReturnUrl(returnUrl);
-    }
-    
-    if (window.google) {
-      window.google.accounts.id.renderButton(element, {
-        theme: 'outline',
-        size: 'large',
-        width: element.offsetWidth || 320,
-        text: 'signin_with',
-        shape: 'rectangular',
-        logo_alignment: 'left'
-      });
-    }
-  }
 
   private loadStoredAuth(): void {
     const token = sessionStorage.getItem('access_token');
@@ -209,7 +86,7 @@ export class AuthService {
     }
   }
 
-  private handleAuthSuccess(response: LoginResponse | GoogleAuthResponse): void {
+  private handleAuthSuccess(response: LoginResponse): void {
     // Store access token in session storage (cleared on browser close)
     sessionStorage.setItem('access_token', response.access_token);
     sessionStorage.setItem('current_user', JSON.stringify(response.user));

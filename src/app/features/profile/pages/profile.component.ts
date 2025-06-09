@@ -208,13 +208,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   getProviderIcon(): string {
-    if (!this.currentUser) return 'fas fa-user';
-    return this.currentUser.google_id ? 'fab fa-google' : 'fas fa-envelope';
+    return 'fas fa-envelope';
   }
 
   getProviderText(): string {
-    if (!this.currentUser) return '';
-    return this.currentUser.google_id ? 'Google Account' : 'Email Account';
+    return 'Email Account';
   }
   
   navigateToHome(): void {

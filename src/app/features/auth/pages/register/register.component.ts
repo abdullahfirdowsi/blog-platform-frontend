@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
@@ -49,8 +49,7 @@ export function passwordStrengthValidator(): ValidatorFn {
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('googleButton', { static: false }) googleButton!: ElementRef;
+export class RegisterComponent implements OnInit, OnDestroy {
   
   registerForm: FormGroup;
   isLoading = false;
@@ -90,14 +89,6 @@ export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
-  ngAfterViewInit(): void {
-    // Initialize Google Sign-In button
-    if (this.googleButton) {
-      setTimeout(() => {
-        this.authService.renderGoogleButton(this.googleButton.nativeElement);
-      }, 100);
-    }
-  }
 
   ngOnDestroy(): void {
     this.destroy$.next();

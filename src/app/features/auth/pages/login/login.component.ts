@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -11,8 +11,7 @@ import { finalize, takeUntil, Subject } from 'rxjs';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('googleButton', { static: false }) googleButton!: ElementRef;
+export class LoginComponent implements OnInit, OnDestroy {
   
   loginForm: FormGroup;
   isLoading = false;
@@ -50,14 +49,6 @@ export class LoginComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
-  ngAfterViewInit(): void {
-    // Initialize Google Sign-In button
-    if (this.googleButton) {
-      setTimeout(() => {
-        this.authService.renderGoogleButton(this.googleButton.nativeElement, this.returnUrl);
-      }, 100);
-    }
-  }
 
   ngOnDestroy(): void {
     this.destroy$.next();

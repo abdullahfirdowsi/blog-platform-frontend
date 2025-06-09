@@ -31,7 +31,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
 const isRefreshing = new BehaviorSubject<boolean>(false);
 
 function isAuthEndpoint(url: string): boolean {
-  const authEndpoints = ['/auth/login', '/auth/register', '/auth/google', '/auth/forgot-password', '/auth/reset-password'];
+  const authEndpoints = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password'];
   return authEndpoints.some(endpoint => url.includes(endpoint));
 }
 

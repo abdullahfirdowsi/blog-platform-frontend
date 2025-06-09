@@ -10,8 +10,7 @@ export interface User {
   is_active?: boolean;
   is_verified?: boolean;
   role?: string;
-  provider?: string; // Authentication provider (e.g., 'google', 'email')
-  google_id?: string; // Google user ID
+  provider?: string; // Authentication provider (e.g., 'email')
   has_password?: boolean; // Indicates if user can change password
   created_at: string;
   updated_at?: string;
@@ -37,12 +36,6 @@ export interface LoginResponse {
   user: User;
 }
 
-export interface GoogleAuthResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  user: User;
-}
 
 export interface UpdateUserRequest {
   full_name?: string;
