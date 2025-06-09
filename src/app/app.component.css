@@ -1,0 +1,20 @@
+/* Global header spacing */
+body.has-header {
+  padding-top: 80px; /* Adjust based on your header height */
+}
+
+.main-content {
+  padding-top: 20px;
+}
+
+/* Ensure router outlet content has proper spacing when header is shown */
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+router-outlet + * {
+  flex: 1;
+}
+
