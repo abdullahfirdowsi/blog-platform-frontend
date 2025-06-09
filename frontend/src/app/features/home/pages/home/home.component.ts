@@ -17,8 +17,8 @@ import { FooterComponent } from '../../../../shared/components/footer/footer.com
   styleUrl: './home.component.css'
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
-  private searchSubject = new Subject<string>();
+  private destroy$ = new Subject<void>();//used to clean up subscription when the component is destroyed
+  private searchSubject = new Subject<string>();//emits search terms from the user input (debouncing)
   
   // Blog data
   posts: PostSummary[] = [];

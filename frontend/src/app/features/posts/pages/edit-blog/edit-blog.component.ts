@@ -339,7 +339,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
       title: this.blogTitle,
       content: JSON.stringify(this.blogBlocks),
       main_image_url: this.mainImageUrl,
-      tag_ids: this.selectedTags
+      tags: this.selectedTags
     };
 
     this.blogStateService.updateBlog(this.blogId, updateData).subscribe({

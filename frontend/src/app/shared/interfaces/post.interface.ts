@@ -12,13 +12,8 @@ export interface Blog {
   published: boolean;
   created_at: string;
   updated_at: string;
-  // Populated fields
-  user?: User;
+  // Optional populated fields for internal use
   tags?: Tag[];
-  views?: number;
-  likes_count?: number;
-  comments_count?: number;
-  is_liked?: boolean;
 }
 
 // Tag structure
@@ -81,24 +76,17 @@ export interface UpdatePostRequest {
 
 // Blog response interfaces for MongoDB
 export interface BlogSummary {
-  _id: string;
+  id: string;
+  user_id: string;
   title: string;
-  content?: string;
-  blog_body?: string;  // Backend field name
-  tag_ids: string[];
+  content: string;  // JSON string with block structure
+  tags: string[];
   main_image_url?: string;
   published: boolean;
   created_at: string;
   updated_at: string;
-  user_id: string;
-  // Populated fields
-  user?: Pick<User, '_id' | 'username' | 'profile_picture'>;
-  tags?: Pick<Tag, '_id' | 'name'>[] | string[];  // Can be tag objects or tag names
-  views?: number;
-  likes_count?: number;
-  comments_count?: number;
-  is_liked?: boolean;
-  excerpt?: string;
+  comment_count: number;
+  likes_count: number;
 }
 
 export interface BlogsResponse {
@@ -112,7 +100,7 @@ export interface BlogsResponse {
 export interface CreateBlogRequest {
   title: string;
   content: string;
-  tag_ids?: string[];
+  tags?: string[];  // Updated to match new structure
   main_image_url?: string;
   published?: boolean;
 }
@@ -120,7 +108,7 @@ export interface CreateBlogRequest {
 export interface UpdateBlogRequest {
   title?: string;
   content?: string;
-  tag_ids?: string[];
+  tags?: string[];  // Updated to match new structure
   main_image_url?: string;
   published?: boolean;
 }

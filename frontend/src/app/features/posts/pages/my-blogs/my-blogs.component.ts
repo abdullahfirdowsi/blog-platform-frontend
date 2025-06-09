@@ -127,8 +127,7 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
   }
 
   getContentPreview(blog: Blog): string {
-    // Handle both API response format (blog_body) and localStorage format (content)
-    const content = (blog as any).blog_body || blog.content;
+    const content = blog.content;
     if (!content) return 'No content';
     
     try {

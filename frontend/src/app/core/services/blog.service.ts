@@ -93,23 +93,23 @@ export class BlogService {
     return this.getBlogs(blogFilters).pipe(
       map(blogResponse => {
         const posts: PostSummary[] = blogResponse.blogs.map(blog => ({
-          id: blog._id,
+          id: blog.id,
           title: blog.title,
-          excerpt: blog.excerpt || this.generateExcerpt(blog.blog_body || blog.content),
+          excerpt: this.generateExcerpt(blog.content),
           slug: this.generateSlug(blog.title),
           status: blog.published ? 'published' : 'draft',
           featured_image: blog.main_image_url,
           author_id: blog.user_id,
           author: {
-            id: blog.user?._id || blog.user_id,
-            username: blog.user?.username || 'Unknown',
-            profile_picture: blog.user?.profile_picture
+            id: blog.user_id,
+            username: 'Unknown',
+            profile_picture: undefined
           },
-          tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],
-          views: blog.views || 0,
-          likes_count: blog.likes_count || 0,
-          comments_count: blog.comments_count || 0,
-          is_liked: blog.is_liked || false,
+          tags: blog.tags,
+          views: 0,
+          likes_count: blog.likes_count,
+          comments_count: blog.comment_count,
+          is_liked: false,
           created_at: blog.created_at,
           updated_at: blog.updated_at
         }));
@@ -155,23 +155,23 @@ export class BlogService {
 
   private convertBlogsToPostsResponse(blogResponse: BlogsResponse): PostsResponse {
     const posts: PostSummary[] = blogResponse.blogs.map(blog => ({
-      id: blog._id,
+      id: blog.id,
       title: blog.title,
-      excerpt: blog.excerpt || this.generateExcerpt(blog.blog_body || blog.content),
+      excerpt: this.generateExcerpt(blog.content),
       slug: this.generateSlug(blog.title),
       status: blog.published ? 'published' : 'draft',
       featured_image: blog.main_image_url,
       author_id: blog.user_id,
       author: {
-        id: blog.user?._id || blog.user_id,
-        username: blog.user?.username || 'Unknown',
-        profile_picture: blog.user?.profile_picture
+        id: blog.user_id,
+        username: 'Unknown',
+        profile_picture: undefined
       },
-      tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],
-      views: blog.views || 0,
-      likes_count: blog.likes_count || 0,
-      comments_count: blog.comments_count || 0,
-      is_liked: blog.is_liked || false,
+      tags: blog.tags,
+      views: 0,
+      likes_count: blog.likes_count,
+      comments_count: blog.comment_count,
+      is_liked: false,
       created_at: blog.created_at,
       updated_at: blog.updated_at
     }));
@@ -201,12 +201,29 @@ export class BlogService {
   }
 
   // Get user's blogs (both published and drafts)
-  getMyBlogs(page = 1, pageSize = 10): Observable<Blog[]> {
+  getMyBlogs(page = 1, limit = 10): Observable<Blog[]> {
     const params = new HttpParams()
       .set('page', page.toString())
-      .set('page_size', pageSize.toString());
+      .set('limit', limit.toString());
     
-    return this.http.get<Blog[]>(`${this.apiUrl}/blogs/my-blogs`, { params });
+    return this.http.get<BlogsResponse>(`${this.apiUrl}/blogs`, { params }).pipe(
+      map(response => response.blogs.map(blog => this.convertBlogSummaryToBlog(blog)))
+    );
+  }
+
+  private convertBlogSummaryToBlog(summary: BlogSummary): Blog {
+    return {
+      _id: summary.id,
+      user_id: summary.user_id,
+      title: summary.title,
+      content: summary.content,
+      tag_ids: summary.tags,
+      main_image_url: summary.main_image_url,
+      published: summary.published,
+      created_at: summary.created_at,
+      updated_at: summary.updated_at,
+      tags: summary.tags.map(tag => ({ _id: tag, name: tag, created_at: new Date().toISOString() }))
+    };
   }
 
   // Save blog as draft

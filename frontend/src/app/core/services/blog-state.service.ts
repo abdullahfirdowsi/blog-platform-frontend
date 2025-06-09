@@ -253,10 +253,16 @@ export class BlogStateService {
       
       if (blogIndex === -1) return null;
       
-      const updatedBlog = {
+      const updatedBlog: Blog = {
         ...blogs[blogIndex],
         ...updateData,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        // Ensure tags property is properly typed
+        tags: updateData.tags ? updateData.tags.map(tag => 
+          typeof tag === 'string' ? { _id: tag, name: tag, created_at: new Date().toISOString() } : tag
+        ) : blogs[blogIndex].tags,
+        // Update tag_ids based on tags if provided
+        tag_ids: updateData.tags || blogs[blogIndex].tag_ids
       };
       
       blogs[blogIndex] = updatedBlog;
@@ -325,13 +331,13 @@ export class BlogStateService {
       _id: summary.id || summary._id,
       user_id: summary.user_id,
       title: summary.title,
-      content: summary.content || summary.blog_body || '',
-      tag_ids: summary.tag_ids || [],
+      content: summary.content,
+      tag_ids: summary.tags || [],
       main_image_url: summary.main_image_url,
       published: summary.published,
       created_at: summary.created_at,
       updated_at: summary.updated_at,
-      tags: summary.tags || []
+      tags: summary.tags ? summary.tags.map((tag: string) => ({ _id: tag, name: tag, created_at: new Date().toISOString() })) : []
     };
   }
 
@@ -340,13 +346,13 @@ export class BlogStateService {
       _id: apiResponse.id || apiResponse._id,
       user_id: apiResponse.user_id,
       title: apiResponse.title,
-      content: apiResponse.blog_body || apiResponse.content || '',
-      tag_ids: apiResponse.tag_ids || [],
+      content: apiResponse.content,
+      tag_ids: apiResponse.tags || [],
       main_image_url: apiResponse.main_image_url,
       published: apiResponse.published,
       created_at: apiResponse.created_at,
       updated_at: apiResponse.updated_at,
-      tags: apiResponse.tags || []
+      tags: apiResponse.tags ? apiResponse.tags.map((tag: string) => ({ _id: tag, name: tag, created_at: new Date().toISOString() })) : []
     };
   }
 }
