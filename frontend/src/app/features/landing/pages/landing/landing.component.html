@@ -1,0 +1,48 @@
+<!-- Minimal Dark Landing Page -->
+<section class="landing-hero">
+  <div class="landing-container">
+    <!-- Brand Section -->
+    <div class="brand-section">
+      <div class="brand-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="url(#gradient)"/>
+          <path d="M16 18h16M16 24h12M16 30h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#667eea"/>
+              <stop offset="1" stop-color="#764ba2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="brand-title">BlogPlatform</h1>
+      <p class="brand-subtitle">Where stories come to life</p>
+    </div>
+
+    <!-- Login Section -->
+    <div class="login-section">
+      <a [routerLink]="['/auth/login']" class="login-button">
+        <span class="login-text">Continue reading</span>
+        <svg class="login-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      
+      <div class="auth-links">
+        <span class="auth-divider">New here?</span>
+        <a [routerLink]="['/auth/register']" class="register-link">Create account</a>
+      </div>
+    </div>
+
+    <!-- Decorative Elements -->
+    <div class="decoration-dots">
+      <div class="dot dot-1"></div>
+      <div class="dot dot-2"></div>
+      <div class="dot dot-3"></div>
+      <div class="dot dot-4"></div>
+      <div class="dot dot-5"></div>
+      <div class="dot dot-6"></div>
+    </div>
+  </div>
+</section>
+
