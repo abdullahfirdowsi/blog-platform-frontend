@@ -34,10 +34,13 @@ export class AuthService {
     const user = sessionStorage.getItem('current_user');
     
     if (token && user && this.isTokenValid(token)) {
+      console.log('Loading stored authentication');
       this.tokenSubject.next(token);
       this.currentUserSubject.next(JSON.parse(user));
       this.scheduleTokenRefresh();
     } else {
+      console.log('No valid stored authentication found');
+      // Clear stored auth silently - don't log as error for public pages
       this.clearStoredAuth();
     }
   }
@@ -65,17 +68,33 @@ export class AuthService {
     const token = this.getToken();
     if (!token) return;
 
+    // Clear any existing timer first
+    this.clearRefreshTimer();
+
     const expirationTime = this.getTokenExpirationTime(token);
     const currentTime = Date.now();
     const refreshTime = expirationTime - currentTime - (5 * 60 * 1000); // Refresh 5 minutes before expiry
 
-    if (refreshTime > 0) {
+    // Only schedule if we have a reasonable time until expiry (more than 1 minute)
+    if (refreshTime > 60000) {
+      console.log(`Token refresh scheduled in ${Math.floor(refreshTime / 1000 / 60)} minutes`);
       this.refreshTokenTimer = timer(refreshTime).subscribe(() => {
+        console.log('Attempting token refresh...');
         this.refreshToken().subscribe({
-          next: () => this.scheduleTokenRefresh(),
-          error: () => this.logout()
+          next: (response) => {
+            console.log('Token refreshed successfully');
+            this.scheduleTokenRefresh();
+          },
+          error: (error) => {
+            console.error('Token refresh failed:', error);
+            this.logout();
+          }
         });
       });
+    } else if (refreshTime <= 0) {
+      // Token is expired or about to expire, logout immediately
+      console.log('Token expired, logging out');
+      this.logout();
     }
   }
 
@@ -175,11 +194,13 @@ export class AuthService {
   }
 
   refreshToken(): Observable<LoginResponse> {
+    console.log('Refreshing token...');
     // Backend uses HTTP-only cookies for refresh tokens
     return this.http.post<LoginResponse>(`${this.apiUrl}/refresh`, {}, {
       withCredentials: true // Include cookies
     }).pipe(
       tap(response => {
+        console.log('Token refresh response received');
         sessionStorage.setItem('access_token', response.access_token);
         this.tokenSubject.next(response.access_token);
         if (response.user) {
@@ -188,6 +209,7 @@ export class AuthService {
         }
       }),
       catchError(error => {
+        console.error('Token refresh error:', error);
         this.logout();
         return throwError(() => error);
       })
@@ -229,6 +251,37 @@ export class AuthService {
 
   resendVerificationEmail(): Observable<any> {
     return this.http.post(`${this.apiUrl}/resend-verification`, {});
+  }
+
+  // Debug methods
+  getRefreshTimerStatus(): boolean {
+    return !!this.refreshTokenTimer;
+  }
+
+  manualClearRefreshTimer(): void {
+    console.log('Manually clearing refresh timer');
+    this.clearRefreshTimer();
+  }
+
+  getTokenInfo(): any {
+    const token = this.getToken();
+    if (!token) return null;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      const expirationTime = payload.exp;
+      const timeUntilExpiry = expirationTime - currentTime;
+      
+      return {
+        isValid: this.isTokenValid(token),
+        expiresAt: new Date(expirationTime * 1000),
+        timeUntilExpiryMinutes: Math.floor(timeUntilExpiry / 60),
+        timeUntilExpirySeconds: timeUntilExpiry % 60
+      };
+    } catch (error) {
+      return { error: 'Invalid token format' };
+    }
   }
 }
 

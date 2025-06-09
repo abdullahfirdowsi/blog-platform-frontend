@@ -195,8 +195,42 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   
   getDefaultAvatar(): string {
+    // Return a data URL for a simple colored circle with initials
     const name = this.currentUser?.full_name || this.currentUser?.username || 'User';
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=667eea&color=fff&size=32`;
+    const initials = this.getInitials(name);
+    return this.generateAvatarDataUrl(initials);
+  }
+
+  private getInitials(name: string): string {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join('');
+  }
+
+  private generateAvatarDataUrl(initials: string): string {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    const size = 32;
+    
+    canvas.width = size;
+    canvas.height = size;
+    
+    // Background circle
+    ctx.fillStyle = '#667eea';
+    ctx.beginPath();
+    ctx.arc(size/2, size/2, size/2, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `${size/2.5}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(initials, size/2, size/2);
+    
+    return canvas.toDataURL();
   }
   
   getImageUrl(imageUrl: string | undefined): string | null {
@@ -247,6 +281,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   logout(): void {
     this.authService.logout();
     this.closeUserMenu();
+  }
+
+  handleAvatarError(event: any): void {
+    // Replace with generated avatar on error
+    event.target.src = this.getDefaultAvatar();
   }
   
   @HostListener('document:click', ['$event'])

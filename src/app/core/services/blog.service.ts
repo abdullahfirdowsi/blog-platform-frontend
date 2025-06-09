@@ -92,9 +92,11 @@ export class BlogService {
 
     return this.getBlogs(blogFilters).pipe(
       map(blogResponse => {
-        const posts: PostSummary[] = blogResponse.blogs.map(blog => ({
+        const posts: PostSummary[] = blogResponse.blogs
+          .filter(blog => blog && blog._id) // Filter out null/undefined blogs
+          .map(blog => ({
           id: blog._id,
-          title: blog.title,
+          title: blog.title || 'Untitled',
           excerpt: blog.excerpt || this.generateExcerpt(blog.blog_body || blog.content),
           slug: this.generateSlug(blog.title),
           status: blog.published ? 'published' : 'draft',
@@ -144,7 +146,10 @@ export class BlogService {
     return textContent.length > length ? textContent.substring(0, length) + '...' : textContent;
   }
 
-  private generateSlug(title: string): string {
+  private generateSlug(title: string | undefined | null): string {
+    if (!title) {
+      return 'untitled-' + Date.now();
+    }
     return title
       .toLowerCase()
       .replace(/[^a-z0-9 -]/g, '')
@@ -154,9 +159,11 @@ export class BlogService {
   }
 
   private convertBlogsToPostsResponse(blogResponse: BlogsResponse): PostsResponse {
-    const posts: PostSummary[] = blogResponse.blogs.map(blog => ({
+    const posts: PostSummary[] = blogResponse.blogs
+      .filter(blog => blog && blog._id) // Filter out null/undefined blogs
+      .map(blog => ({
       id: blog._id,
-      title: blog.title,
+      title: blog.title || 'Untitled',
       excerpt: blog.excerpt || this.generateExcerpt(blog.blog_body || blog.content),
       slug: this.generateSlug(blog.title),
       status: blog.published ? 'published' : 'draft',

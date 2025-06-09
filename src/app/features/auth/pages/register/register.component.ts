@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth.service';
-import { takeUntil, Subject, filter, take } from 'rxjs';
+import { takeUntil, Subject } from 'rxjs';
 
 // Custom validator for password confirmation
 export function passwordMatchValidator(passwordField: string): ValidatorFn {
@@ -151,46 +151,12 @@ export class RegisterComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (response) => {
             console.log('Registration response:', response);
-            // Check if registration response includes tokens (auto-login)
-            if (response && response.access_token) {
-              this.successMessage = 'Registration successful! You have been automatically logged in.';
-              
-              // Wait for authentication state to be updated, then navigate
-              this.authService.isAuthenticated$.pipe(
-                filter(isAuth => isAuth === true),
-                take(1),
-                takeUntil(this.destroy$)
-              ).subscribe(() => {
-                setTimeout(() => {
-                  this.router.navigate(['/home']);
-                }, 1500);
-              });
-            } else {
-              // If no tokens in response, perform automatic login
-              this.successMessage = 'Registration successful! Logging you in...';
-              
-              const loginCredentials = {
-                email: this.registerForm.value.email,
-                password: this.registerForm.value.password
-              };
-              
-              this.authService.login(loginCredentials)
-                .subscribe({
-                  next: (loginResponse) => {
-                    this.successMessage = 'Registration and login successful!';
-                    setTimeout(() => {
-                      this.router.navigate(['/home']);
-                    }, 1500);
-                  },
-                  error: (loginError) => {
-                    console.error('Auto-login error:', loginError);
-                    this.successMessage = 'Registration successful! Please log in manually.';
-                    setTimeout(() => {
-                      this.router.navigate(['/auth/login']);
-                    }, 2000);
-                  }
-                });
-            }
+            this.successMessage = 'Registration successful! Please log in with your credentials.';
+            
+            // Navigate to login page after successful registration
+            setTimeout(() => {
+              this.router.navigate(['/auth/login']);
+            }, 2000);
           },
           error: (error) => {
             console.error('Registration error:', error);

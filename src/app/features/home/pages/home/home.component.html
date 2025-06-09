@@ -62,7 +62,7 @@
                 [src]="currentUser?.profile_picture || getDefaultAvatar()" 
                 [alt]="currentUser?.username || 'User'"
                 class="profile-avatar"
-                onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent(this.alt) + '&background=667eea&color=fff&size=32'"
+                (error)="handleAvatarError($event)"
               />
               <span class="profile-name">{{ currentUser?.full_name || currentUser?.username || 'User' }}</span>
               <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 20 20" fill="none" [class.rotated]="isUserMenuOpen">
