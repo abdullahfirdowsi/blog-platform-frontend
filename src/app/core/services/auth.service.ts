@@ -126,14 +126,17 @@ export class AuthService {
     );
   }
 
-  register(userData: CreateUserRequest): Observable<LoginResponse> {
+  register(userData: CreateUserRequest): Observable<any> {
     this.isLoadingSubject.next(true);
     
-    return this.http.post<LoginResponse>(`${this.apiUrl}/register`, userData, {
+    return this.http.post<any>(`${this.apiUrl}/register`, userData, {
       withCredentials: true // Include cookies for refresh token
     }).pipe(
       tap(response => {
-        this.handleAuthSuccess(response);
+        // Only handle auth success if response contains tokens
+        if (response && response.access_token) {
+          this.handleAuthSuccess(response);
+        }
         this.isLoadingSubject.next(false);
       }),
       catchError(error => {
