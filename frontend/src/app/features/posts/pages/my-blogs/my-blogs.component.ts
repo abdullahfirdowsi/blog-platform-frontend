@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { BlogStateService } from '../../../../core/services/blog-state.service';
 import { Blog } from '../../../../shared/interfaces/post.interface';
-import { FooterComponent } from '../../../../shared/components/footer/footer.component';
+import { FooterComponent } from "../../../../shared/components/footer/footer.component";
 
 @Component({
   selector: 'app-my-blogs',
@@ -67,7 +67,17 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
   }
 
   onEditBlog(blog: Blog): void {
-    this.router.navigate(['/posts/edit', blog._id]);
+    console.log('Editing blog:', blog);
+    // Handle both API response format (id) and localStorage format (_id)
+    const blogId = (blog as any).id || blog._id;
+    if (!blogId || blogId === '' || blogId === 'undefined') {
+      console.error('Blog ID is missing or invalid:', blog);
+      console.error('Blog object structure:', JSON.stringify(blog, null, 2));
+      alert('Cannot edit blog: Invalid blog ID. Please check the blog data.');
+      return;
+    }
+    console.log('Navigating to edit blog with ID:', blogId);
+    this.router.navigate(['/posts/edit', blogId]);
   }
 
   onDeleteBlog(blog: Blog): void {
@@ -77,7 +87,9 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
 
   confirmDelete(): void {
     if (this.selectedBlogForDelete) {
-      this.blogStateService.deleteBlog(this.selectedBlogForDelete._id).subscribe({
+      // Handle both API response format (id) and localStorage format (_id)
+      const blogId = (this.selectedBlogForDelete as any).id || this.selectedBlogForDelete._id;
+      this.blogStateService.deleteBlog(blogId).subscribe({
         next: () => {
           console.log('Blog deleted successfully');
           this.closeDeleteModal();
@@ -114,7 +126,9 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
     });
   }
 
-  getContentPreview(content: string): string {
+  getContentPreview(blog: Blog): string {
+    // Handle both API response format (blog_body) and localStorage format (content)
+    const content = (blog as any).blog_body || blog.content;
     if (!content) return 'No content';
     
     try {
@@ -156,8 +170,48 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
     return 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
   }
 
+  // Get processed image URL with fallback
+  getImageUrl(imageUrl: string | undefined): string {
+    // Return placeholder if the image URL is not available
+    if (!imageUrl || imageUrl.trim() === '') {
+      return this.getPlaceholderImage();
+    }
+    
+    // If it's already a full URL (starts with http/https), return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's an AWS S3 key/path, ensure it's a complete URL
+    if (imageUrl.startsWith('uploads/')) {
+      // Construct the full S3 URL if only the path is provided
+      return `https://blog-app-2025.s3.amazonaws.com/${imageUrl}`;
+    }
+    
+    // If it contains amazonaws.com, it's already a complete S3 URL
+    if (imageUrl.includes('amazonaws.com')) {
+      return imageUrl;
+    }
+    
+    // If it's a data URL (base64), return as is
+    if (imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+    
+    // Default fallback for other cases
+    return this.getPlaceholderImage();
+  }
+
   trackByBlogId(index: number, blog: Blog): string {
-    return blog._id;
+    // Handle both API response format (id) and localStorage format (_id)
+    return (blog as any).id || blog._id;
+  }
+
+  onImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = this.getPlaceholderImage();
+    }
   }
 }
 

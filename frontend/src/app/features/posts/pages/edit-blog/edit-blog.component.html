@@ -60,6 +60,16 @@
     </div>
   </header>
 
+  <!-- Message Container -->
+  <div class="message-container" [ngClass]="messageType" *ngIf="showMessage">
+    <span class="message-text">{{ messageText }}</span>
+    <button class="message-close" (click)="hideMessage()">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+        <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="loading-spinner"></div>
@@ -184,18 +194,37 @@
               
               <!-- Image Block -->
               <div *ngIf="block.type === 'image'" class="image-block">
-                <input 
-                  type="url"
-                  class="image-url-input"
-                  [id]="'block-' + block.id"
-                  placeholder="Paste image URL"
-                  [value]="block.data"
-                  (input)="onBlockChange(block.id, $any($event.target).value)"
-                />
+                <div class="image-input-container">
+                  <input 
+                    type="url"
+                    class="image-url-input"
+                    [id]="'block-' + block.id"
+                    placeholder="Paste image URL or upload file"
+                    [value]="block.data"
+                    (input)="onBlockChange(block.id, $any($event.target).value)"
+                  />
+                  
+                  <!-- Upload Button -->
+                  <button 
+                    type="button" 
+                    class="upload-btn"
+                    (click)="selectImageFile(block.id)"
+                    [disabled]="isUploadingImage"
+                    title="Upload image from your device"
+                  >
+                    <span *ngIf="!isUploadingImage">📁 Upload</span>
+                    <span *ngIf="isUploadingImage">⏳ Uploading...</span>
+                  </button>
+                </div>
                 
                 <!-- Image Preview -->
                 <div *ngIf="block.data" class="image-preview">
-                  <img [src]="block.data" [alt]="'Image preview'" />
+                  <img 
+                    [src]="block.data" 
+                    [alt]="'Image preview'"
+                    (load)="onImageLoad($event, block.id)"
+                    (error)="onImageError($event, block.id)"
+                  />
                   <div class="image-url-display">
                     <small>{{ block.data }}</small>
                   </div>
@@ -255,5 +284,141 @@
   </div>
 </div>
 
-<app-footer></app-footer>
+<!-- Republish Modal with Main Image and Tags Editing -->
+<div *ngIf="showRepublishModal" class="publish-modal-overlay">
+  <div class="publish-modal">
+    <div class="modal-header">
+      <h2>Update Blog Settings</h2>
+      <button class="close-btn" (click)="closeRepublishModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Main Image Section -->
+      <div class="form-group">
+        <label>Main Image</label>
+        <div class="main-image-upload">
+          <!-- No Image State -->
+          <div *ngIf="!mainImageUrl" class="upload-area">
+            <div class="upload-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <p>No main image selected</p>
+            </div>
+          </div>
+          
+          <!-- Image Preview -->
+          <div *ngIf="mainImageUrl" class="image-preview">
+            <img 
+              [src]="mainImageUrl" 
+              alt="Main image preview"
+              (error)="onMainImageError($event)"
+            />
+            <button type="button" class="remove-btn" (click)="removeMainImage()">×</button>
+          </div>
+          
+          <!-- Upload Actions -->
+          <button 
+            type="button" 
+            class="upload-btn"
+            (click)="selectMainImageFile()"
+            [disabled]="isUploadingMainImage"
+          >
+            <span *ngIf="!isUploadingMainImage">📁 {{ mainImageUrl ? 'Change Image' : 'Upload Image' }}</span>
+            <span *ngIf="isUploadingMainImage">⏳ Uploading...</span>
+          </button>
+          
+          <!-- Upload Loading -->
+          <div *ngIf="isUploadingMainImage" class="upload-loading">
+            <div class="loading-spinner"></div>
+            <span>Uploading main image...</span>
+          </div>
+        </div>
+      </div>
 
+      <!-- Tags Section -->
+      <div class="form-group">
+        <label>Tags</label>
+        
+        <!-- Add Custom Tag -->
+        <div class="add-tag-section">
+          <div class="tag-input-group">
+            <input 
+              type="text" 
+              class="tag-input" 
+              placeholder="Enter tag name..." 
+              [(ngModel)]="newTagInput"
+              (keyup.enter)="addCustomTag()"
+              maxlength="20"
+            />
+            <button 
+              type="button" 
+              class="add-tag-btn" 
+              (click)="addCustomTag()"
+              [disabled]="!newTagInput.trim()"
+            >
+              Add Tag
+            </button>
+          </div>
+        </div>
+
+        <!-- Selected Tags -->
+        <div class="selected-tags" *ngIf="selectedTags.length > 0">
+          <h4>Selected Tags ({{ selectedTags.length }}/10):</h4>
+          <div class="tags-list">
+            <span 
+              *ngFor="let tag of selectedTags" 
+              class="tag-item selected"
+            >
+              {{ tag }}
+              <button 
+                type="button" 
+                class="remove-tag-btn" 
+                (click)="removeTag(tag)"
+              >
+                &times;
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Recommended Tags -->
+        <div class="recommended-tags" *ngIf="availableTags.length > 0">
+          <h4>Recommended Tags:</h4>
+          <div class="tags-grid">
+            <span 
+              *ngFor="let tag of availableTags" 
+              class="tag-item recommended"
+              [class.disabled]="selectedTags.includes(tag.name)"
+              (click)="addRecommendedTag(tag.name)"
+            >
+              {{ tag.name }}
+              <span *ngIf="selectedTags.includes(tag.name)" class="checkmark">✓</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button 
+        type="button" 
+        class="btn secondary" 
+        (click)="closeRepublishModal()"
+      >
+        Cancel
+      </button>
+      <button 
+        type="button" 
+        class="btn primary" 
+        (click)="performSave()" 
+        [disabled]="isRepublishing"
+      >
+        <span *ngIf="!isRepublishing">Update Blog</span>
+        <span *ngIf="isRepublishing">Updating...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { BlogService } from '../../../../core/services/blog.service';
+import { ImageUploadService } from '../../../../core/services/image-upload.service';
 import { FooterComponent } from "../../../../shared/components/footer/footer.component";
 import { Tag } from '../../../../shared/interfaces/post.interface';
 
@@ -46,6 +47,11 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   availableTags: Tag[] = [];
   isLoadingTags = false;
   
+  // Message container
+  showMessage = false;
+  messageText = '';
+  messageType: 'success' | 'error' | 'info' = 'info';
+  
   // Menu options
   blockTypes: { type: BlogBlock['type'], label: string, icon: string }[] = [
     { type: 'subtitle', label: 'Subtitle', icon: 'H2' },
@@ -56,7 +62,8 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private blogService: BlogService
+    private blogService: BlogService,
+    private imageUploadService: ImageUploadService
   ) {}
 
   ngOnInit(): void {
@@ -208,12 +215,17 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     // Convert blocks to JSON string for storage
     const contentJsonString = JSON.stringify(this.blogBlocks);
 
-    // Create minimal blog data - only title and content
+    // Create blog data with proper structure
     const blogData = {
       _id: this.generateBlogId(),
+      user_id: this.getCurrentUserId(),
       title: this.blogTitle,
       content: contentJsonString, // JSON stringified blocks
-      published: false // Save as draft
+      tag_ids: [],
+      main_image_url: '',
+      published: false, // Save as draft
+      created_at: this.getCurrentTimestamp(),
+      updated_at: this.getCurrentTimestamp()
     };
 
     console.log('Saving blog draft to localStorage:', blogData);
@@ -258,62 +270,48 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file');
+      this.showMessageContainer('Please select a valid image file', 'error');
       return;
     }
     
     // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert('Image size should be less than 5MB');
-      return;
-    }
-    
-    this.uploadImageToS3(file, blockId);
-  }
-
-  // Handle image loading error
-  onImageError(event: Event, blockId: string): void {
-    const target = event.target as HTMLImageElement;
-    const block = this.blogBlocks.find(b => b.id === blockId);
-    
-    if (block && target) {
-      // Hide the broken image
-      target.style.display = 'none';
-      
-      // Show error message to user
-      console.error('Failed to load image:', block.data);
-      
-      // Optionally clear the invalid URL
-      if (confirm('The image failed to load. Would you like to clear the URL and try again?')) {
-        block.data = '';
-      }
-    }
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+          this.showMessageContainer('Image size should be less than 5MB', 'error');
+          return;
+        }
+        
+        this.uploadImageToS3(file, blockId);
   }
   
   // Upload image to AWS S3
-  private async uploadImageToS3(file: File, blockId: string): Promise<void> {
+  private uploadImageToS3(file: File, blockId: string): void {
     const block = this.blogBlocks.find(b => b.id === blockId);
     if (!block) return;
     
     this.isUploadingImage = true;
     
-    try {
-      // Simulate S3 upload with a placeholder
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const timestamp = Date.now();
-      const fileName = file.name.replace(/\s+/g, '_');
-      const mockS3Url = `https://your-bucket.s3.amazonaws.com/blog-images/${timestamp}_${fileName}`;
-      block.data = mockS3Url;
-      console.log('Image uploaded to S3:', mockS3Url);
-      alert('Image uploaded successfully!');
-      
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      alert('Failed to upload image. Please try again.');
-    } finally {
-      this.isUploadingImage = false;
-    }
+    this.imageUploadService.uploadImage(file).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => {
+        console.log('Full upload response:', response);
+        if (response && response.imageUrl) {
+          block.data = response.imageUrl;
+          console.log('Image uploaded to S3 successfully:', response.imageUrl);
+          this.showMessageContainer('Image uploaded successfully!', 'success');
+          this.isUploadingImage = false;
+        } else {
+          console.error('Invalid response format:', response);
+          this.showMessageContainer('Invalid response from server. Please try again.', 'error');
+          this.isUploadingImage = false;
+        }
+      },
+      error: (error) => {
+        console.error('Error uploading image:', error);
+        this.isUploadingImage = false;
+      }
+    });
   }
   
   // Trigger file input for image upload
@@ -325,9 +323,17 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     input.click();
   }
 
-  // Generate unique blog ID
+  // Generate unique blog ID (MongoDB ObjectId-like format)
   private generateBlogId(): string {
-    return 'blog_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    // Generate a pseudo-ObjectId for localStorage blogs
+    const timestamp = Math.floor(Date.now() / 1000).toString(16);
+    const random = Math.random().toString(16).substring(2, 16);
+    return timestamp + random.padEnd(16, '0');
+  }
+
+  // Get current timestamp for created_at and updated_at
+  private getCurrentTimestamp(): string {
+    return new Date().toISOString();
   }
 
   // Get current user ID (you might need to implement this based on your auth service)
@@ -415,14 +421,14 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file');
+      this.showMessageContainer('Please select a valid image file', 'error');
       return;
     }
     
     // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      alert('Image size should be less than 5MB');
+      this.showMessageContainer('Image size should be less than 5MB', 'error');
       return;
     }
     
@@ -430,24 +436,24 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   }
 
   // Upload main image to AWS S3
-  private async uploadMainImageToS3(file: File): Promise<void> {
+  private uploadMainImageToS3(file: File): void {
     this.isUploadingMainImage = true;
     
-    try {
-      // Simulate S3 upload
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const timestamp = Date.now();
-      const fileName = file.name.replace(/\s+/g, '_');
-      const mockS3Url = `https://your-bucket.s3.amazonaws.com/blog-main-images/${timestamp}_${fileName}`;
-      this.mainImageUrl = mockS3Url;
-      console.log('Main image uploaded to S3:', mockS3Url);
-      
-    } catch (error) {
-      console.error('Error uploading main image:', error);
-      alert('Failed to upload main image. Please try again.');
-    } finally {
-      this.isUploadingMainImage = false;
-    }
+    this.imageUploadService.uploadImage(file).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => {
+        this.mainImageUrl = response.imageUrl;
+        console.log('Main image uploaded to S3:', response.imageUrl);
+        this.showMessageContainer('Main image uploaded successfully!', 'success');
+        this.isUploadingMainImage = false;
+      },
+      error: (error) => {
+        console.error('Error uploading main image:', error);
+        this.showMessageContainer('Failed to upload main image. Please try again.', 'error');
+        this.isUploadingMainImage = false;
+      }
+    });
   }
 
   // Select main image file
@@ -521,44 +527,90 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     // Convert blocks to content string
     const contentJsonString = JSON.stringify(this.blogBlocks);
 
-    // Create blog data for saving
+    // Create blog data for publishing - use appropriate API structure
     const blogData = {
-      _id: this.generateBlogId(),
-      user_id: this.getCurrentUserId(),
       title: this.blogTitle,
       content: contentJsonString,
-      tags: this.selectedTags,
-      main_image_url: this.mainImageUrl,
-      published: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      tag_ids: this.selectedTags,
+      main_image_url: this.mainImageUrl || '',
+      published: true
     };
 
     console.log('Publishing blog:', blogData);
 
-    // Simulate API call
-    setTimeout(() => {
-      try {
-        // Save to localStorage
-        this.saveBlogToLocalStorage(blogData);
-        
+    // Publish to MongoDB via API
+    this.blogService.createBlog(blogData).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => {
+        console.log('Blog published successfully:', response);
         this.isPublishing = false;
         this.closePublishModal();
-        alert('Blog published successfully!');
+        this.showMessageContainer('Blog published successfully!', 'success');
         
-        // Navigate to home or blog list
-        this.router.navigate(['/home']);
-      } catch (error) {
+        // Navigate to home or blog list after a short delay
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 2000);
+      },
+      error: (error) => {
         console.error('Error publishing blog:', error);
         this.isPublishing = false;
-        alert('Error publishing blog. Please try again.');
+        this.showMessageContainer('Error publishing blog. Please try again.', 'error');
       }
-    }, 2000);
+    });
   }
 
   // Track by function for ngFor optimization
   trackByBlockId(index: number, block: BlogBlock): string {
     return block.id;
+  }
+
+  // Message container methods
+  showMessageContainer(text: string, type: 'success' | 'error' | 'info' = 'info'): void {
+    this.messageText = text;
+    this.messageType = type;
+    this.showMessage = true;
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      this.hideMessage();
+    }, 5000);
+  }
+
+  hideMessage(): void {
+    this.showMessage = false;
+    this.messageText = '';
+  }
+
+  // Handle image load event
+  onImageLoad(event: Event, blockId: string): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.style.display = 'block';
+    }
+  }
+
+  // Handle image error event
+  onImageError(event: Event, blockId?: string): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = this.getDefaultImage();
+    }
+  }
+
+  // Handle main image error event
+  onMainImageError(event: Event): void {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = this.getDefaultImage();
+      this.showMessageContainer('Failed to load main image. Using default image.', 'error');
+    }
+  }
+
+  // Get default image placeholder
+  getDefaultImage(): string {
+    return 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
   }
 }
 

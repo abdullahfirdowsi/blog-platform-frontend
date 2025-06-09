@@ -21,7 +21,7 @@ export class AuthService {
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   private refreshTokenTimer: any;
   private router = inject(Router);
-  private googleAuthReturnUrl: string = '/home';
+  private googleAuthReturnUrl = '/home';
 
   public currentUser$ = this.currentUserSubject.asObservable();
   public token$ = this.tokenSubject.asObservable();

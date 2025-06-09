@@ -84,6 +84,7 @@ export interface BlogSummary {
   _id: string;
   title: string;
   content?: string;
+  blog_body?: string;  // Backend field name
   tag_ids: string[];
   main_image_url?: string;
   published: boolean;
@@ -92,7 +93,7 @@ export interface BlogSummary {
   user_id: string;
   // Populated fields
   user?: Pick<User, '_id' | 'username' | 'profile_picture'>;
-  tags?: Pick<Tag, '_id' | 'name'>[];
+  tags?: Pick<Tag, '_id' | 'name'>[] | string[];  // Can be tag objects or tag names
   views?: number;
   likes_count?: number;
   comments_count?: number;

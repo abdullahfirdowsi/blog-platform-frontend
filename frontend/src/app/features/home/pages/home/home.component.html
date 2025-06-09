@@ -99,24 +99,23 @@
         <!-- Posts Grid -->
         <div *ngIf="!loading" class="posts-grid">
           <article *ngFor="let post of posts" class="post-card">
-            <!-- Post Image -->
-            <div class="post-image-container">
-              <img 
-                [src]="post.featured_image || getPlaceholderImage()" 
-                [alt]="post.title"
-                class="post-image"
-                loading="lazy"
-              />
+            <!-- Post Header with Image and Title in the same row -->
+            <div class="post-header">
+              <div class="post-image-container" *ngIf="getImageUrl(post.featured_image)">
+                <img 
+                  [src]="getImageUrl(post.featured_image)" 
+                  [alt]="post.title"
+                  class="post-image"
+                  loading="lazy"
+                  (error)="onImageError($event)"
+                />
+              </div>
+              <div class="post-image-placeholder" *ngIf="!getImageUrl(post.featured_image)"></div>
+              <h2 class="post-title">{{ post.title }}</h2>
             </div>
             
             <!-- Post Content -->
             <div class="post-content">
-              <h2 class="post-title">{{ post.title }}</h2>
-              
-              <p class="post-excerpt" *ngIf="post.excerpt">
-                {{ post.excerpt }}
-              </p>
-              
               <!-- Tags -->
               <div class="post-tags" *ngIf="post.tags.length > 0">
                 <span 
@@ -132,10 +131,18 @@
               <div class="post-meta">
                 <div class="post-author">
                   <img 
-                    [src]="post.author.profile_picture || getPlaceholderImage()" 
+                    *ngIf="getImageUrl(post.author.profile_picture)"
+                    [src]="getImageUrl(post.author.profile_picture)" 
                     [alt]="post.author.username"
                     class="author-avatar"
+                    (error)="onImageError($event)"
                   />
+                  <div 
+                    *ngIf="!getImageUrl(post.author.profile_picture)"
+                    class="author-avatar-placeholder"
+                  >
+                    {{ post.author.username.charAt(0).toUpperCase() }}
+                  </div>
                   <span class="author-name">{{ post.author.username }}</span>
                 </div>
                 

@@ -53,7 +53,7 @@ export class BlogService {
   }
 
   // Search blogs
-  searchBlogs(query: string, page: number = 1, limit: number = 10): Observable<BlogsResponse> {
+  searchBlogs(query: string, page = 1, limit = 10): Observable<BlogsResponse> {
     const params = new HttpParams()
       .set('search', query)
       .set('page', page.toString())
@@ -64,7 +64,7 @@ export class BlogService {
   }
 
   // Get blogs by tag
-  getBlogsByTag(tagName: string, page: number = 1, limit: number = 10): Observable<BlogsResponse> {
+  getBlogsByTag(tagName: string, page = 1, limit = 10): Observable<BlogsResponse> {
     const params = new HttpParams()
       .set('tag_name', tagName)
       .set('page', page.toString())
@@ -95,7 +95,7 @@ export class BlogService {
         const posts: PostSummary[] = blogResponse.blogs.map(blog => ({
           id: blog._id,
           title: blog.title,
-          excerpt: blog.excerpt || this.generateExcerpt(blog.content),
+          excerpt: blog.excerpt || this.generateExcerpt(blog.blog_body || blog.content),
           slug: this.generateSlug(blog.title),
           status: blog.published ? 'published' : 'draft',
           featured_image: blog.main_image_url,
@@ -105,7 +105,7 @@ export class BlogService {
             username: blog.user?.username || 'Unknown',
             profile_picture: blog.user?.profile_picture
           },
-          tags: blog.tags?.map(tag => tag.name) || [],
+          tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],
           views: blog.views || 0,
           likes_count: blog.likes_count || 0,
           comments_count: blog.comments_count || 0,
@@ -125,20 +125,20 @@ export class BlogService {
     );
   }
 
-  searchPosts(query: string, page: number = 1, limit: number = 10): Observable<PostsResponse> {
+  searchPosts(query: string, page = 1, limit = 10): Observable<PostsResponse> {
     return this.searchBlogs(query, page, limit).pipe(
       map(blogResponse => this.convertBlogsToPostsResponse(blogResponse))
     );
   }
 
-  getPostsByTag(tag: string, page: number = 1, limit: number = 10): Observable<PostsResponse> {
+  getPostsByTag(tag: string, page = 1, limit = 10): Observable<PostsResponse> {
     return this.getBlogsByTag(tag, page, limit).pipe(
       map(blogResponse => this.convertBlogsToPostsResponse(blogResponse))
     );
   }
 
   // Helper methods
-  private generateExcerpt(content: string | undefined, length: number = 150): string {
+  private generateExcerpt(content: string | undefined, length = 150): string {
     if (!content) return '';
     const textContent = content.replace(/<[^>]*>/g, '');
     return textContent.length > length ? textContent.substring(0, length) + '...' : textContent;
@@ -157,7 +157,7 @@ export class BlogService {
     const posts: PostSummary[] = blogResponse.blogs.map(blog => ({
       id: blog._id,
       title: blog.title,
-      excerpt: blog.excerpt || this.generateExcerpt(blog.content),
+      excerpt: blog.excerpt || this.generateExcerpt(blog.blog_body || blog.content),
       slug: this.generateSlug(blog.title),
       status: blog.published ? 'published' : 'draft',
       featured_image: blog.main_image_url,
@@ -167,7 +167,7 @@ export class BlogService {
         username: blog.user?.username || 'Unknown',
         profile_picture: blog.user?.profile_picture
       },
-      tags: blog.tags?.map(tag => tag.name) || [],
+      tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],
       views: blog.views || 0,
       likes_count: blog.likes_count || 0,
       comments_count: blog.comments_count || 0,
@@ -201,12 +201,22 @@ export class BlogService {
   }
 
   // Get user's blogs (both published and drafts)
-  getMyBlogs(page: number = 1, pageSize: number = 10): Observable<Blog[]> {
+  getMyBlogs(page = 1, pageSize = 10): Observable<Blog[]> {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('page_size', pageSize.toString());
     
     return this.http.get<Blog[]>(`${this.apiUrl}/blogs/my-blogs`, { params });
+  }
+
+  // Save blog as draft
+  saveDraft(blogData: CreateBlogRequest): Observable<Blog> {
+    return this.createBlog({ ...blogData, published: false });
+  }
+
+  // Publish blog
+  publishBlog(blogData: CreateBlogRequest): Observable<Blog> {
+    return this.createBlog({ ...blogData, published: true });
   }
 }
 

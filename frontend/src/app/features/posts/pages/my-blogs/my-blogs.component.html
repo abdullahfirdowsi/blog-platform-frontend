@@ -87,10 +87,11 @@
             <!-- Blog Image -->
             <div class="blog-image-container">
               <img 
-                [src]="blog.main_image_url || getPlaceholderImage()" 
+                [src]="getImageUrl(blog.main_image_url)" 
                 [alt]="blog.title"
                 class="blog-image"
                 loading="lazy"
+                (error)="onImageError($event)"
               />
               <div class="blog-status-badge" [ngClass]="getStatusBadgeClass(blog.published)">
                 {{ getStatusText(blog.published) }}
@@ -102,19 +103,19 @@
               <h3 class="blog-title">{{ blog.title }}</h3>
               
               <p class="blog-preview">
-                {{ getContentPreview(blog.content) }}
+                {{ getContentPreview(blog) }}
               </p>
               
               <!-- Tags -->
-              <div class="blog-tags" *ngIf="blog.tag_ids && blog.tag_ids.length > 0">
+              <div class="blog-tags" *ngIf="blog.tags && blog.tags.length > 0">
                 <span 
-                  *ngFor="let tag of blog.tag_ids.slice(0, 3)" 
+                  *ngFor="let tag of blog.tags.slice(0, 3)" 
                   class="blog-tag"
                 >
                   {{ tag }}
                 </span>
-                <span *ngIf="blog.tag_ids.length > 3" class="more-tags">
-                  +{{ blog.tag_ids.length - 3 }} more
+                <span *ngIf="blog.tags.length > 3" class="more-tags">
+                  +{{ blog.tags.length - 3 }} more
                 </span>
               </div>
               
@@ -186,4 +187,3 @@
 </div>
 
 <app-footer></app-footer>
-

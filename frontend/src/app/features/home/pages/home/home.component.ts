@@ -77,7 +77,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadRecommendedTags();
   }
 
-  private loadPosts(page: number = 1): void {
+  private loadPosts(page = 1): void {
     this.loading = true;
     
     const filters = {
@@ -197,6 +197,42 @@ export class HomeComponent implements OnInit, OnDestroy {
   getDefaultAvatar(): string {
     const name = this.currentUser?.full_name || this.currentUser?.username || 'User';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=667eea&color=fff&size=32`;
+  }
+  
+  getImageUrl(imageUrl: string | undefined): string | null {
+    // Return null if the image URL is not available
+    if (!imageUrl || imageUrl.trim() === '') {
+      return null;
+    }
+    
+    // If it's already a full URL (starts with http/https), return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // If it's an AWS S3 key/path, ensure it's a complete URL
+    if (imageUrl.startsWith('uploads/')) {
+      // Construct the full S3 URL if only the path is provided
+      return `https://blog-app-2025.s3.amazonaws.com/${imageUrl}`;
+    }
+    
+    // If it contains amazonaws.com, it's already a complete S3 URL
+    if (imageUrl.includes('amazonaws.com')) {
+      return imageUrl;
+    }
+    
+    // If it's a data URL (base64), return as is
+    if (imageUrl.startsWith('data:')) {
+      return imageUrl;
+    }
+    
+    // Default fallback for other cases
+    return null;
+  }
+  
+  onImageError(event: any): void {
+    // Set fallback image when S3 image fails to load
+    event.target.src = this.getPlaceholderImage();
   }
   
   toggleUserMenu(event: Event): void {

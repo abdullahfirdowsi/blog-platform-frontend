@@ -190,7 +190,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   private getFieldDisplayName(fieldName: string): string {
-    const displayNames: { [key: string]: string } = {
+    const displayNames: Record<string, string> = {
       email: 'Email',
       full_name: 'Full name',
       bio: 'Bio',

@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
@@ -49,7 +49,7 @@ export function passwordStrengthValidator(): ValidatorFn {
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent implements OnInit, AfterViewInit {
+export class RegisterComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('googleButton', { static: false }) googleButton!: ElementRef;
   
   registerForm: FormGroup;
@@ -226,7 +226,7 @@ export class RegisterComponent implements OnInit, AfterViewInit {
   }
 
   private getFieldDisplayName(fieldName: string): string {
-    const displayNames: { [key: string]: string } = {
+    const displayNames: Record<string, string> = {
       username: 'Username',
       email: 'Email',
       full_name: 'Full name',

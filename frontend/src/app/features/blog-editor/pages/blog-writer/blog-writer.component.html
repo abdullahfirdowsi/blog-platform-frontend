@@ -39,6 +39,18 @@
     </div>
   </header>
 
+  <!-- Message Container -->
+  <div class="message-container" [class]="'message-' + messageType" *ngIf="showMessage">
+    <div class="message-content">
+      <span class="message-text">{{ messageText }}</span>
+      <button class="message-close" (click)="hideMessage()">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+          <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
   <!-- Main Editor Area -->
   <main class="editor-main">
     <div class="editor-container">
@@ -190,7 +202,9 @@
                 
                 <!-- Image Preview -->
                 <div *ngIf="block.data && !isUploadingImage" class="image-preview">
-                  <img [src]="block.data" [alt]="'Image preview'" (error)="onImageError($event, block.id)" />
+                  <img [src]="block.data" [alt]="'Image preview'" 
+                       (error)="onImageError($event, block.id)" 
+                       (load)="onImageLoad($event, block.id)" />
                   <div class="image-url-display">
                     <small>{{ block.data }}</small>
                   </div>
@@ -262,8 +276,14 @@
           </button>
           
           <div class="image-preview" *ngIf="mainImageUrl && !isUploadingMainImage">
-            <img [src]="mainImageUrl" alt="Main image preview" />
-            <button type="button" class="remove-btn" (click)="removeMainImage()">Remove</button>
+            <img [src]="mainImageUrl" alt="Main image preview" (error)="onMainImageError($event)" />
+            <button type="button" class="remove-btn" (click)="removeMainImage()">×</button>
+          </div>
+          
+          <!-- Upload Loading -->
+          <div *ngIf="isUploadingMainImage" class="upload-loading">
+            <div class="loading-spinner"></div>
+            <span>Uploading main image...</span>
           </div>
         </div>
       </div>
