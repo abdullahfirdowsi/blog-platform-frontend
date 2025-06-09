@@ -108,12 +108,21 @@ export class AuthService {
   private handleAuthSuccess(response: LoginResponse): void {
     // Store access token in session storage (cleared on browser close)
     sessionStorage.setItem('access_token', response.access_token);
-    sessionStorage.setItem('current_user', JSON.stringify(response.user));
     
     // Refresh token is handled via HTTP-only cookies on the backend
     this.tokenSubject.next(response.access_token);
-    this.currentUserSubject.next(response.user);
     this.scheduleTokenRefresh();
+    
+    // Fetch user profile data after successful login
+    this.getUserProfile().subscribe({
+      next: (user) => {
+        sessionStorage.setItem('current_user', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      },
+      error: (error) => {
+        console.error('Failed to fetch user profile:', error);
+      }
+    });
   }
 
   private clearStoredAuth(): void {
@@ -152,10 +161,8 @@ export class AuthService {
       withCredentials: true // Include cookies for refresh token
     }).pipe(
       tap(response => {
-        // Only handle auth success if response contains tokens
-        if (response && response.access_token) {
-          this.handleAuthSuccess(response);
-        }
+        // Registration doesn't return tokens in this backend
+        // User needs to login separately after registration
         this.isLoadingSubject.next(false);
       }),
       catchError(error => {
@@ -203,10 +210,6 @@ export class AuthService {
         console.log('Token refresh response received');
         sessionStorage.setItem('access_token', response.access_token);
         this.tokenSubject.next(response.access_token);
-        if (response.user) {
-          sessionStorage.setItem('current_user', JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user);
-        }
       }),
       catchError(error => {
         console.error('Token refresh error:', error);
@@ -216,14 +219,9 @@ export class AuthService {
     );
   }
 
-  updateProfile(userData: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/profile`, userData)
-      .pipe(
-        tap(user => {
-          sessionStorage.setItem('current_user', JSON.stringify(user));
-          this.currentUserSubject.next(user);
-        })
-      );
+  // Get user profile from /auth/me endpoint
+  getUserProfile(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/me`);
   }
 
   changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Observable<any> {

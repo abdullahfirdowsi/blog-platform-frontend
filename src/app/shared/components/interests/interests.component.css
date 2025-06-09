@@ -1,0 +1,305 @@
+/* Interests Section */
+.interests-section {
+  margin-bottom: 2rem;
+}
+
+/* Counter */
+.interests-counter {
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.count-text {
+  color: #e5e7eb;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-right: 1rem;
+}
+
+.minimum-text {
+  color: #fbbf24;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+/* Section Titles */
+.section-title {
+  color: #e5e7eb;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title::before {
+  content: '';
+  width: 4px;
+  height: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 2px;
+}
+
+/* Interests Grid */
+.interests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+/* Interest Tags */
+.interest-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(31, 41, 55, 0.6);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 25px;
+  color: #e5e7eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 44px;
+}
+
+.interest-tag:hover:not(.disabled) {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.4);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+}
+
+.interest-tag.selected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: rgba(102, 126, 234, 0.6);
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.interest-tag.selected:hover {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+}
+
+.interest-tag.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(31, 41, 55, 0.3);
+  border-color: rgba(102, 126, 234, 0.1);
+  color: #9ca3af;
+}
+
+.interest-tag.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Icons */
+.check-icon {
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.remove-icon {
+  color: #ffffff;
+  flex-shrink: 0;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.interest-tag.selected:hover .remove-icon {
+  opacity: 1;
+}
+
+/* Selected Interests Section */
+.selected-interests-section {
+  margin-bottom: 2rem;
+}
+
+.selected-interests-section .interests-grid {
+  margin-bottom: 1rem;
+}
+
+/* Suggestions Section */
+.suggestions-section {
+  margin-bottom: 2rem;
+}
+
+/* Custom Interest Section */
+.custom-interest-section {
+  margin-bottom: 2rem;
+}
+
+.custom-interest-section .input-wrapper {
+  position: relative;
+}
+
+.add-custom-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 20px;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-custom-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.add-custom-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: rgba(102, 126, 234, 0.3);
+}
+
+.add-custom-btn:disabled:hover {
+  transform: translateY(-50%);
+  box-shadow: none;
+}
+
+/* Custom input with button spacing */
+.custom-interest-section .form-input {
+  padding-right: 80px;
+}
+
+/* Actions */
+.interests-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.save-interests-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 50px;
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 180px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.save-interests-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+}
+
+.save-interests-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgba(102, 126, 234, 0.4);
+  transform: none;
+  box-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+}
+
+.skip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: rgba(31, 41, 55, 0.8);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 50px;
+  color: #e5e7eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.skip-btn:hover {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.4);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .interests-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+  
+  .interest-tag {
+    font-size: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    min-height: 40px;
+  }
+  
+  .interests-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .save-interests-btn,
+  .skip-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .custom-interest-section .form-input {
+    padding-right: 70px;
+  }
+  
+  .add-custom-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .interests-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  
+  .interest-tag {
+    font-size: 0.7rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+

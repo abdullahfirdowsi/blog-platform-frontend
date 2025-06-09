@@ -1,0 +1,70 @@
+<div class="interests-setup-page">
+  <!-- Header -->
+  <div class="setup-header">
+    <div class="header-container">
+      <div class="header-content">
+        <div class="logo-section">
+          <h1 class="logo">BlogPlatform</h1>
+        </div>
+        <div class="logout-section">
+          <button (click)="logout()" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="setup-hero">
+    <div class="setup-container">
+      <!-- Welcome Section -->
+      <div class="welcome-section">
+        <div class="welcome-content">
+          <h1 class="welcome-title">
+            <i class="fas fa-heart welcome-icon"></i>
+            Welcome to BlogPlatform!
+          </h1>
+          <p class="welcome-subtitle">
+            Let's personalize your experience by setting up your interests.
+            This will help us recommend the best content for you.
+          </p>
+        </div>
+      </div>
+
+      <!-- Interests Setup Content -->
+      <div class="setup-content">
+        <div class="setup-card">
+          <app-interests 
+            [isFirstTimeSetup]="true"
+            (interestsSelected)="onInterestsSelected($event)"
+            (setupCompleted)="onSetupCompleted()">
+          </app-interests>
+        </div>
+      </div>
+
+      <!-- Skip Section -->
+      <div class="skip-section">
+        <p class="skip-text">You can always update your interests later in your profile settings.</p>
+        <button (click)="skipSetup()" class="skip-setup-btn">
+          <i class="fas fa-arrow-right"></i>
+          Skip and Continue to Dashboard
+        </button>
+      </div>
+
+      <!-- Decorative Elements -->
+      <div class="decoration-dots">
+        <div class="dot dot-1"></div>
+        <div class="dot dot-2"></div>
+        <div class="dot dot-3"></div>
+        <div class="dot dot-4"></div>
+        <div class="dot dot-5"></div>
+        <div class="dot dot-6"></div>
+      </div>
+    </div>
+  </div>
+  
+  <app-footer></app-footer>
+</div>
+

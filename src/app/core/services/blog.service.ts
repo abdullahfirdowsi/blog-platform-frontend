@@ -105,7 +105,6 @@ export class BlogService {
           author: {
             id: blog.user?._id || blog.user_id,
             username: blog.user?.username || 'Unknown',
-            profile_picture: blog.user?.profile_picture
           },
           tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],
           views: blog.views || 0,
@@ -172,7 +171,6 @@ export class BlogService {
       author: {
         id: blog.user?._id || blog.user_id,
         username: blog.user?.username || 'Unknown',
-        profile_picture: blog.user?.profile_picture
       },
       tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],
       views: blog.views || 0,

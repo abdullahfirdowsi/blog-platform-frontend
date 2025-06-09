@@ -31,6 +31,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/profile/profile.routes').then(m => m.profileRoutes)
   },
   {
+    path: 'interests',
+    loadComponent: () => import('./features/interests-setup/interests-setup.component').then(m => m.InterestsSetupComponent)
+  },
+  {
     path: '**',
     redirectTo: '/landing'
   }

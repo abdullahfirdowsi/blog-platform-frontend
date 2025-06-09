@@ -6,10 +6,11 @@ import { AuthService } from '../../../core/services/auth.service';
 import { takeUntil, Subject } from 'rxjs';
 import { User } from './../../../shared/interfaces/user.interface'
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
+import { InterestsComponent } from '../../../shared/components/interests/interests.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, ReactiveFormsModule, FooterComponent],
+  imports: [CommonModule, ReactiveFormsModule, FooterComponent, InterestsComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
@@ -26,7 +27,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   showCurrentPassword = false;
   showNewPassword = false;
   showConfirmPassword = false;
-  activeTab: 'profile' | 'password' = 'profile';
+  activeTab: 'profile' | 'password' | 'interests' = 'profile';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -36,9 +37,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ) {
     this.profileForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      full_name: ['', [Validators.required, Validators.minLength(2)]],
-      bio: [''],
-      profile_image: ['']
+      username: ['', [Validators.required, Validators.minLength(2)]]
     });
 
     this.passwordForm = this.fb.group({
@@ -57,9 +56,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (user) {
           this.profileForm.patchValue({
             email: user.email,
-            full_name: user.full_name || '',
-            bio: user.bio || '',
-            profile_image: user.profile_image || ''
+            username: user.username
           });
         }
       });
@@ -82,25 +79,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
       this.successMessage = '';
       this.errorMessage = '';
 
+      // Note: Backend doesn't support profile updates yet
+      // This is just for demonstration
       const profileData = {
-        username: this.profileForm.value.email, // Use email as username
-        email: this.profileForm.value.email,
-        full_name: this.profileForm.value.full_name,
-        bio: this.profileForm.value.bio,
-        profile_image: this.profileForm.value.profile_image
+        username: this.profileForm.value.username,
+        email: this.profileForm.value.email
       };
 
-      this.authService.updateProfile(profileData)
-        .subscribe({
-          next: (user) => {
-            this.successMessage = 'Profile updated successfully!';
-            setTimeout(() => this.successMessage = '', 5000);
-          },
-          error: (error) => {
-            console.error('Profile update error:', error);
-            this.errorMessage = error.error?.message || 'Failed to update profile. Please try again.';
-          }
-        });
+      // Profile update not available in current backend
+      this.errorMessage = 'Profile updates are not available yet.';
+      setTimeout(() => this.errorMessage = '', 5000);
     } else {
       Object.keys(this.profileForm.controls).forEach(key => {
         this.profileForm.get(key)?.markAsTouched();
@@ -159,7 +147,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
   }
 
-  setActiveTab(tab: 'profile' | 'password'): void {
+  setActiveTab(tab: 'profile' | 'password' | 'interests'): void {
     this.activeTab = tab;
     // Clear messages when switching tabs
     this.successMessage = '';
@@ -192,8 +180,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private getFieldDisplayName(fieldName: string): string {
     const displayNames: Record<string, string> = {
       email: 'Email',
-      full_name: 'Full name',
-      bio: 'Bio',
+      username: 'Username',
       current_password: 'Current password',
       new_password: 'New password',
       confirm_password: 'Confirm password'
@@ -203,7 +190,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   getUserInitials(): string {
     if (!this.currentUser) return '';
-    const name = this.currentUser.full_name || this.currentUser.username;
+    const name = this.currentUser.username;
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 

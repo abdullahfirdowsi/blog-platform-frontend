@@ -92,7 +92,7 @@ export interface BlogSummary {
   updated_at: string;
   user_id: string;
   // Populated fields
-  user?: Pick<User, '_id' | 'username' | 'profile_picture'>;
+  user?: Pick<User, '_id' | 'username'>;
   tags?: Pick<Tag, '_id' | 'name'>[] | string[];  // Can be tag objects or tag names
   views?: number;
   likes_count?: number;
@@ -153,7 +153,7 @@ export interface PostSummary {
   status: 'draft' | 'published';
   featured_image?: string;
   author_id: string;
-  author: Pick<User, 'id' | 'username' | 'profile_picture'>;
+  author: Pick<User, 'id' | 'username'>;
   category?: string;
   tags: string[];
   views: number;

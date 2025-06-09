@@ -58,13 +58,10 @@
           <!-- Profile Button -->
           <div class="profile-dropdown" (click)="toggleUserMenu($event)">
             <button class="profile-btn" [class.active]="isUserMenuOpen">
-              <img 
-                [src]="currentUser?.profile_picture || getDefaultAvatar()" 
-                [alt]="currentUser?.username || 'User'"
-                class="profile-avatar"
-                (error)="handleAvatarError($event)"
-              />
-              <span class="profile-name">{{ currentUser?.full_name || currentUser?.username || 'User' }}</span>
+              <div class="profile-avatar-placeholder">
+                {{ currentUser?.username?.charAt(0)?.toUpperCase() || 'U' }}
+              </div>
+              <span class="profile-name">{{ currentUser?.username || 'User' }}</span>
               <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 20 20" fill="none" [class.rotated]="isUserMenuOpen">
                 <path d="M5 7.5l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -130,17 +127,7 @@
               <!-- Post Meta -->
               <div class="post-meta">
                 <div class="post-author">
-                  <img 
-                    *ngIf="getImageUrl(post.author.profile_picture)"
-                    [src]="getImageUrl(post.author.profile_picture)" 
-                    [alt]="post.author.username"
-                    class="author-avatar"
-                    (error)="onImageError($event)"
-                  />
-                  <div 
-                    *ngIf="!getImageUrl(post.author.profile_picture)"
-                    class="author-avatar-placeholder"
-                  >
+                  <div class="author-avatar-placeholder">
                     {{ post.author.username.charAt(0).toUpperCase() }}
                   </div>
                   <span class="author-name">{{ post.author.username }}</span>

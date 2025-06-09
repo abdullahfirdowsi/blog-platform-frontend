@@ -15,31 +15,20 @@
       <div class="profile-header">
         <!-- Profile Avatar -->
         <div class="profile-avatar-section">
-          @if (currentUser?.profile_image) {
-            <img 
-              class="profile-avatar" 
-              [src]="currentUser?.profile_image" 
-              [alt]="currentUser?.username"
-            >
-          } @else {
-            <div class="profile-avatar-placeholder">
-              <span class="avatar-initials">{{ getUserInitials() }}</span>
-            </div>
-          }
+          <div class="profile-avatar-placeholder">
+            <span class="avatar-initials">{{ getUserInitials() }}</span>
+          </div>
         </div>
         
         <!-- Profile Info -->
         <div class="profile-info">
           <h1 class="profile-name">
-            {{ currentUser?.full_name || currentUser?.username }}
+            {{ currentUser?.username }}
           </h1>
           <p class="profile-email">{{ currentUser?.email }}</p>
           <div class="profile-provider">
             <i [class]="getProviderIcon() + ' provider-icon'"></i>
             <span class="provider-text">{{ getProviderText() }}</span>
-            @if (currentUser?.is_verified) {
-              <i class="fas fa-check-circle verified-icon" title="Verified account"></i>
-            }
           </div>
         </div>
       </div>
@@ -62,6 +51,14 @@
           >
             <i class="fas fa-lock tab-icon"></i>
             <span class="tab-text">Change Password</span>
+          </button>
+          <button
+            (click)="setActiveTab('interests')"
+            [class.active]="activeTab === 'interests'"
+            class="tab-button"
+          >
+            <i class="fas fa-heart tab-icon"></i>
+            <span class="tab-text">My Interests</span>
           </button>
         </nav>
       </div>
@@ -121,42 +118,30 @@
             }
           </div>
 
-          <!-- Full Name -->
+          <!-- Username -->
           <div class="form-group">
-            <label for="full_name" class="form-label">Full Name</label>
+            <label for="username" class="form-label">Username</label>
             <div class="input-wrapper">
               <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" fill="currentColor"/>
               </svg>
               <input
-                id="full_name"
+                id="username"
                 type="text"
-                formControlName="full_name"
+                formControlName="username"
                 class="form-input"
-                [class.input-error]="hasFieldError(profileForm, 'full_name')"
-                placeholder="Your full name"
+                [class.input-error]="hasFieldError(profileForm, 'username')"
+                placeholder="Your username"
               >
             </div>
-            @if (hasFieldError(profileForm, 'full_name')) {
+            @if (hasFieldError(profileForm, 'username')) {
               <div class="field-error">
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                   <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
                 </svg>
-                {{ getFieldError(profileForm, 'full_name') }}
+                {{ getFieldError(profileForm, 'username') }}
               </div>
             }
-          </div>
-
-          <!-- Bio -->
-          <div class="form-group">
-            <label for="bio" class="form-label">Bio</label>
-            <textarea
-              id="bio"
-              formControlName="bio"
-              rows="4"
-              class="form-input"
-              placeholder="Tell us about yourself..."
-            ></textarea>
           </div>
 
           <!-- Submit Button -->
@@ -365,6 +350,13 @@
             </button>
           </div>
         </form>
+        </div>
+      }
+
+      <!-- Interests Tab Content -->
+      @if (activeTab === 'interests') {
+        <div class="form-section">
+          <app-interests [isFirstTimeSetup]="false"></app-interests>
         </div>
       }
       
