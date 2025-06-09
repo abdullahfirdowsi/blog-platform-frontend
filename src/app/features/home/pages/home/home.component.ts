@@ -1,21 +1,6 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
-import { BlogService } from '../../../../core/services/blog.service';
-import { AuthService } from '../../../../core/services/auth.service';
-import { PostSummary } from '../../../../shared/interfaces/post.interface';
-import { FooterComponent } from '../../../../shared/components/footer/footer.component';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';import { CommonModule } from '@angular/common';import { RouterLink } from '@angular/router';import { FormsModule } from '@angular/forms';import { HttpClientModule } from '@angular/common/http';import { Subject, takeUntil, debounceTime, distinctUntilChanged, timer } from 'rxjs';import { BlogService } from '../../../../core/services/blog.service';import { AuthService } from '../../../../core/services/auth.service';import { InterestsService } from '../../../../core/services/interests.service';import { PostSummary } from '../../../../shared/interfaces/post.interface';import { FooterComponent } from '../../../../shared/components/footer/footer.component';import { InterestsComponent } from '../../../../shared/components/interests/interests.component';
 
-@Component({
-  selector: 'app-home',
-  standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, HttpClientModule,FooterComponent],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
-})
+@Component({  selector: 'app-home',  standalone: true,  imports: [CommonModule, RouterLink, FormsModule, HttpClientModule, FooterComponent, InterestsComponent],  templateUrl: './home.component.html',  styleUrl: './home.component.css'})
 export class HomeComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
@@ -28,15 +13,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   currentPage = 1;
   totalPages = 1;
   
-  // UI state
-  isAuthenticated = false;
-  currentUser: any = null;
-  isUserMenuOpen = false;
+  // UI state  isAuthenticated = false;  currentUser: any = null;  isUserMenuOpen = false;    // Interest popup state  showInterestsPopup = false;  isCheckingInterests = false;  hasCheckedInterests = false;
   
-  constructor(
-    private blogService: BlogService,
-    private authService: AuthService
-  ) {
+  constructor(    private blogService: BlogService,    private authService: AuthService,    private interestsService: InterestsService  ) {
     // Setup search debouncing
     this.searchSubject.pipe(
       debounceTime(300),
@@ -57,20 +36,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private checkAuthStatus(): void {
-    this.authService.isAuthenticated$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe((isAuth: boolean) => {
-      this.isAuthenticated = isAuth;
-    });
-    
-    // Subscribe to current user
-    this.authService.currentUser$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe((user: any) => {
-      this.currentUser = user;
-    });
-  }
+  private checkAuthStatus(): void {    this.authService.isAuthenticated$.pipe(      takeUntil(this.destroy$)    ).subscribe((isAuth: boolean) => {      this.isAuthenticated = isAuth;      if (isAuth && !this.hasCheckedInterests) {        // Check interests after a short delay to allow user data to load        timer(1000).pipe(takeUntil(this.destroy$)).subscribe(() => {          this.checkUserInterests();        });      }    });        // Subscribe to current user    this.authService.currentUser$.pipe(      takeUntil(this.destroy$)    ).subscribe((user: any) => {      this.currentUser = user;    });  }
 
   private loadInitialData(): void {
     this.loadPosts();
@@ -190,6 +156,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Generate username from email (part before @) - fallback only
+  generateUsernameFromEmail(email: string | undefined): string {
+    if (!email) return '';
+    return email.split('@')[0];
+  }
+
+  // Get display username - prioritize database username over email-generated one
+  getDisplayUsername(): string {
+    return this.currentUser?.username || this.generateUsernameFromEmail(this.currentUser?.email) || 'User';
+  }
+
   getPlaceholderImage(): string {
     return 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
   }
@@ -294,6 +271,5 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (!target.closest('.profile-dropdown')) {
       this.closeUserMenu();
     }
-  }
-}
+  }    // Check if user has interests, if not show popup  private checkUserInterests(): void {    if (this.isCheckingInterests || this.hasCheckedInterests) {      return;    }        this.isCheckingInterests = true;    this.hasCheckedInterests = true;        this.interestsService.getUserInterests()      .pipe(takeUntil(this.destroy$))      .subscribe({        next: (interests) => {          this.isCheckingInterests = false;          // If user has no interests or empty interests array, show popup          if (!interests || !interests.interests || interests.interests.length === 0) {            // Show popup after a short delay for better UX            timer(2000).pipe(takeUntil(this.destroy$)).subscribe(() => {              this.showInterestsPopup = true;            });          }        },        error: (error) => {          this.isCheckingInterests = false;          // 404 means user has no interests yet, show popup          if (error.status === 404) {            timer(2000).pipe(takeUntil(this.destroy$)).subscribe(() => {              this.showInterestsPopup = true;            });          } else {            console.error('Error checking user interests:', error);          }        }      });  }    // Handle interests popup completion  onInterestsSetupCompleted(): void {    this.showInterestsPopup = false;  }    // Handle skip interests  onSkipInterests(): void {    this.showInterestsPopup = false;  }    // Close interests popup  closeInterestsPopup(): void {    this.showInterestsPopup = false;  }}
 

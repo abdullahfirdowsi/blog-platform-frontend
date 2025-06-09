@@ -1,12 +1,50 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { takeUntil, Subject } from 'rxjs';
 import { User } from './../../../shared/interfaces/user.interface'
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
 import { InterestsComponent } from '../../../shared/components/interests/interests.component';
+
+// Custom validator for password confirmation
+export function passwordMatchValidator(passwordField: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.parent) {
+      return null;
+    }
+    const password = control.parent.get(passwordField);
+    const confirmPassword = control;
+
+    if (!password || !confirmPassword) {
+      return null;
+    }
+
+    return password.value === confirmPassword.value ? null : { passwordMismatch: true };
+  };
+}
+
+// Custom validator for password strength
+export function passwordStrengthValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+
+    const hasNumber = /[0-9]/.test(value);
+    const hasUpper = /[A-Z]/.test(value);
+    const hasLower = /[a-z]/.test(value);
+    const hasSpecial = /[#?!@$%^&*-]/.test(value);
+    
+    const valid = hasNumber && hasUpper && hasLower && hasSpecial;
+    if (!valid) {
+      return { passwordStrength: true };
+    }
+    return null;
+  };
+}
 
 @Component({
   selector: 'app-profile',
@@ -27,6 +65,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   showCurrentPassword = false;
   showNewPassword = false;
   showConfirmPassword = false;
+  newPasswordStrength = 0;
   activeTab: 'profile' | 'password' | 'interests' = 'profile';
   private destroy$ = new Subject<void>();
 
@@ -42,8 +81,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     this.passwordForm = this.fb.group({
       current_password: ['', [Validators.required]],
-      new_password: ['', [Validators.required, Validators.minLength(8)]],
-      confirm_password: ['', [Validators.required]]
+      new_password: ['', [Validators.required, Validators.minLength(8), passwordStrengthValidator()]],
+      confirm_password: ['', [Validators.required, passwordMatchValidator('new_password')]]
+    });
+
+    // Watch password changes for strength indicator
+    this.passwordForm.get('new_password')?.valueChanges.subscribe(password => {
+      this.calculatePasswordStrength(password);
+      // Revalidate confirm password when password changes
+      this.passwordForm.get('confirm_password')?.updateValueAndValidity();
     });
   }
 
@@ -56,7 +102,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (user) {
           this.profileForm.patchValue({
             email: user.email,
-            username: user.username
+            username: user.username || this.generateUsernameFromEmail(user.email)
           });
         }
       });
@@ -78,17 +124,32 @@ export class ProfileComponent implements OnInit, OnDestroy {
     if (this.profileForm.valid) {
       this.successMessage = '';
       this.errorMessage = '';
+      this.isLoading = true;
 
-      // Note: Backend doesn't support profile updates yet
-      // This is just for demonstration
-      const profileData = {
-        username: this.profileForm.value.username,
-        email: this.profileForm.value.email
-      };
+      const newUsername = this.profileForm.value.username;
+      const currentUsername = this.currentUser?.username;
 
-      // Profile update not available in current backend
-      this.errorMessage = 'Profile updates are not available yet.';
-      setTimeout(() => this.errorMessage = '', 5000);
+      // Only update username if it has changed
+      if (newUsername !== currentUsername) {
+        this.authService.updateUsername(newUsername)
+          .subscribe({
+            next: (response) => {
+              this.successMessage = 'Username updated successfully!';
+              this.isLoading = false;
+              setTimeout(() => this.successMessage = '', 5000);
+            },
+            error: (error) => {
+              console.error('Username update error:', error);
+              this.errorMessage = error.error?.detail || 'Failed to update username. Please try again.';
+              this.isLoading = false;
+              setTimeout(() => this.errorMessage = '', 5000);
+            }
+          });
+      } else {
+        this.errorMessage = 'No changes detected.';
+        this.isLoading = false;
+        setTimeout(() => this.errorMessage = '', 3000);
+      }
     } else {
       Object.keys(this.profileForm.controls).forEach(key => {
         this.profileForm.get(key)?.markAsTouched();
@@ -133,6 +194,45 @@ export class ProfileComponent implements OnInit, OnDestroy {
     return newPassword === confirmPassword;
   }
 
+  private calculatePasswordStrength(password: string): void {
+    if (!password) {
+      this.newPasswordStrength = 0;
+      return;
+    }
+
+    let strength = 0;
+    const checks = [
+      /.{8,}/, // at least 8 characters
+      /[a-z]/, // lowercase
+      /[A-Z]/, // uppercase
+      /[0-9]/, // numbers
+      /[^A-Za-z0-9]/ // special characters
+    ];
+
+    checks.forEach(check => {
+      if (check.test(password)) {
+        strength += 20;
+      }
+    });
+
+    this.newPasswordStrength = strength;
+  }
+
+  getPasswordStrengthText(): string {
+    if (this.newPasswordStrength === 0) return '';
+    if (this.newPasswordStrength <= 40) return 'Weak';
+    if (this.newPasswordStrength <= 60) return 'Fair';
+    if (this.newPasswordStrength <= 80) return 'Good';
+    return 'Strong';
+  }
+
+  getPasswordStrengthColor(): string {
+    if (this.newPasswordStrength <= 40) return 'bg-red-500';
+    if (this.newPasswordStrength <= 60) return 'bg-yellow-500';
+    if (this.newPasswordStrength <= 80) return 'bg-blue-500';
+    return 'bg-green-500';
+  }
+
   togglePasswordVisibility(field: 'current' | 'new' | 'confirm'): void {
     switch (field) {
       case 'current':
@@ -168,6 +268,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
       if (field.errors['minlength']) {
         return `${this.getFieldDisplayName(fieldName)} must be at least ${field.errors['minlength'].requiredLength} characters`;
       }
+      if (field.errors['passwordStrength']) {
+        return 'Password must contain uppercase, lowercase, number, and special character';
+      }
+      if (field.errors['passwordMismatch']) {
+        return 'Passwords do not match';
+      }
     }
     return '';
   }
@@ -190,8 +296,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   getUserInitials(): string {
     if (!this.currentUser) return '';
-    const name = this.currentUser.username;
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    // Use actual username or fallback to generated username from email
+    const username = this.currentUser.username || this.generateUsernameFromEmail(this.currentUser.email);
+    if (!username) return 'U';
+    
+    // Take first 2 characters of username
+    return username.slice(0, 2).toUpperCase();
   }
 
   getProviderIcon(): string {
@@ -204,5 +314,11 @@ export class ProfileComponent implements OnInit, OnDestroy {
   
   navigateToHome(): void {
     this.router.navigate(['/home']);
+  }
+
+  // Generate username from email (part before @)
+  private generateUsernameFromEmail(email: string): string {
+    if (!email) return '';
+    return email.split('@')[0];
   }
 }

@@ -38,6 +38,10 @@ export class AuthService {
       this.tokenSubject.next(token);
       this.currentUserSubject.next(JSON.parse(user));
       this.scheduleTokenRefresh();
+      
+      // Refresh user profile to ensure we have the latest data
+      // This is especially important if the username was updated in another session
+      this.refreshUserProfile();
     } else {
       console.log('No valid stored authentication found');
       // Clear stored auth silently - don't log as error for public pages
@@ -114,15 +118,7 @@ export class AuthService {
     this.scheduleTokenRefresh();
     
     // Fetch user profile data after successful login
-    this.getUserProfile().subscribe({
-      next: (user) => {
-        sessionStorage.setItem('current_user', JSON.stringify(user));
-        this.currentUserSubject.next(user);
-      },
-      error: (error) => {
-        console.error('Failed to fetch user profile:', error);
-      }
-    });
+    this.refreshUserProfile();
   }
 
   private clearStoredAuth(): void {
@@ -225,10 +221,35 @@ export class AuthService {
   }
 
   changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/change-password`, {
+    return this.http.put(`${this.apiUrl}/change-password`, {
       current_password: currentPassword,
       new_password: newPassword,
       confirm_password: confirmPassword
+    });
+  }
+
+  updateUsername(newUsername: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/update-username`, {
+      new_username: newUsername
+    }).pipe(
+      tap(() => {
+        // Refresh user profile to get updated username
+        this.refreshUserProfile();
+      })
+    );
+  }
+
+  // Refresh user profile data and update local storage and subjects
+  refreshUserProfile(): void {
+    this.getUserProfile().subscribe({
+      next: (user) => {
+        console.log('User profile refreshed:', user);
+        sessionStorage.setItem('current_user', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      },
+      error: (error) => {
+        console.error('Failed to refresh user profile:', error);
+      }
     });
   }
 

@@ -68,7 +68,7 @@
         <div class="form-section">
           <div class="form-header">
             <h3 class="form-title">Profile Information</h3>
-            <p class="form-subtitle">Update your account's profile information and email address.</p>
+            <p class="form-subtitle">Update your username. Email address cannot be modified.</p>
           </div>
 
         <!-- Success/Error Messages -->
@@ -103,19 +103,11 @@
                 id="email"
                 type="email"
                 formControlName="email"
-                class="form-input"
-                [class.input-error]="hasFieldError(profileForm, 'email')"
+                class="form-input readonly"
                 placeholder="your@email.com"
+                readonly
               >
             </div>
-            @if (hasFieldError(profileForm, 'email')) {
-              <div class="field-error">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
-                </svg>
-                {{ getFieldError(profileForm, 'email') }}
-              </div>
-            }
           </div>
 
           <!-- Username -->
@@ -149,6 +141,7 @@
             <button
               type="submit"
               [disabled]="profileForm.invalid || isLoading"
+              class="btn btn-primary"
             >
               @if (isLoading) {
                 <div class="flex items-center">
@@ -207,6 +200,7 @@
                 id="current_password"
                 [type]="showCurrentPassword ? 'text' : 'password'"
                 formControlName="current_password"
+                autocomplete="current-password"
                 class="form-input"
                 [class.input-error]="hasFieldError(passwordForm, 'current_password')"
                 placeholder="Enter current password"
@@ -249,9 +243,10 @@
                 id="new_password"
                 [type]="showNewPassword ? 'text' : 'password'"
                 formControlName="new_password"
+                autocomplete="new-password"
                 class="form-input"
                 [class.input-error]="hasFieldError(passwordForm, 'new_password')"
-                placeholder="Enter new password"
+                placeholder="Create a strong password"
               >
               <button
                 type="button"
@@ -270,6 +265,26 @@
                 </svg>
               </button>
             </div>
+            
+            <!-- Password Strength Indicator -->
+            @if (passwordForm.get('new_password')?.value && passwordForm.get('new_password')?.touched) {
+              <div class="password-strength-container">
+                <div class="password-strength-header">
+                  <span class="strength-label">Password strength:</span>
+                  <span class="strength-text" [class]="newPasswordStrength <= 40 ? 'strength-weak' : newPasswordStrength <= 60 ? 'strength-fair' : newPasswordStrength <= 80 ? 'strength-good' : 'strength-strong'">
+                    {{ getPasswordStrengthText() }}
+                  </span>
+                </div>
+                <div class="strength-bar">
+                  <div 
+                    class="strength-progress" 
+                    [class]="newPasswordStrength <= 40 ? 'bg-red-500' : newPasswordStrength <= 60 ? 'bg-yellow-500' : newPasswordStrength <= 80 ? 'bg-blue-500' : 'bg-green-500'"
+                    [style.width.%]="newPasswordStrength"
+                  ></div>
+                </div>
+              </div>
+            }
+            
             @if (hasFieldError(passwordForm, 'new_password')) {
               <div class="field-error">
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -291,9 +306,10 @@
                 id="confirm_password"
                 [type]="showConfirmPassword ? 'text' : 'password'"
                 formControlName="confirm_password"
+                autocomplete="new-password"
                 class="form-input"
-                [class.input-error]="hasFieldError(passwordForm, 'confirm_password') || (!passwordsMatch() && passwordForm.get('confirm_password')?.touched)"
-                placeholder="Confirm new password"
+                [class.input-error]="hasFieldError(passwordForm, 'confirm_password')"
+                placeholder="Confirm your new password"
               >
               <button
                 type="button"
@@ -320,32 +336,26 @@
                 {{ getFieldError(passwordForm, 'confirm_password') }}
               </div>
             }
-            @if (!passwordsMatch() && passwordForm.get('confirm_password')?.touched && !hasFieldError(passwordForm, 'confirm_password')) {
-              <div class="field-error">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                  <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
-                </svg>
-                Passwords do not match
-              </div>
-            }
           </div>
 
           <!-- Submit Button -->
           <div class="flex justify-center">
             <button
               type="submit"
-              [disabled]="passwordForm.invalid || !passwordsMatch() || isPasswordLoading"
+              [disabled]="passwordForm.invalid || isPasswordLoading"
+              class="submit-button"
+              [class.loading]="isPasswordLoading"
             >
               @if (isPasswordLoading) {
-                <div class="flex items-center">
-                  <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Changing...
+                <div class="loading-content">
+                  <div class="loading-spinner"></div>
+                  <span>Changing password...</span>
                 </div>
               } @else {
-                <span class="flex items-center">
-                  <i class="fas fa-key mr-2"></i>
-                  Change Password
-                </span>
+                <span class="button-text">Change Password</span>
+                <svg class="button-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               }
             </button>
           </div>
