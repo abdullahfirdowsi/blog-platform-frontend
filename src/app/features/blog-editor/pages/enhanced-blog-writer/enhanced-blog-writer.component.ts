@@ -9,7 +9,6 @@ import { ImageUploadService } from '../../../../core/services/image-upload.servi
 import { FooterComponent } from "../../../../shared/components/footer/footer.component";
 import { Tag } from '../../../../shared/interfaces/post.interface';
 
-
 export interface BlogBlock {
   id: string;
   type: 'subtitle' | 'content' | 'image' | 'quote' | 'divider';
@@ -141,7 +140,7 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
   
   loadAvailableTags(): void {
     this.isLoadingTags = true;
-    this.blogService.getTags()
+    this.blogService.getPopularTags()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (tags) => {
@@ -151,15 +150,6 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading tags:', error);
           this.isLoadingTags = false;
-          // Fallback to default tags
-          this.availableTags = [
-            { _id: '1', name: 'Technology', created_at: new Date().toISOString() },
-            { _id: '2', name: 'Programming', created_at: new Date().toISOString() },
-            { _id: '3', name: 'Web Development', created_at: new Date().toISOString() },
-            { _id: '4', name: 'JavaScript', created_at: new Date().toISOString() },
-            { _id: '5', name: 'Angular', created_at: new Date().toISOString() },
-            { _id: '6', name: 'Tutorial', created_at: new Date().toISOString() }
-          ];
         }
       });
   }
@@ -363,9 +353,7 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Handle different response formats
-          const imageUrl = response.imageUrl || response.url;
-          this.onBlockChange(blockId, imageUrl);
+          this.onBlockChange(blockId, response.url);
           this.isUploadingImage = false;
           this.showMessage = true;
           this.messageType = 'success';
@@ -414,8 +402,7 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          // Handle different response formats
-          this.mainImageUrl = response.imageUrl || response.url;
+          this.mainImageUrl = response.url;
           this.isUploadingMainImage = false;
           this.hasChanges = true;
         },
@@ -484,13 +471,12 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
     
     const blogData = {
       title: this.blogTitle.trim(),
-      content: JSON.stringify(this.blogBlocks), // Convert blocks to JSON string
-      tag_ids: this.selectedTags, // Use tag_ids instead of tags
-      main_image_url: this.mainImageUrl, // Use main_image_url instead of mainImage
+      subtitle: this.blogSubtitle.trim(),
+      content: this.blogBlocks,
+      mainImage: this.mainImageUrl,
+      tags: this.selectedTags,
       published: true
     };
-    
-    console.log('Sending blog data to backend:', blogData);
     
     this.blogService.createBlog(blogData)
       .pipe(takeUntil(this.destroy$))
@@ -531,13 +517,12 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
     
     const blogData = {
       title: this.blogTitle.trim(),
-      content: JSON.stringify(this.blogBlocks), // Convert blocks to JSON string
-      tag_ids: this.selectedTags, // Use tag_ids instead of tags
-      main_image_url: this.mainImageUrl, // Use main_image_url instead of mainImage
+      subtitle: this.blogSubtitle.trim(),
+      content: this.blogBlocks,
+      mainImage: this.mainImageUrl,
+      tags: this.selectedTags,
       published: false
     };
-    
-    console.log('Sending blog draft data to backend:', blogData);
     
     this.blogService.createBlog(blogData)
       .pipe(takeUntil(this.destroy$))
