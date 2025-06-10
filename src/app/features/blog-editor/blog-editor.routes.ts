@@ -4,12 +4,7 @@ import { authGuard } from '../../core/guards/auth.guard';
 export const blogEditorRoutes: Routes = [
   {
     path: '',
-    redirectTo: 'write',
-    pathMatch: 'full'
-  },
-  {
-    path: 'write',
-    loadComponent: () => import('./pages/blog-writer/blog-writer.component').then(c => c.BlogWriterComponent),
+    loadComponent: () => import('./pages/enhanced-blog-writer/enhanced-blog-writer.component').then(c => c.EnhancedBlogWriterComponent),
     canActivate: [authGuard]
   }
 ];

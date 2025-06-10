@@ -8,6 +8,7 @@ import { BlogService } from '../../../../core/services/blog.service';
 import { ImageUploadService } from '../../../../core/services/image-upload.service';
 import { Blog, UpdateBlogRequest, Tag } from '../../../../shared/interfaces/post.interface';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
+import { DateUtil } from '../../../../shared/utils/date.util';
 
 export interface BlogBlock {
   id: string;
@@ -420,14 +421,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
   }
 
   formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return DateUtil.formatDate(dateString);
   }
 
   // S3 Image Upload Functionality

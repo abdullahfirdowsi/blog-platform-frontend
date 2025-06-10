@@ -148,11 +148,30 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   formatDate(dateString: string): string {
+    if (!dateString) return 'N/A';
+    
+    // Parse the date string - let JavaScript handle the timezone interpretation
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return 'Invalid Date';
+    }
+    
+    // Get user's timezone
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
+    // Use toLocaleString to properly handle timezone conversion
+    // This will automatically convert to local timezone
+    return date.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: timeZone
     });
   }
 

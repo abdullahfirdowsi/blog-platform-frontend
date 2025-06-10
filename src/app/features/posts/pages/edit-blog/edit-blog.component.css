@@ -359,6 +359,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  padding-right: 120px; /* Reserve space for block controls */
 }
 
 .image-input-container {
@@ -426,6 +427,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  position: relative;
 }
 
 .image-preview img {
@@ -440,6 +442,11 @@
   font-size: 0.8rem;
   color: #9ca3af;
   word-break: break-all;
+  margin-right: 120px; /* Reserve space for block controls */
+  padding: 0.5rem;
+  background: rgba(31, 41, 55, 0.3);
+  border-radius: 6px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
 }
 
 /* Add Block Controls */
@@ -858,6 +865,16 @@
   .upload-btn {
     width: 100%;
     margin-top: 0.5rem;
+  }
+  
+  /* Reduce padding for mobile to avoid layout issues */
+  .image-block {
+    padding-right: 80px; /* Reduced from 120px for mobile */
+  }
+  
+  .image-url-display {
+    margin-right: 80px; /* Reduced from 120px for mobile */
+    font-size: 0.75rem;
   }
 }
 

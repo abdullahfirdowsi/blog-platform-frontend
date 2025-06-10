@@ -5,11 +5,13 @@ import { Subject, takeUntil } from 'rxjs';
 import { BlogStateService } from '../../../../core/services/blog-state.service';
 import { Blog } from '../../../../shared/interfaces/post.interface';
 import { FooterComponent } from "../../../../shared/components/footer/footer.component";
+import { DateUtil } from '../../../../shared/utils/date.util';
+import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
 
 @Component({
   selector: 'app-my-blogs',
   standalone: true,
-  imports: [CommonModule, FooterComponent],
+  imports: [CommonModule, FooterComponent, DateFormatPipe],
   templateUrl: './my-blogs.component.html',
   styleUrl: './my-blogs.component.css'
 })
@@ -115,16 +117,6 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
     return published ? 'Published' : 'Draft';
   }
 
-  formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
 
   getContentPreview(blog: Blog): string {
     // Handle both API response format (blog_body) and localStorage format (content)
