@@ -32,6 +32,7 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   aiSummary: AiSummary | null = null;
   summaryLoading = false;
   summaryError: string | null = null;
+  showSummarySidebar = false;
 
   // Comment properties
   comments: CommentResponse[] = [];
@@ -478,5 +479,15 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
 
   canLike(): boolean {
     return this.authService.isAuthenticated();
+  }
+
+  // AI Summary sidebar toggle
+  toggleSummarySidebar(): void {
+    this.showSummarySidebar = !this.showSummarySidebar;
+    
+    // If opening sidebar and no summary exists, generate one
+    if (this.showSummarySidebar && !this.aiSummary && !this.summaryLoading && this.canManageSummary()) {
+      this.generateAiSummary();
+    }
   }
 }

@@ -43,33 +43,6 @@
       
       <!-- Registration Form -->
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
-        <!-- Name Field -->
-        <div class="form-group">
-          <label for="full_name" class="form-label">Full Name</label>
-          <div class="input-wrapper">
-            <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" fill="currentColor"/>
-            </svg>
-            <input 
-              id="full_name" 
-              name="full_name" 
-              type="text" 
-              formControlName="full_name"
-              autocomplete="name"
-              class="form-input"
-              [class.input-error]="hasFieldError('full_name')"
-              placeholder="Enter your full name"
-            >
-          </div>
-          @if (hasFieldError('full_name')) {
-            <div class="field-error">
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
-              </svg>
-              {{ getFieldError('full_name') }}
-            </div>
-          }
-        </div>
 
         <!-- Email Field -->
         <div class="form-group">

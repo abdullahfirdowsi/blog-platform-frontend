@@ -66,7 +66,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
     private router: Router
   ) {
     this.registerForm = this.fb.group({
-      full_name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(8), passwordStrengthValidator()]],
       confirm_password: ['', [Validators.required, passwordMatchValidator('password')]]
@@ -142,7 +141,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
       const userData = {
         username: this.registerForm.value.email, // Use email as username
         email: this.registerForm.value.email,
-        full_name: this.registerForm.value.full_name,
         password: this.registerForm.value.password,
         confirm_password: this.registerForm.value.confirm_password
       };
@@ -221,7 +219,6 @@ export class RegisterComponent implements OnInit, OnDestroy {
     const displayNames: Record<string, string> = {
       username: 'Username',
       email: 'Email',
-      full_name: 'Full name',
       password: 'Password',
       confirm_password: 'Confirm password'
     };

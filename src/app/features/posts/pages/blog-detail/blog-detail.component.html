@@ -11,12 +11,27 @@
           Back to Home
         </button>
       </div>
+      
+      <div class="header-right">
+        <button 
+          *ngIf="blog?.published" 
+          class="ai-summary-toggle-btn"
+          [class.active]="showSummarySidebar"
+          (click)="toggleSummarySidebar()"
+          [disabled]="!canManageSummary()"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.847a4.5 4.5 0 003.09 3.09L15.75 12l-2.847.813a4.5 4.5 0 00-3.09 3.091zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423L16.5 15.75l.394 1.183a2.25 2.25 0 001.423 1.423L19.5 18.75l-1.183.394a2.25 2.25 0 00-1.423 1.423z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          {{ showSummarySidebar ? 'Hide AI Summary' : 'AI Summary' }}
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Main Content -->
   <main class="main-content">
-    <div class="content-container">
+    <div class="content-container" [class.split-view]="showSummarySidebar">
       <!-- Loading State -->
       <div *ngIf="loading" class="loading-container">
         <div class="loading-spinner"></div>
@@ -35,8 +50,10 @@
         <button class="retry-btn" (click)="loadBlog()">Try Again</button>
       </div>
 
-      <!-- Blog Content -->
-      <article *ngIf="!loading && !error && blog" class="blog-article">
+      <!-- Main Content Area -->
+      <div *ngIf="!loading && !error && blog" class="main-content-area">
+        <!-- Blog Content -->
+        <article class="blog-article">
         <!-- Blog Header -->
         <header class="blog-header">
           <div class="blog-image-container" *ngIf="blog.main_image_url">
@@ -90,13 +107,6 @@
               
               <!-- Stats -->
               <div class="blog-stats">
-                <span class="stat">
-                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" fill="currentColor"/>
-                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" fill="currentColor"/>
-                  </svg>
-                  {{ blog.views || 0 }} views
-                </span>
                 <span class="stat">
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                     <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" fill="currentColor"/>
@@ -229,9 +239,12 @@
             </div>
           </div>
         </div>
-        
-        <!-- AI Summary Section -->
-        <section *ngIf="blog?.published" class="ai-summary-section">
+        </article>
+      </div>
+
+      <!-- AI Summary Sidebar -->
+      <aside *ngIf="showSummarySidebar && blog?.published" class="ai-summary-sidebar">
+        <section class="ai-summary-section">
           <div class="summary-header">
             <div class="summary-title-container">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="ai-icon">
@@ -265,7 +278,6 @@
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                     <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m-15.357-2A8.001 8.001 0 0015.419 15M15 15H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
-                  Regenerate
                 </button>
                 <button 
                   *ngIf="canDeleteSummary()"
@@ -317,7 +329,7 @@
             <button class="retry-btn" (click)="generateAiSummary()">Try Again</button>
           </div>
         </section>
-      </article>
+      </aside>
     </div>
   </main>
 </div>

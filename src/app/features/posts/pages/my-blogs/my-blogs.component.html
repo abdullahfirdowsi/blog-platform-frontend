@@ -69,15 +69,11 @@
       <!-- Blogs List -->
       <div *ngIf="!loading && !error && blogs.length > 0" class="blogs-container">
         <div class="blogs-header">
-          <h2>Your Blogs ({{ blogs.length }})</h2>
+          <h2>Your Blogs</h2>
           <div class="blogs-stats">
             <span class="stat-item">
             <span class="stat-value">{{ getPublishedCount() }}</span>
               <span class="stat-label">Published</span>
-            </span>
-            <span class="stat-item">
-              <span class="stat-value">{{ getDraftCount() }}</span>
-              <span class="stat-label">Drafts</span>
             </span>
           </div>
         </div>
@@ -93,9 +89,6 @@
                 loading="lazy"
                 (error)="onImageError($event)"
               />
-              <div class="blog-status-badge" [ngClass]="getStatusBadgeClass(blog.published)">
-                {{ getStatusText(blog.published) }}
-              </div>
             </div>
             
             <!-- Blog Content -->

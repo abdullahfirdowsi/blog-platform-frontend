@@ -2,16 +2,18 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged, pipe } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, pipe, timer } from 'rxjs';
 import { BlogService } from '../../../../core/services/blog.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PostSummary } from '../../../../shared/interfaces/post.interface';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
+import { InterestsComponent } from '../../../../shared/components/interests/interests.component';
+import { InterestsService } from '../../../../core/services/interests.service';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule,FooterComponent],
+  imports: [CommonModule, RouterLink, FormsModule,FooterComponent,InterestsComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
@@ -31,11 +33,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   isAuthenticated = false;
   currentUser: any = null;
   isUserMenuOpen = false;
+
+    // Interest popup state
+  showInterestsPopup = false;
+  isCheckingInterests = false;
+  hasCheckedInterests = false;
   
   constructor(
     private blogService: BlogService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private interestsService:InterestsService
   ) {
     // Setup search debouncing
     this.searchSubject.pipe(
@@ -62,6 +70,13 @@ export class HomeComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe((isAuth: boolean) => {
       this.isAuthenticated = isAuth;
+      // Check user interests only if authenticated
+      if (isAuth) {
+        // Delay to ensure user data is loaded
+        timer(1000).pipe(takeUntil(this.destroy$)).subscribe(() => {
+          this.checkUserInterests();
+        });
+      }
     });
     
     // Subscribe to current user
@@ -312,5 +327,55 @@ export class HomeComponent implements OnInit, OnDestroy {
   navigateToBlogDetail(postId: string): void {
     this.router.navigate(['/posts/detail', postId]);
   }
-}
 
+  // interest page popup
+  private checkUserInterests(): void {
+    if (this.isCheckingInterests || this.hasCheckedInterests) {
+      return;
+    }
+   
+    this.isCheckingInterests = true;
+    this.hasCheckedInterests = true;
+   
+    this.interestsService.getUserInterests()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (interests) => {
+          this.isCheckingInterests = false;
+          // If user has no interests or empty interests array, show popup
+          if (!interests || !interests.interests || interests.interests.length === 0) {
+            // Show popup after a short delay for better UX
+            timer(2000).pipe(takeUntil(this.destroy$)).subscribe(() => {
+              this.showInterestsPopup = true;
+            });
+          }
+        },
+        error: (error) => {
+          this.isCheckingInterests = false;
+          // 404 means user has no interests yet, show popup
+          if (error.status === 404) {
+            timer(2000).pipe(takeUntil(this.destroy$)).subscribe(() => {
+              this.showInterestsPopup = true;
+            });
+          } else {
+            console.error('Error checking user interests:', error);
+          }
+        }
+      });
+  }
+ 
+  // Handle interests popup completion
+  onInterestsSetupCompleted(): void {
+    this.showInterestsPopup = false;
+  }
+ 
+  // Handle skip interests
+  onSkipInterests(): void {
+    this.showInterestsPopup = false;
+  }
+ 
+  // Close interests popup
+  closeInterestsPopup(): void {
+    this.showInterestsPopup = false;
+  }
+}

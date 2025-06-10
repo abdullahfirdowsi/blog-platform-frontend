@@ -371,6 +371,8 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   discardChanges(): void {
     if (this.blogTitle || this.blogBlocks.length > 0) {
         this.router.navigate(['/home']);
+    } else {
+      this.router.navigate(['/home']);
     }
   }
 

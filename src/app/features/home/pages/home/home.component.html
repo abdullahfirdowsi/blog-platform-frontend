@@ -178,15 +178,8 @@
                 
                 <div class="post-stats">
                   <span class="stat">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" fill="currentColor"/>
-                      <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" fill="currentColor"/>
-                    </svg>
-                    {{ post.views }}
-                  </span>
-                  <span class="stat">
-                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                      <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" fill="currentColor"/>
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
                     </svg>
                     {{ post.likes_count }}
                   </span>
@@ -257,6 +250,58 @@
       </aside>
     </div>
   </main>
+</div>
+
+<!-- Interest Collection Popup -->
+<div *ngIf="showInterestsPopup" class="interests-popup-overlay" (click)="closeInterestsPopup()">
+  <div class="interests-popup-container" (click)="$event.stopPropagation()">
+    <!-- Close Button -->
+    <button class="popup-close-btn" (click)="closeInterestsPopup()">
+      <svg width="24" height="24" viewBox="0 0 20 20" fill="none">
+        <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+   
+    <!-- Welcome Message -->
+    <div class="popup-header">
+      <div class="popup-icon">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <circle cx="24" cy="24" r="20" fill="url(#popupGradient)"/>
+          <path d="M24 16v8m0 4h.01" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="popupGradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#667eea"/>
+              <stop offset="1" stop-color="#764ba2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h2 class="popup-title">🎉 Welcome to BlogPlatform!</h2>
+      <p class="popup-subtitle">
+        Let's personalize your experience! Tell us what topics interest you
+        to get better blog recommendations.
+      </p>
+    </div>
+   
+    <!-- Interests Component -->
+    <div class="popup-content">
+      <app-interests
+        [isFirstTimeSetup]="true"
+        (setupCompleted)="onInterestsSetupCompleted()"
+      ></app-interests>
+    </div>
+   
+    <!-- Skip Option -->
+    <div class="popup-footer">
+      <p class="skip-text">You can always update your interests later in your profile.</p>
+      <button class="skip-popup-btn" (click)="onSkipInterests()">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+          <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Skip for now
+      </button>
+    </div>
+  </div>
 </div>
 <app-footer></app-footer>
 

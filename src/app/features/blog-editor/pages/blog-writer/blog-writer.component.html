@@ -17,16 +17,6 @@
       </div>
       
       <div class="header-actions">
-
-        
-        <button class="action-btn secondary" (click)="saveBlog()" [disabled]="isSaving || !blogTitle || blogBlocks.length === 0" [class.loading]="isSaving">
-          <svg *ngIf="!isSaving" width="18" height="18" viewBox="0 0 20 20" fill="none">
-            <path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <div *ngIf="isSaving" class="spinner"></div>
-          {{ isSaving ? 'Saving...' : 'Save Draft' }}
-        </button>
-        
         <button class="action-btn primary" (click)="openPublishModal()" [disabled]="!blogTitle || blogBlocks.length === 0">
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" fill="currentColor"/>

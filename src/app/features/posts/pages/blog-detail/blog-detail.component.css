@@ -223,6 +223,12 @@
   align-items: center;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .back-btn {
   display: inline-flex;
   align-items: center;
@@ -246,6 +252,48 @@
   transform: translateY(-1px);
 }
 
+/* AI Summary Toggle Button */
+.ai-summary-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: rgba(31, 41, 55, 0.8);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 50px;
+  color: #e5e7eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.ai-summary-toggle-btn:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.1);
+  border-color: rgba(102, 126, 234, 0.4);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.ai-summary-toggle-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  color: white;
+}
+
+.ai-summary-toggle-btn.active:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.ai-summary-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Main Content */
 .main-content {
   padding: 2rem 0;
@@ -255,6 +303,28 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
+}
+
+/* Split View Layout */
+.content-container.split-view {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.main-content-area {
+  width: 100%;
+}
+
+/* AI Summary Sidebar */
+.ai-summary-sidebar {
+  position: sticky;
+  top: 100px;
+  width: 100%;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 
 /* Loading State */
@@ -563,9 +633,19 @@
 }
 
 .content-image {
-  max-width: 100%;
+  max-width: 60%;
   height: auto;
   border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Medium-sized images for all content images */
+.text-content img {
+  max-width: 60%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1.5rem auto;
+  display: block;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
@@ -914,6 +994,21 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  /* Stack split view on tablets */
+  .content-container.split-view {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 1.5rem;
+  }
+  
+  .ai-summary-sidebar {
+    position: static;
+    max-height: none;
+    order: -1; /* Show AI summary at the top on mobile */
+  }
+}
+
 @media (max-width: 768px) {
   .header-container {
     padding: 0 1rem;
