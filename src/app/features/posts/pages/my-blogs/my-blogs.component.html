@@ -109,7 +109,7 @@
               <!-- Tags -->
               <div class="blog-tags" *ngIf="blog.tags && blog.tags.length > 0">
                 <span 
-                  *ngFor="let tag of blog.tags.slice(0, 3)" 
+                  *ngFor="let tag of getTagNames(blog).slice(0, 3)" 
                   class="blog-tag"
                 >
                   {{ tag }}

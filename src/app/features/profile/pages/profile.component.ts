@@ -76,7 +76,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ) {
     this.profileForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      username: ['', [Validators.required, Validators.minLength(2)]]
+      username: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30), this.usernameValidator]]
     });
 
     this.passwordForm = this.fb.group({
@@ -140,7 +140,65 @@ export class ProfileComponent implements OnInit, OnDestroy {
             },
             error: (error) => {
               console.error('Username update error:', error);
-              this.errorMessage = error.error?.detail || 'Failed to update username. Please try again.';
+              console.error('Error status:', error.status);
+              console.error('Error response:', error.error);
+              
+              // Log detailed error structure for debugging
+              if (error.error?.detail && Array.isArray(error.error.detail)) {
+                console.error('Error detail array contents:');
+                error.error.detail.forEach((item: any, index: number) => {
+                  console.error(`Detail ${index}:`, item);
+                  if (typeof item === 'object') {
+                    console.error(`Detail ${index} stringified:`, JSON.stringify(item, null, 2));
+                  }
+                });
+              }
+              
+              let errorMessage = 'Failed to update username. Please try again.';
+              
+              if (error.status === 422) {
+                // Handle different types of error detail formats
+                if (error.error?.detail) {
+                  if (Array.isArray(error.error.detail)) {
+                    // If detail is an array, extract the message from the first item
+                    const firstError = error.error.detail[0];
+                    if (typeof firstError === 'string') {
+                      errorMessage = firstError;
+                    } else if (firstError?.msg) {
+                      errorMessage = firstError.msg;
+                    } else if (firstError?.message) {
+                      errorMessage = firstError.message;
+                    } else {
+                      errorMessage = 'Username validation failed. Please check your input.';
+                    }
+                  } else if (typeof error.error.detail === 'string') {
+                    errorMessage = error.error.detail;
+                  } else {
+                    errorMessage = 'Username validation failed. Please check your input.';
+                  }
+                } else if (error.error?.message) {
+                  errorMessage = error.error.message;
+                } else {
+                  errorMessage = 'Username validation failed. Please check your input.';
+                }
+              } else if (error.error?.detail) {
+                if (Array.isArray(error.error.detail)) {
+                  const firstError = error.error.detail[0];
+                  if (typeof firstError === 'string') {
+                    errorMessage = firstError;
+                  } else if (firstError?.msg) {
+                    errorMessage = firstError.msg;
+                  } else {
+                    errorMessage = firstError?.message || 'An error occurred.';
+                  }
+                } else {
+                  errorMessage = error.error.detail;
+                }
+              } else if (error.error?.message) {
+                errorMessage = error.error.message;
+              }
+              
+              this.errorMessage = errorMessage;
               this.isLoading = false;
               setTimeout(() => this.errorMessage = '', 5000);
             }
@@ -274,6 +332,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
       if (field.errors['passwordMismatch']) {
         return 'Passwords do not match';
       }
+      if (field.errors['maxlength']) {
+        return `${this.getFieldDisplayName(fieldName)} cannot exceed ${field.errors['maxlength'].requiredLength} characters`;
+      }
+      if (field.errors['invalidUsername']) {
+        return 'Username can only contain letters, numbers, underscore, and hyphen';
+      }
+      if (field.errors['invalidUsernameFormat']) {
+        return 'Username cannot start or end with underscore or hyphen';
+      }
     }
     return '';
   }
@@ -320,5 +387,28 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private generateUsernameFromEmail(email: string): string {
     if (!email) return '';
     return email.split('@')[0];
+  }
+
+  // Username validator - only alphanumeric, underscore, and hyphen allowed
+  private usernameValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+
+    // Username can only contain letters, numbers, underscore, and hyphen
+    // No spaces or special characters allowed
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    
+    if (!usernameRegex.test(value)) {
+      return { invalidUsername: true };
+    }
+
+    // Username cannot start or end with underscore or hyphen
+    if (/^[_-]|[_-]$/.test(value)) {
+      return { invalidUsernameFormat: true };
+    }
+
+    return null;
   }
 }

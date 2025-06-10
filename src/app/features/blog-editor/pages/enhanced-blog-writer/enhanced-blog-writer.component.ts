@@ -140,7 +140,7 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
   
   loadAvailableTags(): void {
     this.isLoadingTags = true;
-    this.blogService.getPopularTags()
+    this.blogService.getTags()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (tags) => {
@@ -150,6 +150,15 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error loading tags:', error);
           this.isLoadingTags = false;
+          // Fallback to some default tags
+          this.availableTags = [
+            { _id: '1', name: 'Technology', created_at: new Date().toISOString() },
+            { _id: '2', name: 'Programming', created_at: new Date().toISOString() },
+            { _id: '3', name: 'Web Development', created_at: new Date().toISOString() },
+            { _id: '4', name: 'JavaScript', created_at: new Date().toISOString() },
+            { _id: '5', name: 'Angular', created_at: new Date().toISOString() },
+            { _id: '6', name: 'Tutorial', created_at: new Date().toISOString() }
+          ];
         }
       });
   }
@@ -427,25 +436,72 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
   }
   
   // Tag management
+  checkTagInput(): void {
+    // Optional: You can add real-time validation here
+    console.log('Tag input changed:', this.newTagInput);
+  }
+  
   addCustomTag(): void {
-    const tagName = this.newTagInput.trim().toLowerCase();
-    if (tagName && !this.selectedTags.includes(tagName) && this.selectedTags.length < 10) {
-      this.selectedTags.push(tagName);
-      this.newTagInput = '';
-      this.hasChanges = true;
+    const tagName = this.newTagInput.trim();
+    
+    if (!tagName) {
+      this.showMessage = true;
+      this.messageType = 'error';
+      this.messageText = 'Please enter a tag name';
+      setTimeout(() => this.hideMessage(), 3000);
+      return;
     }
+    
+    if (this.selectedTags.includes(tagName.toLowerCase())) {
+      this.showMessage = true;
+      this.messageType = 'error';
+      this.messageText = 'Tag already added';
+      setTimeout(() => this.hideMessage(), 3000);
+      return;
+    }
+    
+    if (this.selectedTags.length >= 10) {
+      this.showMessage = true;
+      this.messageType = 'error';
+      this.messageText = 'Maximum 10 tags allowed';
+      setTimeout(() => this.hideMessage(), 3000);
+      return;
+    }
+    
+    // Add tag with proper case (first letter capitalized)
+    const formattedTag = tagName.charAt(0).toUpperCase() + tagName.slice(1).toLowerCase();
+    this.selectedTags.push(formattedTag);
+    this.newTagInput = '';
+    this.hasChanges = true;
+    
+    console.log('Tag added:', formattedTag, 'Current tags:', this.selectedTags);
   }
   
   addRecommendedTag(tagName: string): void {
-    if (!this.selectedTags.includes(tagName) && this.selectedTags.length < 10) {
+    if (this.selectedTags.length >= 10) {
+      this.showMessage = true;
+      this.messageType = 'error';
+      this.messageText = 'Maximum 10 tags allowed';
+      setTimeout(() => this.hideMessage(), 3000);
+      return;
+    }
+    
+    if (!this.selectedTags.includes(tagName)) {
       this.selectedTags.push(tagName);
       this.hasChanges = true;
+      
+      console.log('Recommended tag added:', tagName, 'Current tags:', this.selectedTags);
     }
   }
   
   removeTag(tagName: string): void {
-    this.selectedTags = this.selectedTags.filter(tag => tag !== tagName);
-    this.hasChanges = true;
+    const index = this.selectedTags.indexOf(tagName);
+    if (index > -1) {
+      this.selectedTags.splice(index, 1);
+      this.hasChanges = true;
+      
+      console.log('Tag removed:', tagName, 'Current tags:', this.selectedTags);
+    }
   }
   
   // Modal management
@@ -469,15 +525,19 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
     
     this.isPublishing = true;
     
+    console.log('Publishing blog with tag names:', this.selectedTags);
+    
+    // Create blog data - backend expects tag names, not IDs
     const blogData = {
       title: this.blogTitle.trim(),
-      subtitle: this.blogSubtitle.trim(),
-      content: this.blogBlocks,
-      mainImage: this.mainImageUrl,
-      tags: this.selectedTags,
+      content: JSON.stringify(this.blogBlocks), // Convert blocks to JSON string
+      tags: this.selectedTags, // Send tag names directly to backend
+      main_image_url: this.mainImageUrl,
       published: true
     };
     
+    console.log('Publishing blog with tag names:', blogData);
+          
     this.blogService.createBlog(blogData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -515,15 +575,19 @@ export class EnhancedBlogWriterComponent implements OnInit, OnDestroy {
     
     this.isSaving = true;
     
+    console.log('Saving draft with tag names:', this.selectedTags);
+    
+    // Create draft data - backend expects tag names, not IDs
     const blogData = {
       title: this.blogTitle.trim(),
-      subtitle: this.blogSubtitle.trim(),
-      content: this.blogBlocks,
-      mainImage: this.mainImageUrl,
-      tags: this.selectedTags,
+      content: JSON.stringify(this.blogBlocks), // Convert blocks to JSON string
+      tags: this.selectedTags, // Send tag names directly to backend
+      main_image_url: this.mainImageUrl,
       published: false
     };
     
+    console.log('Saving draft with tag names:', blogData);
+          
     this.blogService.createBlog(blogData)
       .pipe(takeUntil(this.destroy$))
       .subscribe({

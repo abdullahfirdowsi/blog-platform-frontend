@@ -39,9 +39,11 @@ export class AuthService {
       this.currentUserSubject.next(JSON.parse(user));
       this.scheduleTokenRefresh();
       
-      // Refresh user profile to ensure we have the latest data
-      // This is especially important if the username was updated in another session
-      this.refreshUserProfile();
+      // Defer the user profile refresh to avoid circular dependency during service initialization
+      // This ensures the HTTP client and interceptors are fully initialized first
+      setTimeout(() => {
+        this.refreshUserProfile();
+      }, 0);
     } else {
       console.log('No valid stored authentication found');
       // Clear stored auth silently - don't log as error for public pages
@@ -229,12 +231,41 @@ export class AuthService {
   }
 
   updateUsername(newUsername: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/update-username`, {
-      new_username: newUsername
-    }).pipe(
-      tap(() => {
+    const requestBody = { new_username: newUsername };
+    console.log('Updating username with request:', requestBody);
+    console.log('API endpoint:', `${this.apiUrl}/update-username`);
+    
+    return this.http.put(`${this.apiUrl}/update-username`, requestBody).pipe(
+      tap((response) => {
+        console.log('Username update successful:', response);
         // Refresh user profile to get updated username
         this.refreshUserProfile();
+      }),
+      catchError(error => {
+        console.error('Username update failed:', error);
+        console.error('Error status:', error.status);
+        console.error('Error headers:', error.headers);
+        console.error('Error body:', error.error);
+        console.error('Request was:', requestBody);
+        
+        // Log the full error object for debugging
+        console.log('Full error object:', JSON.stringify({
+          status: error.status,
+          statusText: error.statusText,
+          error: error.error,
+          message: error.message,
+          url: error.url
+        }, null, 2));
+        
+        // Handle different error formats
+        if (error.status === 422 && error.error?.detail) {
+          console.error('Validation error details:', error.error.detail);
+          if (Array.isArray(error.error.detail)) {
+            console.error('Error detail array:', error.error.detail.map((item: any, index: number) => `${index}: ${JSON.stringify(item)}`));
+          }
+        }
+        
+        return throwError(() => error);
       })
     );
   }

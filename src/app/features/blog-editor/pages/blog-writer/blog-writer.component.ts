@@ -388,11 +388,13 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
 
   // Load available tags
   private loadAvailableTags(): void {
+    console.log('Loading available tags...');
     this.isLoadingTags = true;
     this.blogService.getTags().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (tags) => {
+        console.log('Tags loaded successfully:', tags);
         this.availableTags = tags;
         this.isLoadingTags = false;
       },
@@ -408,8 +410,18 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
           { _id: '5', name: 'Angular', created_at: new Date().toISOString() },
           { _id: '6', name: 'Tutorial', created_at: new Date().toISOString() }
         ];
+        console.log('Using fallback tags:', this.availableTags);
       }
     });
+  }
+  
+  // Debug method for testing tag functionality
+  debugTagFunctionality(): void {
+    console.log('=== Tag Functionality Debug ===');
+    console.log('newTagInput:', this.newTagInput);
+    console.log('selectedTags:', this.selectedTags);
+    console.log('availableTags:', this.availableTags);
+    console.log('isLoadingTags:', this.isLoadingTags);
   }
 
   // Handle main image file selection
@@ -475,22 +487,26 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     const tagName = this.newTagInput.trim();
     
     if (!tagName) {
-      alert('Please enter a tag name');
+      this.showMessageContainer('Please enter a tag name', 'error');
       return;
     }
     
-    if (this.selectedTags.includes(tagName)) {
-      alert('Tag already added');
+    if (this.selectedTags.includes(tagName.toLowerCase())) {
+      this.showMessageContainer('Tag already added', 'error');
       return;
     }
     
     if (this.selectedTags.length >= 10) {
-      alert('Maximum 10 tags allowed');
+      this.showMessageContainer('Maximum 10 tags allowed', 'error');
       return;
     }
     
-    this.selectedTags.push(tagName);
+    // Add tag with proper case (first letter capitalized)
+    const formattedTag = tagName.charAt(0).toUpperCase() + tagName.slice(1).toLowerCase();
+    this.selectedTags.push(formattedTag);
     this.newTagInput = '';
+    
+    console.log('Tag added:', formattedTag, 'Current tags:', this.selectedTags);
   }
 
   // Remove tag from selected
@@ -498,17 +514,20 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     const index = this.selectedTags.indexOf(tagName);
     if (index > -1) {
       this.selectedTags.splice(index, 1);
+      console.log('Tag removed:', tagName, 'Current tags:', this.selectedTags);
     }
   }
 
   // Add tag from recommended list
   addRecommendedTag(tagName: string): void {
+    if (this.selectedTags.length >= 10) {
+      this.showMessageContainer('Maximum 10 tags allowed', 'error');
+      return;
+    }
+    
     if (!this.selectedTags.includes(tagName)) {
-      if (this.selectedTags.length >= 10) {
-        alert('Maximum 10 tags allowed');
-        return;
-      }
       this.selectedTags.push(tagName);
+      console.log('Recommended tag added:', tagName, 'Current tags:', this.selectedTags);
     }
   }
 
@@ -527,16 +546,18 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     // Convert blocks to content string
     const contentJsonString = JSON.stringify(this.blogBlocks);
 
-    // Create blog data for publishing - use appropriate API structure
+    console.log('Publishing blog with tag names:', this.selectedTags);
+    
+    // Create blog data for publishing - backend expects tag names, not IDs
     const blogData = {
       title: this.blogTitle,
       content: contentJsonString,
-      tag_ids: this.selectedTags,
+      tags: this.selectedTags, // Send tag names directly to backend
       main_image_url: this.mainImageUrl || '',
       published: true
     };
 
-    console.log('Publishing blog:', blogData);
+    console.log('Publishing blog with tag names:', blogData);
 
     // Publish to MongoDB via API
     this.blogService.createBlog(blogData).pipe(

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of, forkJoin } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { 
   BlogsResponse, 
@@ -257,8 +257,9 @@ export class BlogService {
     }
 
     return this.getTags().pipe(
-      map(allTags => {
+      switchMap(allTags => {
         const tagIds: string[] = [];
+        const missingTags: string[] = [];
         
         tagNames.forEach(tagName => {
           const foundTag = allTags.find(tag => 
@@ -268,22 +269,64 @@ export class BlogService {
           if (foundTag) {
             tagIds.push(foundTag._id);
           } else {
-            // If tag doesn't exist, we could either:
-            // 1. Skip it (current approach)
-            // 2. Create it dynamically (requires backend endpoint)
-            console.warn(`Tag '${tagName}' not found in available tags`);
+            console.warn(`Tag '${tagName}' not found in available tags, will create it`);
+            missingTags.push(tagName);
           }
         });
         
-        return tagIds;
+        // If there are missing tags, create them
+        if (missingTags.length > 0) {
+          return this.createMissingTags(missingTags).pipe(
+            map(newTags => {
+              // Add new tag IDs to the existing ones
+              return [...tagIds, ...newTags.map(tag => tag._id)];
+            })
+          );
+        }
+        
+        return of(tagIds);
       })
     );
   }
 
-  // Create a new tag (if the backend supports it)
-  createTag(tagName: string): Observable<Tag> {
-    return this.http.post<Tag>(`${this.apiUrl}/tags`, { name: tagName });
+  // Create multiple missing tags - backend expects array of tag names
+  private createMissingTags(tagNames: string[]): Observable<Tag[]> {
+    if (tagNames.length === 0) {
+      return of([]);
+    }
+
+    // Backend expects array of strings, not individual objects
+    return this.http.post<{message: string}>(`${this.apiUrl}/tags`, tagNames).pipe(
+      switchMap(() => {
+        // After successful creation, fetch the created tags
+        return this.getTags().pipe(
+          map(allTags => {
+            // Return only the tags that were just created
+            return allTags.filter(tag => 
+              tagNames.some(name => name.toLowerCase() === tag.name.toLowerCase())
+            );
+          })
+        );
+      }),
+      catchError(error => {
+        console.error('Failed to create tags:', error);
+        // Return fake tag objects so the process doesn't completely fail
+        return of(tagNames.map(name => ({
+          _id: 'temp_' + Date.now() + '_' + Math.random(),
+          name: name,
+          created_at: new Date().toISOString()
+        } as Tag)));
+      })
+    );
   }
+
+  // Legacy method for backward compatibility
+  createTag(tagName: string): Observable<Tag> {
+    return this.createMissingTags([tagName]).pipe(
+      map(tags => tags[0])
+    );
+  }
+
 
   // Save blog as draft
   saveDraft(blogData: CreateBlogRequest): Observable<Blog> {

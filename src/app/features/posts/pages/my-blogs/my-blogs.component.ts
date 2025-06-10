@@ -205,5 +205,17 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
       target.src = this.getPlaceholderImage();
     }
   }
+
+  // Helper method to get tag names as strings
+  getTagNames(blog: Blog): string[] {
+    if (!blog.tags || blog.tags.length === 0) {
+      return [];
+    }
+    
+    // Handle both Tag objects and string arrays
+    return blog.tags.map(tag => 
+      typeof tag === 'string' ? tag : (tag as any).name || tag.toString()
+    );
+  }
 }
 

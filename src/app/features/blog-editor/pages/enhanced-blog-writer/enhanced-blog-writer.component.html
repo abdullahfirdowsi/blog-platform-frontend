@@ -409,13 +409,15 @@
               placeholder="Enter tag name..." 
               [(ngModel)]="newTagInput"
               (keyup.enter)="addCustomTag()"
+              (input)="checkTagInput()"
               maxlength="20"
+              #tagInputField
             />
             <button 
               type="button" 
               class="add-tag-btn" 
               (click)="addCustomTag()"
-              [disabled]="!newTagInput.trim() || selectedTags.length >= 10"
+              [disabled]="!newTagInput?.trim() || selectedTags.length >= 10"
             >
               <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                 <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

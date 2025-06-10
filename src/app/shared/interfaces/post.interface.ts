@@ -14,7 +14,7 @@ export interface Blog {
   updated_at: string;
   // Populated fields
   user?: User;
-  tags?: Tag[];
+  tags?: Tag[] | string[];  // Can be tag objects or tag names
   views?: number;
   likes_count?: number;
   comments_count?: number;
@@ -112,7 +112,7 @@ export interface BlogsResponse {
 export interface CreateBlogRequest {
   title: string;
   content: string;
-  tag_ids?: string[];
+  tags?: string[];  // Backend expects tag names, not tag IDs
   main_image_url?: string;
   published?: boolean;
 }
@@ -120,7 +120,7 @@ export interface CreateBlogRequest {
 export interface UpdateBlogRequest {
   title?: string;
   content?: string;
-  tag_ids?: string[];
+  tags?: string[];  // Backend expects tag names, not tag IDs
   main_image_url?: string;
   published?: boolean;
 }

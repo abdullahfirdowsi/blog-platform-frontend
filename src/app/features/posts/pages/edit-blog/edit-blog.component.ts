@@ -89,7 +89,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
     this.blogStateService.selectedBlog$.pipe(
       takeUntil(this.destroy$)
     ).subscribe(blog => {
-      if (blog) {
+      if (blog && (!this.blog || this.blog._id !== blog._id)) {
         this.blog = blog;
         this.initializeEditForm(blog);
       }
@@ -340,7 +340,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
       title: this.blogTitle,
       content: JSON.stringify(this.blogBlocks),
       main_image_url: this.mainImageUrl,
-      tag_ids: this.selectedTags
+      tags: this.selectedTags  // Send tag names, not tag IDs
     };
 
     this.blogStateService.updateBlog(this.blogId, updateData).subscribe({
