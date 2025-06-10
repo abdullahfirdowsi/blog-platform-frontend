@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, takeUntil, debounceTime, distinctUntilChanged, pipe } from 'rxjs';
 import { BlogService } from '../../../../core/services/blog.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { PostSummary } from '../../../../shared/interfaces/post.interface';
@@ -34,7 +34,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   constructor(
     private blogService: BlogService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {
     // Setup search debouncing
     this.searchSubject.pipe(
@@ -71,6 +72,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  getFirstName(fullName?: string): string {
+    return fullName?.split('@')[0] || '';
+  }
+
   private loadInitialData(): void {
     this.loadPosts();
     this.loadRecommendedTags();
@@ -90,6 +95,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.posts = response.posts;
+        console.log(this.posts);
         console.log('Loaded posts:', this.posts);
         this.currentPage = response.page;
         this.totalPages = response.total_pages;
@@ -300,6 +306,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (!target.closest('.profile-dropdown')) {
       this.closeUserMenu();
     }
+  }
+
+  // Navigate to blog detail page
+  navigateToBlogDetail(postId: string): void {
+    this.router.navigate(['/posts/detail', postId]);
   }
 }
 

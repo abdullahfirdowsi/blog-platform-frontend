@@ -324,7 +324,7 @@ private createEmptyResponse(page: number, limit: number): PostsResponse {
       tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],
       views: blog.views || 0,
       likes_count: blog.likes_count || 0,
-      comments_count: blog.comments_count || 0,
+      comment_count: blog.comment_count || 0,
       is_liked: blog.is_liked || false,
       created_at: blog.created_at,
       updated_at: blog.updated_at

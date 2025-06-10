@@ -16,6 +16,24 @@ export interface User {
   updated_at?: string;
 }
 
+
+// User Interests interfaces
+export interface UserInterests {
+  _id: string;
+  user_id: string;
+  interests: string[];
+  created_at: string;
+  updated_at: string;
+}
+ 
+export interface UserInterestsCreate {
+  interests: string[];
+}
+ 
+export interface UserInterestsUpdate {
+  interests: string[];
+}
+
 export interface CreateUserRequest {
   username: string;
   email: string;

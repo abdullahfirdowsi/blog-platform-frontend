@@ -370,11 +370,7 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   // Discard changes and go back
   discardChanges(): void {
     if (this.blogTitle || this.blogBlocks.length > 0) {
-      if (confirm('Are you sure you want to discard all changes?')) {
         this.router.navigate(['/home']);
-      }
-    } else {
-      this.router.navigate(['/home']);
     }
   }
 

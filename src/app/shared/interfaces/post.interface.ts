@@ -16,7 +16,6 @@ export interface Blog {
   user?: User;
   views?: number;
   likes_count?: number;
-  comments_count?: number;
   comment_count?: number;
 }
 
@@ -94,7 +93,7 @@ export interface BlogSummary {
   tags?: Pick<Tag, '_id' | 'name'>[] | string[];  // Can be tag objects or tag names
   views?: number;
   likes_count?: number;
-  comments_count?: number;
+  comment_count?: number;
 }
 
 export interface BlogsResponse {
@@ -103,6 +102,21 @@ export interface BlogsResponse {
   page: number;
   limit: number;
   total_pages: number;
+}
+
+// AI Summary interface
+export interface AiSummary {
+  _id: string;
+  blog_id: string;
+  summary: string;
+  created_at: string;
+}
+
+// AI Summary creation request interface
+export interface AiSummaryCreate {
+  blog_id: string;
+  blog_title: string;
+  blog_content: string;
 }
 
 export interface CreateBlogRequest {
@@ -155,7 +169,7 @@ export interface PostSummary {
   tags: string[];
   views: number;
   likes_count: number;
-  comments_count: number;
+  comment_count: number;
   is_liked?: boolean;
   created_at: string;
   updated_at?: string;

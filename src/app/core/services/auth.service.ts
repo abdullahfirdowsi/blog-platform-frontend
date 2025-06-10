@@ -218,7 +218,7 @@ export class AuthService {
   }
 
   updateProfile(userData: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/profile`, userData)
+    return this.http.put<User>(`${this.apiUrl}/update-username`, userData)
       .pipe(
         tap(user => {
           sessionStorage.setItem('current_user', JSON.stringify(user));
