@@ -37,7 +37,19 @@ export class BlogService {
       if (filters.user_id) params = params.set('user_id', filters.user_id);
     }
 
-    return this.http.get<BlogsResponse>(`${this.apiUrl}/blogs`, { params });
+    return this.http.get<any>(`${this.apiUrl}/blogs`, { params }).pipe(
+      map(response => {
+        // Handle nested blog structure from backend
+        const blogs = response.blogs?.map((item: any) => item.blog || item) || [];
+        return {
+          blogs,
+          total: response.total_count || response.total || 0,
+          page: response.page || 1,
+          limit: response.page_size || response.limit || 10,
+          total_pages: response.total_pages || Math.ceil((response.total_count || 0) / (response.page_size || response.limit || 10))
+        };
+      })
+    );
   }
 
   // Get all available tags (MongoDB)
@@ -60,7 +72,19 @@ export class BlogService {
       .set('limit', limit.toString())
       .set('published', 'true');
 
-    return this.http.get<BlogsResponse>(`${this.apiUrl}/blogs`, { params });
+    return this.http.get<any>(`${this.apiUrl}/blogs`, { params }).pipe(
+      map(response => {
+        // Handle nested blog structure from backend
+        const blogs = response.blogs?.map((item: any) => item.blog || item) || [];
+        return {
+          blogs,
+          total: response.total_count || response.total || 0,
+          page: response.page || 1,
+          limit: response.page_size || response.limit || 10,
+          total_pages: response.total_pages || Math.ceil((response.total_count || 0) / (response.page_size || response.limit || 10))
+        };
+      })
+    );
   }
 
   // Get blogs by tag
@@ -71,7 +95,19 @@ export class BlogService {
       .set('limit', limit.toString())
       .set('published', 'true');
 
-    return this.http.get<BlogsResponse>(`${this.apiUrl}/blogs`, { params });
+    return this.http.get<any>(`${this.apiUrl}/blogs`, { params }).pipe(
+      map(response => {
+        // Handle nested blog structure from backend
+        const blogs = response.blogs?.map((item: any) => item.blog || item) || [];
+        return {
+          blogs,
+          total: response.total_count || response.total || 0,
+          page: response.page || 1,
+          limit: response.page_size || response.limit || 10,
+          total_pages: response.total_pages || Math.ceil((response.total_count || 0) / (response.page_size || response.limit || 10))
+        };
+      })
+    );
   }
 
   // Get single blog by ID
@@ -212,6 +248,41 @@ export class BlogService {
       .set('page_size', pageSize.toString());
     
     return this.http.get<Blog[]>(`${this.apiUrl}/blogs/my-blogs`, { params });
+  }
+
+  // Convert tag names to tag IDs
+  convertTagNamesToIds(tagNames: string[]): Observable<string[]> {
+    if (!tagNames || tagNames.length === 0) {
+      return of([]);
+    }
+
+    return this.getTags().pipe(
+      map(allTags => {
+        const tagIds: string[] = [];
+        
+        tagNames.forEach(tagName => {
+          const foundTag = allTags.find(tag => 
+            tag.name.toLowerCase() === tagName.toLowerCase()
+          );
+          
+          if (foundTag) {
+            tagIds.push(foundTag._id);
+          } else {
+            // If tag doesn't exist, we could either:
+            // 1. Skip it (current approach)
+            // 2. Create it dynamically (requires backend endpoint)
+            console.warn(`Tag '${tagName}' not found in available tags`);
+          }
+        });
+        
+        return tagIds;
+      })
+    );
+  }
+
+  // Create a new tag (if the backend supports it)
+  createTag(tagName: string): Observable<Tag> {
+    return this.http.post<Tag>(`${this.apiUrl}/tags`, { name: tagName });
   }
 
   // Save blog as draft
