@@ -250,8 +250,8 @@ export class AuthService {
     return this.http.post(`${this.apiUrl}/verify-email`, { token });
   }
 
-  resendVerificationEmail(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/resend-verification`, {});
+  resendVerificationEmail(email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/resend-verification`, { email });
   }
 
   getUserById(userId: string): Observable<User> {

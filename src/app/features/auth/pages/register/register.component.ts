@@ -150,12 +150,20 @@ export class RegisterComponent implements OnInit, OnDestroy {
         .subscribe({
           next: (response) => {
             console.log('Registration response:', response);
-            this.successMessage = 'Registration successful! Please log in with your credentials.';
+            
+            // Check if this is email verification flow or direct login
+            if (response.message && response.message.includes('verify your email')) {
+              this.successMessage = response.message;
+            } else if (response.user && response.user.email_verified === false) {
+              this.successMessage = 'Registration successful! Please check your email to verify your account before logging in.';
+            } else {
+              this.successMessage = 'Registration successful! Please log in with your credentials.';
+            }
             
             // Navigate to login page after successful registration
             setTimeout(() => {
               this.router.navigate(['/auth/login']);
-            }, 2000);
+            }, 3000); // Extended time to read verification message
           },
           error: (error) => {
             console.error('Registration error:', error);

@@ -3,6 +3,7 @@ export interface User {
   id?: string;  // Legacy id for compatibility
   username: string;
   email: string;
+  email_verified?: boolean; // Email verification status
   full_name?: string;
   bio?: string;
   profile_picture?: string;

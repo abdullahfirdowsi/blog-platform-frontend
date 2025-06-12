@@ -18,6 +18,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   errorMessage = '';
   returnUrl = '/';
   showPassword = false;
+  isEmailUnverified = false;
+  resendingVerification = false;
+  verificationSentMessage = '';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -35,6 +38,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Get return url from route parameters or default to '/home'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+    
+    // Check for success message from email verification
+    const message = this.route.snapshot.queryParams['message'];
+    if (message) {
+      this.verificationSentMessage = message;
+    }
     
     // Redirect if already authenticated
     if (this.authService.isAuthenticated()) {
@@ -71,9 +80,16 @@ export class LoginComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Login error:', error);
-            this.errorMessage = error.error?.message || 
-                              error.error?.detail || 
-                              'Login failed. Please check your credentials.';
+            
+            // Check if error is related to email verification
+            const errorMessage = error.error?.message || error.error?.detail || '';
+            if (error.status === 403 && errorMessage.includes('verify your email')) {
+              this.isEmailUnverified = true;
+              this.errorMessage = errorMessage;
+            } else {
+              this.isEmailUnverified = false;
+              this.errorMessage = errorMessage || 'Login failed. Please check your credentials.';
+            }
           }
         });
     } else {
@@ -107,5 +123,34 @@ export class LoginComponent implements OnInit, OnDestroy {
   hasFieldError(fieldName: string): boolean {
     const field = this.loginForm.get(fieldName);
     return !!(field?.errors && field.touched);
+  }
+  
+  resendVerificationEmail(): void {
+    if (!this.loginForm.value.email) {
+      this.errorMessage = 'Please enter your email address first.';
+      return;
+    }
+
+    this.resendingVerification = true;
+    this.verificationSentMessage = '';
+    
+    const email = this.loginForm.value.email.toLowerCase().trim();
+    
+    this.authService.resendVerificationEmail(email)
+      .pipe(
+        finalize(() => {
+          this.resendingVerification = false;
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.verificationSentMessage = 'Verification email sent! Please check your inbox.';
+          this.errorMessage = '';
+        },
+        error: (error) => {
+          console.error('Resend verification error:', error);
+          this.errorMessage = error.error?.message || 'Failed to send verification email. Please try again.';
+        }
+      });
   }
 }

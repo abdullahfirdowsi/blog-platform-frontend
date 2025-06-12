@@ -31,6 +31,38 @@
         </div>
       }
 
+      <!-- Email Verification Success Message -->
+      @if (verificationSentMessage) {
+        <div class="success-message">
+          <svg class="success-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L7.73 10.05a.75.75 0 00-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" fill="currentColor"/>
+          </svg>
+          <span>{{ verificationSentMessage }}</span>
+        </div>
+      }
+
+      <!-- Email Verification Helper -->
+      @if (isEmailUnverified) {
+        <div class="info-message">
+          <svg class="info-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-11a1 1 0 011 1v3a1 1 0 11-2 0V8a1 1 0 011-1zm0-3a1 1 0 100 2 1 1 0 000-2z" fill="currentColor"/>
+          </svg>
+          <span>Need a new verification email?</span>
+          <button 
+            type="button"
+            (click)="resendVerificationEmail()"
+            [disabled]="resendingVerification"
+            class="resend-button"
+          >
+            @if (resendingVerification) {
+              <div class="loading-spinner-small"></div>
+              <span>Sending...</span>
+            } @else {
+              <span>Resend Email</span>
+            }
+          </button>
+        </div>
+      }
 
       <!-- Login Form -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
