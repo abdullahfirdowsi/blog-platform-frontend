@@ -325,6 +325,7 @@
   right: 0.75rem;
   opacity: 0;
   transition: opacity 0.3s ease;
+  z-index: 10; /* Ensure block controls stay above all content */
 }
 
 .content-block:hover .block-controls,
@@ -431,6 +432,7 @@
 .image-preview {
   margin-top: 16px;
   position: relative;
+  margin-right: 130px; /* Reserve space for block controls */
 }
 
 .image-preview img {
@@ -747,13 +749,15 @@
 
 .image-url-display {
   margin-top: 8px;
-  margin-right: 120px; /* Reserve space for block controls */
+  margin-right: 130px; /* Increased margin to prevent overlap with block controls */
   padding: 8px 12px;
   background: rgba(31, 41, 55, 0.6);
   border: 1px solid rgba(102, 126, 234, 0.2);
   border-radius: 8px;
   word-break: break-all;
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1; /* Ensure it stays below block controls */
 }
 
 .image-url-display small {
