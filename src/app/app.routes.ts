@@ -11,6 +11,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
   },
   {
+    path: 'reset-password',
+    redirectTo: '/auth/reset-password',
+    pathMatch: 'full'
+  },
+  {
     path: 'landing',
     loadChildren: () => import('./features/landing/landing.routes').then(m => m.landingRoutes)
   },

@@ -33,7 +33,7 @@ export function passwordStrengthValidator(): ValidatorFn {
     const hasNumber = /[0-9]/.test(value);
     const hasUpper = /[A-Z]/.test(value);
     const hasLower = /[a-z]/.test(value);
-    const hasSpecial = /[#?!@$%^&*-]/.test(value);
+    const hasSpecial = /[^A-Za-z0-9]/.test(value);
     
     const valid = hasNumber && hasUpper && hasLower && hasSpecial;
     if (!valid) {

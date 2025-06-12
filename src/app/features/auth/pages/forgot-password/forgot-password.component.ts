@@ -16,6 +16,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  isUnregisteredEmail = false;
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -51,6 +52,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
     if (this.forgotPasswordForm.valid) {
       this.errorMessage = '';
       this.successMessage = '';
+      this.isUnregisteredEmail = false;
 
       const email = this.forgotPasswordForm.value.email;
 
@@ -62,8 +64,16 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Forgot password error:', error);
-            this.errorMessage = error.error?.message || 
-                              'Failed to send reset email. Please try again.';
+            
+            // Check if this is a 404 error for unregistered email
+            if (error.status === 404) {
+              this.isUnregisteredEmail = true;
+              this.errorMessage = error.error?.detail || error.error?.message || 
+                                'No account found with this email address.';
+            } else {
+              this.errorMessage = error.error?.detail || error.error?.message || 
+                                'Failed to send reset email. Please try again.';
+            }
           }
         });
     } else {
