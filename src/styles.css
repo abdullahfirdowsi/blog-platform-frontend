@@ -1,0 +1,545 @@
+/* You can add global styles to this file, and also import other style files */
+@import '../tailwind.css';
+@import '@fortawesome/fontawesome-free/css/all.css';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* CSS Custom Properties for Color System */
+:root {
+  /* Primary Colors */
+  --color-primary: #3498db;
+  --color-primary-dark: #2980b9;
+  --color-primary-light: #85c1e9;
+  
+  /* Accent Colors */
+  --color-accent: #e67e22;
+  --color-accent-dark: #d35400;
+  --color-accent-light: #f39c12;
+  
+  /* Success Colors */
+  --color-success: #2ecc71;
+  --color-success-dark: #27ae60;
+  --color-success-light: #58d68d;
+  
+  /* Error Colors */
+  --color-error: #e74c3c;
+  --color-error-dark: #c0392b;
+  --color-error-light: #ec7063;
+  
+  /* Neutral Colors */
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  
+  /* Spacing System (8px base) */
+  --spacing-1: 8px;
+  --spacing-2: 16px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-8: 64px;
+  --spacing-10: 80px;
+  --spacing-12: 96px;
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+}
+
+/* Global styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  color: #ffffff;
+  background-color: #0a0a0a;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Layout structure */
+router-outlet + * {
+  flex: 1;
+}
+
+/* Page layout with proper spacing for fixed header */
+.page-content {
+  padding-top: 60px; /* Account for fixed header height */
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Main content area should grow */
+.main-content {
+  flex: 1;
+}
+
+/* Ensure footer stays at bottom */
+app-footer {
+  margin-top: auto;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-text-primary);
+}
+
+h1 { font-size: 2.25rem; }
+h2 { font-size: 1.875rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.125rem; }
+h6 { font-size: 1rem; }
+
+p {
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-400);
+}
+
+/* Loading spinner */
+.spinner {
+  border: 4px solid var(--color-gray-200);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal) ease-out;
+}
+
+/* Utility classes */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Focus styles */
+.focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Button base styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.btn:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background-color: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border-color: var(--color-gray-300);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-gray-200);
+  transform: translateY(-1px);
+}
+
+/* Form elements */
+.form-input {
+  appearance: none;
+  background-color: white;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-2) var(--spacing-2);
+  font-size: 0.875rem;
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-input.error {
+  border-color: var(--color-error);
+}
+
+.form-input.error:focus {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+/* Card styles */
+.card {
+  background-color: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Alert styles */
+.alert {
+  padding: var(--spacing-2);
+  border-radius: var(--radius-md);
+  border-left: 4px solid;
+  margin-bottom: var(--spacing-2);
+}
+
+.alert-success {
+  background-color: rgba(46, 204, 113, 0.1);
+  border-left-color: var(--color-success);
+  color: var(--color-success-dark);
+}
+
+.alert-error {
+  background-color: rgba(231, 76, 60, 0.1);
+  border-left-color: var(--color-error);
+  color: var(--color-error-dark);
+}
+
+.alert-info {
+  background-color: rgba(52, 152, 219, 0.1);
+  border-left-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+
+/* Responsive design helpers */
+@media (max-width: 640px) {
+  .container {
+    padding-left: var(--spacing-2);
+    padding-right: var(--spacing-2);
+  }
+}
+
+/* Print styles */
+@media print {
+  * {
+    box-shadow: none !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode as default */
+:root {
+  /* Dark theme color overrides */
+  --color-bg-primary: #0a0a0a;
+  --color-bg-secondary: #1a1a1a;
+  --color-bg-tertiary: #2a2a2a;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #e5e7eb;
+  --color-text-muted: #9ca3af;
+  --color-border: #374151;
+  --color-border-light: #4b5563;
+}
+
+/* Enhanced dark theme support */
+.card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.form-input {
+  background-color: var(--color-bg-secondary);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Global text color overrides for dark theme */
+span, div, label, time, small {
+  color: inherit;
+}
+
+/* Ensure all text elements are visible on dark background */
+.text-gray-900,
+.text-gray-800,
+.text-gray-700,
+.text-gray-600 {
+  color: var(--color-text-primary) !important;
+}
+
+.text-gray-500,
+.text-gray-400 {
+  color: var(--color-text-secondary) !important;
+}
+
+.text-gray-300,
+.text-gray-200,
+.text-gray-100 {
+  color: var(--color-text-muted) !important;
+}
+
+/* Content wrapper text styling */
+.content-wrapper,
+.content-wrapper * {
+  color: var(--color-text-secondary);
+}
+
+.content-wrapper h1,
+.content-wrapper h2,
+.content-wrapper h3,
+.content-wrapper h4,
+.content-wrapper h5,
+.content-wrapper h6 {
+  color: var(--color-text-primary) !important;
+}
+
+/* Blog content specific overrides */
+.blog-content,
+.blog-content *,
+.post-content,
+.post-content *,
+.article-content,
+.article-content * {
+  color: var(--color-text-secondary);
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4,
+.blog-content h5,
+.blog-content h6,
+.post-content h1,
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6,
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4,
+.article-content h5,
+.article-content h6 {
+  color: var(--color-text-primary) !important;
+}
+
+/* Override any remaining dark text */
+[style*="color: #000"],
+[style*="color: black"],
+[style*="color: rgb(0"] {
+  color: var(--color-text-primary) !important;
+}
+
+/* Tailwind CSS overrides for dark theme */
+.text-black {
+  color: var(--color-text-primary) !important;
+}
+
+.bg-white {
+  background-color: var(--color-bg-secondary) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* List styling */
+ul, ol {
+  color: var(--color-text-secondary);
+}
+
+li {
+  color: inherit;
+}
+
+/* Table styling */
+table {
+  color: var(--color-text-secondary);
+}
+
+th, td {
+  color: inherit;
+}
+
+/* Code and pre styling */
+code {
+  color: #f472b6;
+  background-color: rgba(31, 41, 55, 0.8);
+}
+
+pre {
+  color: var(--color-text-secondary);
+  background-color: rgba(31, 41, 55, 0.8);
+}
+
+/* Blockquote styling */
+blockquote {
+  color: var(--color-text-secondary);
+  border-left: 4px solid var(--color-primary);
+  background-color: rgba(102, 126, 234, 0.1);
+}
+
+/* Strong and emphasis */
+strong, b {
+  color: var(--color-text-primary);
+}
+
+em, i {
+  color: var(--color-text-secondary);
+}
+
+/* Light mode override (for users who prefer it) */
+@media (prefers-color-scheme: light) {
+  body {
+    color: var(--color-gray-700);
+    background-color: var(--color-gray-50);
+  }
+  
+  .card {
+    background-color: white;
+    border-color: var(--color-gray-200);
+    color: var(--color-gray-700);
+  }
+  
+  .form-input {
+    background-color: white;
+    border-color: var(--color-gray-300);
+    color: var(--color-gray-700);
+  }
+}

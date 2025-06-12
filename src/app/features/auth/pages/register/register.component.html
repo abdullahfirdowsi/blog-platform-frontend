@@ -1,0 +1,221 @@
+<!-- Register Page - Matching Landing Page Design -->
+<section class="landing-hero">
+  <div class="landing-container">
+    <!-- Brand Section -->
+    <div class="brand-section">
+      <div class="brand-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="url(#gradient)"/>
+          <path d="M16 18h16M16 24h12M16 30h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#667eea"/>
+              <stop offset="1" stop-color="#764ba2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="brand-title">Join BlogPlatform</h1>
+      <p class="brand-subtitle">Create your account to start sharing stories</p>
+    </div>
+
+    <!-- Register Card -->
+    <div class="auth-card">
+      <!-- Success/Error Messages -->
+      @if (errorMessage) {
+        <div class="error-message">
+          <svg class="error-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+          </svg>
+          <span>{{ errorMessage }}</span>
+        </div>
+      }
+      
+      @if (successMessage) {
+        <div class="success-message">
+          <svg class="success-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill="currentColor"/>
+          </svg>
+          <span>{{ successMessage }}</span>
+        </div>
+      }
+
+      
+      <!-- Registration Form -->
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+
+        <!-- Email Field -->
+        <div class="form-group">
+          <label for="email" class="form-label">Email</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M2.5 6.667v6.666A1.667 1.667 0 004.167 15h11.666A1.667 1.667 0 0017.5 13.333V6.667m-15 0A1.667 1.667 0 014.167 5h11.666A1.667 1.667 0 0117.5 6.667m-15 0l7.5 5 7.5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input 
+              id="email" 
+              name="email" 
+              type="email" 
+              formControlName="email"
+              autocomplete="email"
+              class="form-input"
+              [class.input-error]="hasFieldError('email')"
+              placeholder="Enter your email"
+            >
+          </div>
+          @if (hasFieldError('email')) {
+            <div class="field-error">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+              </svg>
+              {{ getFieldError('email') }}
+            </div>
+          }
+        </div>
+
+        <!-- Password Field -->
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M5 10V7a5 5 0 0110 0v3m-7 0h8a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input 
+              id="password" 
+              name="password" 
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              class="form-input"
+              [class.input-error]="hasFieldError('password')"
+              placeholder="Create a strong password"
+            >
+            <button 
+              type="button"
+              (click)="togglePasswordVisibility('password')"
+              class="password-toggle"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                @if (showPassword) {
+                  <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2.5 2.5l15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                } @else {
+                  <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                }
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Password Strength Indicator -->
+          @if (registerForm.get('password')?.value && registerForm.get('password')?.touched) {
+            <div class="password-strength-container">
+              <div class="password-strength-header">
+                <span class="strength-label">Password strength:</span>
+                <span class="strength-text" [class]="passwordStrength <= 40 ? 'strength-weak' : passwordStrength <= 60 ? 'strength-fair' : passwordStrength <= 80 ? 'strength-good' : 'strength-strong'">
+                  {{ getPasswordStrengthText() }}
+                </span>
+              </div>
+              <div class="strength-bar">
+                <div 
+                  class="strength-progress" 
+                  [class]="passwordStrength <= 40 ? 'bg-red-500' : passwordStrength <= 60 ? 'bg-yellow-500' : passwordStrength <= 80 ? 'bg-blue-500' : 'bg-green-500'"
+                  [style.width.%]="passwordStrength"
+                ></div>
+              </div>
+            </div>
+          }
+          
+          @if (hasFieldError('password')) {
+            <div class="field-error">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+              </svg>
+              {{ getFieldError('password') }}
+            </div>
+          }
+        </div>
+
+        <!-- Confirm Password Field -->
+        <div class="form-group">
+          <label for="confirm_password" class="form-label">Confirm Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M5 10V7a5 5 0 0110 0v3m-7 0h8a2 2 0 012 2v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input 
+              id="confirm_password" 
+              name="confirm_password" 
+              [type]="showConfirmPassword ? 'text' : 'password'"
+              formControlName="confirm_password"
+              autocomplete="new-password"
+              class="form-input"
+              [class.input-error]="hasFieldError('confirm_password')"
+              placeholder="Confirm your password"
+            >
+            <button 
+              type="button"
+              (click)="togglePasswordVisibility('confirm')"
+              class="password-toggle"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                @if (showConfirmPassword) {
+                  <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2.5 2.5l15 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                } @else {
+                  <path d="M2.5 10s3.5-6 7.5-6 7.5 6 7.5 6-3.5 6-7.5 6-7.5-6-7.5-6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                }
+              </svg>
+            </button>
+          </div>
+          @if (hasFieldError('confirm_password')) {
+            <div class="field-error">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7l1.72 1.72L11.72 7 13 8.28 11.28 10 13 11.72 11.72 13 10 11.28 8.28 13 7 11.72 8.72 10 7 8.28 8.28 7z" fill="currentColor"/>
+              </svg>
+              {{ getFieldError('confirm_password') }}
+            </div>
+          }
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          [disabled]="registerForm.invalid || isLoading"
+          class="submit-button"
+          [class.loading]="isLoading"
+        >
+          @if (isLoading) {
+            <div class="loading-content">
+              <div class="loading-spinner"></div>
+              <span>Creating account...</span>
+            </div>
+          } @else {
+            <span class="button-text">Create Account</span>
+            <svg class="button-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          }
+        </button>
+      </form>
+
+      <!-- Login Link -->
+      <div class="auth-footer">
+        <span class="footer-text">Already have an account?</span>
+        <a [routerLink]="['/auth/login']" class="register-link">Sign in here</a>
+      </div>
+    </div>
+
+    <!-- Decorative Elements -->
+    <div class="decoration-dots">
+      <div class="dot dot-1"></div>
+      <div class="dot dot-2"></div>
+      <div class="dot dot-3"></div>
+      <div class="dot dot-4"></div>
+      <div class="dot dot-5"></div>
+      <div class="dot dot-6"></div>
+    </div>
+  </div>
+</section>
