@@ -169,15 +169,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             console.error('Registration error:', error);
-            if (error.error?.message) {
-              this.errorMessage = error.error.message;
-            } else if (error.error?.username) {
-              this.errorMessage = 'Username is already taken.';
-            } else if (error.error?.email) {
-              this.errorMessage = 'Email is already registered.';
-            } else {
-              this.errorMessage = 'Registration failed. Please try again.';
-            }
+            this.errorMessage = this.getRegistrationErrorMessage(error);
           }
         });
     } else {
@@ -234,5 +226,117 @@ export class RegisterComponent implements OnInit, OnDestroy {
       confirm_password: 'Confirm password'
     };
     return displayNames[fieldName] || fieldName;
+  }
+
+  private getRegistrationErrorMessage(error: any): string {
+    // Check for network errors first
+    if (!error.error) {
+      return 'Unable to connect to the server. Please check your internet connection and try again.';
+    }
+
+    const errorData = error.error;
+    const statusCode = error.status;
+
+    // Handle specific server error messages
+    if (errorData.message) {
+      const message = errorData.message.toLowerCase();
+      
+      // Email already exists
+      if (message.includes('email') && (message.includes('already') || message.includes('exists') || message.includes('taken'))) {
+        return 'This email address is already registered. Please use a different email or try signing in instead.';
+      }
+      
+      // Username already exists
+      if (message.includes('username') && (message.includes('already') || message.includes('exists') || message.includes('taken'))) {
+        return 'This username is already taken. Please choose a different username.';
+      }
+      
+      // User already exists (general)
+      if (message.includes('user') && (message.includes('already') || message.includes('exists'))) {
+        return 'An account with these details already exists. Please try signing in or use different information.';
+      }
+      
+      // Password validation errors
+      if (message.includes('password')) {
+        if (message.includes('weak') || message.includes('strength')) {
+          return 'Password is too weak. Please include uppercase, lowercase, numbers, and special characters.';
+        }
+        if (message.includes('match')) {
+          return 'Passwords do not match. Please ensure both password fields are identical.';
+        }
+        if (message.includes('length') || message.includes('short')) {
+          return 'Password is too short. Please use at least 8 characters.';
+        }
+        return 'Invalid password. Please check the password requirements.';
+      }
+      
+      // Email validation errors
+      if (message.includes('email') && (message.includes('invalid') || message.includes('format'))) {
+        return 'Please enter a valid email address.';
+      }
+      
+      // Username validation errors
+      if (message.includes('username') && message.includes('invalid')) {
+        return 'Username contains invalid characters. Please use only letters, numbers, and underscores.';
+      }
+      
+      // Rate limiting
+      if (message.includes('rate') || message.includes('limit') || message.includes('many requests')) {
+        return 'Too many registration attempts. Please wait a few minutes before trying again.';
+      }
+      
+      // Server maintenance
+      if (message.includes('maintenance') || message.includes('unavailable')) {
+        return 'The service is temporarily unavailable. Please try again later.';
+      }
+      
+      // Return the original message if it's user-friendly
+      if (errorData.message.length < 200 && !message.includes('internal') && !message.includes('error')) {
+        return errorData.message;
+      }
+    }
+
+    // Handle field-specific errors
+    if (errorData.email) {
+      if (Array.isArray(errorData.email)) {
+        return errorData.email[0] || 'Email address is invalid.';
+      }
+      return 'This email address is already registered. Please use a different email.';
+    }
+
+    if (errorData.username) {
+      if (Array.isArray(errorData.username)) {
+        return errorData.username[0] || 'Username is invalid.';
+      }
+      return 'This username is already taken. Please choose a different username.';
+    }
+
+    if (errorData.password) {
+      if (Array.isArray(errorData.password)) {
+        return errorData.password[0] || 'Password does not meet requirements.';
+      }
+      return 'Password does not meet the security requirements.';
+    }
+
+    // Handle HTTP status codes
+    switch (statusCode) {
+      case 400:
+        return 'Invalid registration information provided. Please check all fields and try again.';
+      case 409:
+        return 'An account with this email or username already exists. Please use different information.';
+      case 422:
+        return 'The information provided is invalid. Please check all fields and try again.';
+      case 429:
+        return 'Too many registration attempts. Please wait a few minutes before trying again.';
+      case 500:
+        return 'Server error occurred. Please try again in a few moments.';
+      case 503:
+        return 'Registration service is temporarily unavailable. Please try again later.';
+      default:
+        if (statusCode >= 500) {
+          return 'Server error occurred. Please try again later.';
+        }
+        return 'Registration failed. Please check your information and try again.';
+    }
   }
 }
