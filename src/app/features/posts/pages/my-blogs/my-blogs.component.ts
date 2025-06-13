@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { BlogStateService } from '../../../../core/services/blog-state.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { ProfilePictureService } from '../../../../core/services/profile-picture.service';
 import { Blog } from '../../../../shared/interfaces/post.interface';
 import { FooterComponent } from "../../../../shared/components/footer/footer.component";
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
@@ -25,6 +27,8 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
 
   constructor(
     private blogStateService: BlogStateService,
+    private authService: AuthService,
+    private profilePictureService: ProfilePictureService,
     private router: Router
   ) {}
 

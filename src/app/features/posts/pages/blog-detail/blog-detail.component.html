@@ -70,13 +70,22 @@
             
             <!-- Author Info -->
             <div class="blog-author" *ngIf="blog.user_id">
-              <div 
-                class="author-avatar-placeholder"
-              >
-                {{ blog.username.charAt(0).toUpperCase()  }}
+              <div class="author-avatar-container">
+                @if (getAuthorProfilePictureUrl()) {
+                  <img 
+                    [src]="getAuthorProfilePictureUrl()" 
+                    [alt]="blog.username + ' profile picture'"
+                    class="author-avatar"
+                    (error)="onAuthorImageError($event)"
+                  >
+                } @else {
+                  <div class="author-avatar-placeholder">
+                    {{ blog.username.charAt(0).toUpperCase() }}
+                  </div>
+                }
               </div>
               <div class="author-details">
-                <span class="author-name">{{ blog.username || 'Unknown Userrr' }}</span>
+                <span class="author-name">{{ blog.username || 'Unknown User' }}</span>
               </div>
             </div>
             

@@ -218,11 +218,21 @@ export class AuthService {
   }
 
   updateProfile(userData: Partial<User>): Observable<User> {
-    return this.http.put<User>(`${this.apiUrl}/update-username`, userData)
+    // Use different endpoints based on what's being updated
+    const endpoint = userData.profile_picture !== undefined 
+      ? `${this.apiUrl}/update-profile-picture`
+      : `${this.apiUrl}/update-username`;
+      
+    return this.http.put<User>(endpoint, userData)
       .pipe(
         tap(user => {
+          console.log('Profile updated, new user data:', user);
+          // Store updated user data
           sessionStorage.setItem('current_user', JSON.stringify(user));
+          // Force update the current user subject to trigger UI refresh
           this.currentUserSubject.next(user);
+          // Also update any cached user data
+          this.refreshUserData();
         })
       );
   }
@@ -256,6 +266,23 @@ export class AuthService {
 
   getUserById(userId: string): Observable<User> {
     return this.http.get<User>(`${this.apiUrl}/users/${userId}`);
+  }
+
+  // Refresh user data to ensure UI consistency
+  private refreshUserData(): void {
+    // Force a fresh read from session storage
+    const storedUser = sessionStorage.getItem('current_user');
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        // Emit the updated user to trigger UI refresh in all components
+        setTimeout(() => {
+          this.currentUserSubject.next(user);
+        }, 100); // Small delay to ensure the update is processed
+      } catch (error) {
+        console.error('Error parsing stored user data:', error);
+      }
+    }
   }
 
   // Debug methods

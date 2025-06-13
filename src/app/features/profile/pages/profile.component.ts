@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+import { ImageUploadService } from '../../../core/services/image-upload.service';
+import { ProfilePictureService } from '../../../core/services/profile-picture.service';
 import { takeUntil, Subject } from 'rxjs';
 import { User } from './../../../shared/interfaces/user.interface'
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
@@ -67,12 +69,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
   showConfirmPassword = false;
   newPasswordStrength = 0;
   activeTab: 'profile' | 'password' | 'interests' = 'profile';
+  
+  // Profile picture upload state
+  isUploadingProfilePicture = false;
+  uploadSuccessMessage = '';
+  uploadErrorMessage = '';
+  
   private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private imageUploadService: ImageUploadService,
+    private profilePictureService: ProfilePictureService
   ) {
     this.profileForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -254,6 +264,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.passwordSuccessMessage = '';
     this.passwordErrorMessage = '';
+    this.uploadSuccessMessage = '';
+    this.uploadErrorMessage = '';
   }
 
   getFieldError(form: FormGroup, fieldName: string): string {
@@ -295,13 +307,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   }
 
   getUserInitials(): string {
-    if (!this.currentUser) return '';
-    // Use actual username or fallback to generated username from email
-    const username = this.currentUser.username || this.generateUsernameFromEmail(this.currentUser.email);
-    if (!username) return 'U';
-    
-    // Take first 2 characters of username
-    return username.slice(0, 2).toUpperCase();
+    return this.profilePictureService.getUserInitials(this.currentUser);
   }
 
   getProviderIcon(): string {
@@ -320,5 +326,119 @@ export class ProfileComponent implements OnInit, OnDestroy {
   private generateUsernameFromEmail(email: string): string {
     if (!email) return '';
     return email.split('@')[0];
+  }
+
+  // Profile picture upload functionality
+  selectProfilePicture(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (event) => this.onProfilePictureSelect(event!);
+    input.click();
+  }
+
+  onProfilePictureSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      this.showUploadMessage('Please select a valid image file', 'error');
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.showUploadMessage('Image size should be less than 5MB', 'error');
+      return;
+    }
+    
+    this.uploadProfilePicture(file);
+  }
+
+  private uploadProfilePicture(file: File): void {
+    this.isUploadingProfilePicture = true;
+    this.uploadSuccessMessage = '';
+    this.uploadErrorMessage = '';
+    
+    this.imageUploadService.uploadImage(file).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (response) => {
+        if (response && response.imageUrl) {
+          // Update profile with new profile picture
+          this.authService.updateProfile({ profile_picture: response.imageUrl })
+            .subscribe({
+              next: (updatedUser) => {
+                this.isUploadingProfilePicture = false;
+                this.showUploadMessage('Profile picture updated successfully!', 'success');
+                // Update current user in the service and local state
+                this.currentUser = updatedUser;
+              },
+              error: (error) => {
+                console.error('Error updating profile picture:', error);
+                this.isUploadingProfilePicture = false;
+                this.showUploadMessage('Failed to update profile picture. Please try again.', 'error');
+              }
+            });
+        } else {
+          this.isUploadingProfilePicture = false;
+          this.showUploadMessage('Invalid response from server. Please try again.', 'error');
+        }
+      },
+      error: (error) => {
+        console.error('Error uploading image:', error);
+        this.isUploadingProfilePicture = false;
+        
+        let errorMessage = 'Failed to upload image. Please try again.';
+        
+        if (error.status === 413) {
+          errorMessage = 'Image file is too large. Please choose a smaller file.';
+        } else if (error.status === 400) {
+          errorMessage = 'Invalid image file. Please choose a valid image.';
+        } else if (error.status === 0) {
+          errorMessage = 'Cannot connect to server. Please check your connection.';
+        }
+        
+        this.showUploadMessage(errorMessage, 'error');
+      }
+    });
+  }
+
+  removeProfilePicture(): void {
+    this.authService.updateProfile({ profile_picture: '' })
+      .subscribe({
+        next: (updatedUser) => {
+          this.currentUser = updatedUser;
+          this.showUploadMessage('Profile picture removed successfully!', 'success');
+        },
+        error: (error) => {
+          console.error('Error removing profile picture:', error);
+          this.showUploadMessage('Failed to remove profile picture. Please try again.', 'error');
+        }
+      });
+  }
+
+  private showUploadMessage(message: string, type: 'success' | 'error'): void {
+    if (type === 'success') {
+      this.uploadSuccessMessage = message;
+      this.uploadErrorMessage = '';
+      setTimeout(() => this.uploadSuccessMessage = '', 5000);
+    } else {
+      this.uploadErrorMessage = message;
+      this.uploadSuccessMessage = '';
+      setTimeout(() => this.uploadErrorMessage = '', 5000);
+    }
+  }
+
+  getProfilePictureUrl(): string | null {
+    return this.profilePictureService.getUserProfilePictureUrl(this.currentUser);
+  }
+
+  onProfilePictureError(event: Event): void {
+    this.profilePictureService.onImageError(event);
   }
 }

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { BlogService } from '../../../../core/services/blog.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ProfilePictureService } from '../../../../core/services/profile-picture.service';
 import { Blog, BlogSummary, AiSummary } from '../../../../shared/interfaces/post.interface';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
@@ -68,6 +69,7 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private blogService: BlogService,
     private authService: AuthService,
+    private profilePictureService: ProfilePictureService,
     private aiSummaryService: AiSummaryService,
     private commentService: CommentService,
     private likeService: LikeService
@@ -80,6 +82,17 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     } else {
       this.error = 'Blog ID not found';
     }
+    
+    // Subscribe to current user changes to trigger profile picture updates
+    this.authService.currentUser$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(user => {
+      // Force change detection when user data changes to update profile pictures
+      if (this.blog && user) {
+        // The template will automatically re-evaluate getAuthorProfilePictureUrl()
+        // when the currentUser$ observable emits new data
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -530,5 +543,45 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     if (this.showSummarySidebar && !this.aiSummary && !this.summaryLoading && this.canManageSummary()) {
       this.generateAiSummary();
     }
+  }
+
+  // Get author profile picture URL
+  getAuthorProfilePictureUrl(): string | null {
+    // If the blog author is the current user, use current user's profile picture
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (currentUser && this.blog) {
+      // Handle both 'id' and '_id' properties for user identification
+      const currentUserId = currentUser._id || currentUser.id;
+      
+      if (currentUserId === this.blog.user_id) {
+        // Use live current user data for own blogs
+        return this.profilePictureService.getUserProfilePictureUrl(currentUser);
+      }
+    }
+    
+    // For other users' blogs, try to use populated user data if available
+    if (this.blog) {
+      // Check if blog has populated user field with profile_picture
+      if (this.blog.user && this.blog.user.profile_picture) {
+        return this.profilePictureService.getUserProfilePictureUrl(this.blog.user);
+      }
+      
+      // Fallback: create a minimal user object for ProfilePictureService
+      // Note: this will likely return null since we don't have the profile_picture
+      const blogAuthor = {
+        _id: this.blog.user_id,
+        username: this.blog.username,
+        profile_picture: null // Blog interface doesn't include profile_picture
+      };
+      return this.profilePictureService.getUserProfilePictureUrl(blogAuthor);
+    }
+    
+    return null;
+  }
+
+  // Handle author image error
+  onAuthorImageError(event: Event): void {
+    this.profilePictureService.onImageError(event);
   }
 }

@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, pipe, timer } from 'rxjs';
 import { BlogService } from '../../../../core/services/blog.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { ProfilePictureService } from '../../../../core/services/profile-picture.service';
 import { PostSummary } from '../../../../shared/interfaces/post.interface';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { InterestsComponent } from '../../../../shared/components/interests/interests.component';
@@ -43,6 +44,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private blogService: BlogService,
     private authService: AuthService,
+    private profilePictureService: ProfilePictureService,
     private router: Router,
     private interestsService:InterestsService
   ) {
@@ -89,7 +91,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   getFirstName(fullName?: string): string {
-    return fullName?.split('@')[0] || '';
+    if (!fullName) return 'Unknown';
+    // If it's an email, take the part before @
+    if (fullName.includes('@')) {
+      return fullName.split('@')[0];
+    }
+    // If it's a full name, take the first word
+    return fullName.split(' ')[0];
   }
 
   private loadInitialData(): void {
@@ -111,8 +119,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.posts = response.posts;
-        console.log(this.posts);
-        console.log('Loaded posts:', this.posts);
         this.currentPage = response.page;
         this.totalPages = response.total_pages;
         this.loading = false;
@@ -222,6 +228,36 @@ export class HomeComponent implements OnInit, OnDestroy {
     return this.generateAvatarDataUrl(initials);
   }
 
+  getUserProfilePicture(): string | null {
+    const profilePicture = this.currentUser?.profile_picture || this.currentUser?.profile_image;
+    
+    if (!profilePicture || profilePicture.trim() === '') {
+      return null;
+    }
+    
+    // If it's already a full URL (starts with http/https), return as is
+    if (profilePicture.startsWith('http://') || profilePicture.startsWith('https://')) {
+      return profilePicture;
+    }
+    
+    // If it's an AWS S3 key/path, ensure it's a complete URL
+    if (profilePicture.startsWith('uploads/')) {
+      return `https://blog-app-2025.s3.amazonaws.com/${profilePicture}`;
+    }
+    
+    // If it contains amazonaws.com, it's already a complete S3 URL
+    if (profilePicture.includes('amazonaws.com')) {
+      return profilePicture;
+    }
+    
+    // If it's a data URL (base64), return as is
+    if (profilePicture.startsWith('data:')) {
+      return profilePicture;
+    }
+    
+    return null;
+  }
+
   private getInitials(name: string): string {
     return name
       .split(' ')
@@ -255,34 +291,36 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
   
   getImageUrl(imageUrl: string | undefined): string | null {
-    // Return null if the image URL is not available
-    if (!imageUrl || imageUrl.trim() === '') {
-      return null;
+    // Use ProfilePictureService for consistent image URL handling
+    return this.profilePictureService.getProfilePictureUrl(imageUrl);
+  }
+
+  // Get author profile picture URL for posts (same as blog-detail)
+  getAuthorProfilePictureUrl(post: PostSummary): string | null {
+    // If the post author is the current user, use current user's profile picture
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (currentUser && post) {
+      const currentUserId = currentUser._id || currentUser.id;
+      
+      if (currentUserId === post.author_id) {
+        // Use live current user data for own posts
+        return this.profilePictureService.getUserProfilePictureUrl(currentUser);
+      }
     }
     
-    // If it's already a full URL (starts with http/https), return as is
-    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      return imageUrl;
+    // For other users' posts, try to use populated author data if available
+    if (post && post.author && post.author.profile_picture) {
+      return this.profilePictureService.getUserProfilePictureUrl(post.author);
     }
     
-    // If it's an AWS S3 key/path, ensure it's a complete URL
-    if (imageUrl.startsWith('uploads/')) {
-      // Construct the full S3 URL if only the path is provided
-      return `https://blog-app-2025.s3.amazonaws.com/${imageUrl}`;
-    }
-    
-    // If it contains amazonaws.com, it's already a complete S3 URL
-    if (imageUrl.includes('amazonaws.com')) {
-      return imageUrl;
-    }
-    
-    // If it's a data URL (base64), return as is
-    if (imageUrl.startsWith('data:')) {
-      return imageUrl;
-    }
-    
-    // Default fallback for other cases
     return null;
+  }
+
+  // Get author initials for fallback
+  getAuthorInitials(post: PostSummary): string {
+    const authorName = post.username || 'Unknown';
+    return this.profilePictureService.getUserInitials({ username: authorName });
   }
   
   onImageError(event: any): void {

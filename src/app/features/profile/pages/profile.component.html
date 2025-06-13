@@ -15,9 +15,42 @@
       <div class="profile-header">
         <!-- Profile Avatar -->
         <div class="profile-avatar-section">
-          <div class="profile-avatar-placeholder">
-            <span class="avatar-initials">{{ getUserInitials() }}</span>
+          <div class="profile-avatar-container" (click)="selectProfilePicture()">
+            @if (getProfilePictureUrl()) {
+              <img 
+                [src]="getProfilePictureUrl()" 
+                alt="Profile Picture" 
+                class="profile-avatar"
+                (error)="onProfilePictureError($event)"
+              >
+            } @else {
+              <div class="profile-avatar-placeholder">
+                <span class="avatar-initials">{{ getUserInitials() }}</span>
+              </div>
+            }
+            
+            <!-- Upload overlay -->
+            <div class="avatar-upload-overlay">
+              @if (isUploadingProfilePicture) {
+                <div class="upload-spinner">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                </div>
+              } @else {
+                <i class="fas fa-camera upload-icon"></i>
+              }
+            </div>
           </div>
+          
+          <!-- Upload Actions -->
+          @if (getProfilePictureUrl() && !isUploadingProfilePicture) {
+            <button 
+              class="remove-picture-btn" 
+              (click)="removeProfilePicture()" 
+              title="Remove profile picture"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          }
         </div>
         
         <!-- Profile Info -->
@@ -72,6 +105,24 @@
           </div>
 
         <!-- Success/Error Messages -->
+        @if (uploadSuccessMessage) {
+          <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-md mb-6 animate-fade-in">
+            <div class="flex items-center">
+              <i class="fas fa-check-circle text-green-500 mr-3"></i>
+              <span class="text-green-700 text-sm">{{ uploadSuccessMessage }}</span>
+            </div>
+          </div>
+        }
+        
+        @if (uploadErrorMessage) {
+          <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-md mb-6 animate-fade-in">
+            <div class="flex items-center">
+              <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+              <span class="text-red-700 text-sm">{{ uploadErrorMessage }}</span>
+            </div>
+          </div>
+        }
+        
         @if (successMessage) {
           <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-md mb-6 animate-fade-in">
             <div class="flex items-center">

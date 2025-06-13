@@ -74,8 +74,20 @@
   opacity: 0;
   animation: fadeInScale 1.2s ease-out 0.2s forwards;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
+}
+
+.profile-avatar-container {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.profile-avatar-container:hover {
+  transform: scale(1.05);
 }
 
 .profile-avatar {
@@ -112,6 +124,72 @@
 .avatar-initials {
   font-size: 2rem;
   color: #fff;
+}
+
+/* Profile Picture Upload Overlay */
+.avatar-upload-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(2px);
+}
+
+.profile-avatar-container:hover .avatar-upload-overlay {
+  opacity: 1;
+}
+
+.upload-icon {
+  color: #ffffff;
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.profile-avatar-container:hover .upload-icon {
+  transform: scale(1.1);
+}
+
+.upload-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Remove Picture Button */
+.remove-picture-btn {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.875rem;
+  z-index: 10;
+}
+
+.remove-picture-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.remove-picture-btn:active {
+  transform: scale(0.95);
 }
 
 /* Profile Info */

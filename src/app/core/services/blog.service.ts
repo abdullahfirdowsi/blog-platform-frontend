@@ -307,6 +307,9 @@ private createEmptyResponse(page: number, limit: number): PostsResponse {
   }
 
   private mapBlogToPost(blog: any, userInfo: any): PostSummary {
+    // Use blog.username as the primary source, fallback to userInfo only if blog.username is not available
+    const primaryUsername = blog.username || userInfo?.username || 'Unknown';
+    
     return {
       id: blog._id,
       title: blog.title || 'Untitled',
@@ -315,10 +318,10 @@ private createEmptyResponse(page: number, limit: number): PostsResponse {
       status: blog.published ? 'published' : 'draft',
       featured_image: blog.main_image_url,
       author_id: blog.user_id,
-      username: userInfo?.username || blog.username || 'Unknown',
+      username: primaryUsername,
       author: {
         id: blog.user?._id || blog.user_id,
-        username: userInfo?.username || blog.user?.username || 'Unknown',
+        username: primaryUsername,
         profile_picture: userInfo?.profile_picture || blog.user?.profile_picture
       },
       tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],

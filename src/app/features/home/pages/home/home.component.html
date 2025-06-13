@@ -59,7 +59,7 @@
           <div class="profile-dropdown" (click)="toggleUserMenu($event)">
             <button class="profile-btn" [class.active]="isUserMenuOpen">
               <img 
-                [src]="currentUser?.profile_picture || getDefaultAvatar()" 
+                [src]="getUserProfilePicture() || getDefaultAvatar()" 
                 [alt]="currentUser?.username || 'User'"
                 class="profile-avatar"
                 (error)="handleAvatarError($event)"
@@ -152,22 +152,22 @@
               
               <!-- Post Meta -->
               <div class="post-meta">
-                <div class="post-author">
-                  <img 
-                    *ngIf="getImageUrl(post.author.profile_picture)"
-                    [src]="getImageUrl(post.author.profile_picture)" 
-                    [alt]="post.author.username"
-                    class="author-avatar"
-                    (error)="onImageError($event)"
-                  />
-                  <div 
-                    *ngIf="!getImageUrl(post.author.profile_picture)"
-                    class="author-avatar-placeholder"
-                  >
-                    {{ getFirstName(post.username).charAt(0).toUpperCase()  }}
-                  </div>
-                  <span class="author-name">{{ getFirstName(post.username) }}</span>
+              <div class="post-author">
+                <img 
+                  *ngIf="getAuthorProfilePictureUrl(post)"
+                  [src]="getAuthorProfilePictureUrl(post)" 
+                  [alt]="post.author.username || post.username"
+                  class="author-avatar"
+                  (error)="onImageError($event)"
+                />
+                <div 
+                  *ngIf="!getAuthorProfilePictureUrl(post)"
+                  class="author-avatar-placeholder"
+                >
+                  {{ getAuthorInitials(post) }}
                 </div>
+                <span class="author-name">{{ getFirstName(post.username || 'Unknown') }}</span>
+              </div>
                 
                 <div class="post-dates">
                   <span class="post-date">Created: {{ post.created_at | dateFormat }}</span>
