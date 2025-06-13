@@ -131,8 +131,8 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  getFirstName(fullName?: string): string {
-    return fullName || '';
+  getDisplayName(name?: string): string {
+    return name || '';
   }
 
   loadBlog(): void {

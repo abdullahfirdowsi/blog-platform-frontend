@@ -139,8 +139,10 @@ export class RegisterComponent implements OnInit, OnDestroy {
       this.successMessage = '';
 
       const normalizedEmail = this.registerForm.value.email.toLowerCase().trim();
+      // Extract username from email (part before @)
+      const extractedUsername = normalizedEmail.split('@')[0];
       const userData = {
-        username: normalizedEmail, // Use email as username
+        username: extractedUsername, // Use name before @ as username
         email: normalizedEmail,
         password: this.registerForm.value.password,
         confirm_password: this.registerForm.value.confirm_password

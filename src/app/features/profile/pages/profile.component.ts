@@ -128,7 +128,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (user) {
           this.profileForm.patchValue({
             email: user.email,
-            username: user.username || user.email
+            username: user.username
           });
         }
       });
