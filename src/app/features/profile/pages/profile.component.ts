@@ -166,7 +166,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             },
             error: (error: any) => {
               console.error('Username update error:', error);
-              this.errorMessage = error.error?.detail || 'Failed to update username. Please try again.';
+              this.errorMessage = this.getProfileUpdateErrorMessage(error);
               this.isLoading = false;
               setTimeout(() => this.errorMessage = '', 5000);
             }
@@ -203,7 +203,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           },
           error: (error: any) => {
             console.error('Password change error:', error);
-            this.passwordErrorMessage = error.error?.message || 'Failed to change password. Please try again.';
+            this.passwordErrorMessage = this.getPasswordChangeErrorMessage(error);
             this.isPasswordLoading = false;
           }
         });
@@ -395,7 +395,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
               error: (error) => {
                 console.error('Error updating profile picture:', error);
                 this.isUploadingProfilePicture = false;
-                this.showUploadMessage('Failed to update profile picture. Please try again.', 'error');
+                this.showUploadMessage(this.getProfilePictureUpdateErrorMessage(error), 'error');
               }
             });
         } else {
@@ -406,18 +406,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error uploading image:', error);
         this.isUploadingProfilePicture = false;
-        
-        let errorMessage = 'Failed to upload image. Please try again.';
-        
-        if (error.status === 413) {
-          errorMessage = 'Image file is too large. Please choose a smaller file.';
-        } else if (error.status === 400) {
-          errorMessage = 'Invalid image file. Please choose a valid image.';
-        } else if (error.status === 0) {
-          errorMessage = 'Cannot connect to server. Please check your connection.';
-        }
-        
-        this.showUploadMessage(errorMessage, 'error');
+        this.showUploadMessage(this.getImageUploadErrorMessage(error), 'error');
       }
     });
   }
@@ -431,7 +420,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Error removing profile picture:', error);
-          this.showUploadMessage('Failed to remove profile picture. Please try again.', 'error');
+          this.showUploadMessage(this.getProfilePictureRemoveErrorMessage(error), 'error');
         }
       });
   }
@@ -454,5 +443,253 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   onProfilePictureError(event: Event): void {
     this.profilePictureService.onImageError(event);
+  }
+
+  private getProfileUpdateErrorMessage(error: any): string {
+    // Check for network errors first
+    if (!error.error) {
+      return 'Unable to connect to the server. Please check your internet connection and try again.';
+    }
+
+    const errorData = error.error;
+    const statusCode = error.status;
+    const message = errorData.message || errorData.detail || '';
+    const lowerMessage = message.toLowerCase();
+
+    // Handle specific profile update error scenarios
+    if (lowerMessage.includes('username') && (lowerMessage.includes('already') || lowerMessage.includes('exists') || lowerMessage.includes('taken'))) {
+      return 'This username is already taken. Please choose a different username.';
+    }
+
+    if (lowerMessage.includes('username') && lowerMessage.includes('invalid')) {
+      return 'Username contains invalid characters. Please use only letters, numbers, and underscores.';
+    }
+
+    if (lowerMessage.includes('username') && (lowerMessage.includes('short') || lowerMessage.includes('length'))) {
+      return 'Username is too short. Please use at least 2 characters.';
+    }
+
+    if (lowerMessage.includes('username') && lowerMessage.includes('long')) {
+      return 'Username is too long. Please use less than 50 characters.';
+    }
+
+    if (lowerMessage.includes('rate limit') || lowerMessage.includes('too many requests')) {
+      return 'Too many profile update attempts. Please wait a few minutes before trying again.';
+    }
+
+    if (lowerMessage.includes('unauthorized') || lowerMessage.includes('permission')) {
+      return 'You do not have permission to update this profile. Please sign in again.';
+    }
+
+    if (lowerMessage.includes('maintenance') || lowerMessage.includes('unavailable')) {
+      return 'Profile service is temporarily unavailable. Please try again later.';
+    }
+
+    // Handle HTTP status codes
+    switch (statusCode) {
+      case 400:
+        if (errorData.username && Array.isArray(errorData.username)) {
+          return errorData.username[0] || 'Invalid username provided. Please check the requirements.';
+        }
+        return 'Invalid profile information provided. Please check all fields.';
+      case 401:
+        return 'Your session has expired. Please sign in again to update your profile.';
+      case 403:
+        return 'You do not have permission to update this profile.';
+      case 409:
+        return 'This username is already taken. Please choose a different username.';
+      case 422:
+        return 'The username provided does not meet requirements. Please try a different username.';
+      case 429:
+        return 'Too many profile update attempts. Please wait a few minutes before trying again.';
+      case 500:
+        return 'Server error occurred. Please try again in a few moments.';
+      case 503:
+        return 'Profile service is temporarily unavailable. Please try again later.';
+      default:
+        if (statusCode >= 500) {
+          return 'Server error occurred. Please try again later.';
+        }
+        // Return original message if it's user-friendly
+        if (message && message.length < 200 && !lowerMessage.includes('internal') && !lowerMessage.includes('stack')) {
+          return message;
+        }
+        return 'Failed to update profile. Please try again.';
+    }
+  }
+
+  private getPasswordChangeErrorMessage(error: any): string {
+    // Check for network errors first
+    if (!error.error) {
+      return 'Unable to connect to the server. Please check your internet connection and try again.';
+    }
+
+    const errorData = error.error;
+    const statusCode = error.status;
+    const message = errorData.message || errorData.detail || '';
+    const lowerMessage = message.toLowerCase();
+
+    // Handle specific password change error scenarios
+    if (lowerMessage.includes('current password') && (lowerMessage.includes('incorrect') || lowerMessage.includes('wrong') || lowerMessage.includes('invalid'))) {
+      return 'Current password is incorrect. Please enter your current password correctly.';
+    }
+
+    if (lowerMessage.includes('password') && (lowerMessage.includes('weak') || lowerMessage.includes('strength'))) {
+      return 'New password is too weak. Please include uppercase, lowercase, numbers, and special characters.';
+    }
+
+    if (lowerMessage.includes('password') && (lowerMessage.includes('short') || lowerMessage.includes('length'))) {
+      return 'New password is too short. Please use at least 8 characters.';
+    }
+
+    if (lowerMessage.includes('password') && lowerMessage.includes('common')) {
+      return 'This password is too common. Please choose a more unique password.';
+    }
+
+    if (lowerMessage.includes('password') && lowerMessage.includes('match')) {
+      return 'New passwords do not match. Please ensure both password fields are identical.';
+    }
+
+    if (lowerMessage.includes('password') && lowerMessage.includes('same')) {
+      return 'New password cannot be the same as your current password. Please choose a different password.';
+    }
+
+    if (lowerMessage.includes('rate limit') || lowerMessage.includes('too many attempts')) {
+      return 'Too many password change attempts. Please wait a few minutes before trying again.';
+    }
+
+    if (lowerMessage.includes('unauthorized') || lowerMessage.includes('session')) {
+      return 'Your session has expired. Please sign in again to change your password.';
+    }
+
+    if (lowerMessage.includes('maintenance') || lowerMessage.includes('unavailable')) {
+      return 'Password change service is temporarily unavailable. Please try again later.';
+    }
+
+    // Handle HTTP status codes
+    switch (statusCode) {
+      case 400:
+        if (errorData.current_password && Array.isArray(errorData.current_password)) {
+          return errorData.current_password[0] || 'Current password is incorrect.';
+        }
+        if (errorData.new_password && Array.isArray(errorData.new_password)) {
+          return errorData.new_password[0] || 'New password does not meet requirements.';
+        }
+        return 'Invalid password change information provided. Please check all fields.';
+      case 401:
+        return 'Current password is incorrect. Please enter your current password correctly.';
+      case 403:
+        return 'Your session has expired. Please sign in again to change your password.';
+      case 422:
+        return 'The new password provided does not meet security requirements.';
+      case 429:
+        return 'Too many password change attempts. Please wait a few minutes before trying again.';
+      case 500:
+        return 'Server error occurred. Please try again in a few moments.';
+      case 503:
+        return 'Password change service is temporarily unavailable. Please try again later.';
+      default:
+        if (statusCode >= 500) {
+          return 'Server error occurred. Please try again later.';
+        }
+        // Return original message if it's user-friendly
+        if (message && message.length < 200 && !lowerMessage.includes('internal') && !lowerMessage.includes('stack')) {
+          return message;
+        }
+        return 'Failed to change password. Please try again.';
+    }
+  }
+
+  private getImageUploadErrorMessage(error: any): string {
+    const statusCode = error.status;
+
+    // Handle specific image upload error scenarios
+    switch (statusCode) {
+      case 0:
+        return 'Cannot connect to server. Please check your internet connection and try again.';
+      case 400:
+        return 'Invalid image file. Please choose a valid image format (JPG, PNG, GIF).';
+      case 413:
+        return 'Image file is too large. Please choose a file smaller than 5MB.';
+      case 415:
+        return 'Unsupported file type. Please choose a valid image format (JPG, PNG, GIF).';
+      case 429:
+        return 'Too many upload attempts. Please wait a few minutes before trying again.';
+      case 500:
+        return 'Server error occurred during upload. Please try again in a few moments.';
+      case 503:
+        return 'Image upload service is temporarily unavailable. Please try again later.';
+      default:
+        if (statusCode >= 500) {
+          return 'Server error occurred. Please try again later.';
+        }
+        return 'Failed to upload image. Please try again with a different image.';
+    }
+  }
+
+  private getProfilePictureUpdateErrorMessage(error: any): string {
+    // Check for network errors first
+    if (!error.error) {
+      return 'Unable to connect to the server. Please check your internet connection and try again.';
+    }
+
+    const statusCode = error.status;
+    const errorData = error.error;
+    const message = errorData.message || errorData.detail || '';
+    const lowerMessage = message.toLowerCase();
+
+    // Handle specific profile picture update errors
+    if (lowerMessage.includes('unauthorized') || lowerMessage.includes('session')) {
+      return 'Your session has expired. Please refresh the page and try again.';
+    }
+
+    if (lowerMessage.includes('image') && lowerMessage.includes('invalid')) {
+      return 'The uploaded image is invalid. Please try uploading a different image.';
+    }
+
+    // Handle HTTP status codes
+    switch (statusCode) {
+      case 401:
+        return 'Your session has expired. Please refresh the page and try again.';
+      case 403:
+        return 'You do not have permission to update the profile picture.';
+      case 422:
+        return 'Invalid image data. Please try uploading the image again.';
+      case 500:
+        return 'Server error occurred while updating profile picture. Please try again.';
+      default:
+        return 'Failed to update profile picture. Please try again.';
+    }
+  }
+
+  private getProfilePictureRemoveErrorMessage(error: any): string {
+    // Check for network errors first
+    if (!error.error) {
+      return 'Unable to connect to the server. Please check your internet connection and try again.';
+    }
+
+    const statusCode = error.status;
+    const errorData = error.error;
+    const message = errorData.message || errorData.detail || '';
+    const lowerMessage = message.toLowerCase();
+
+    // Handle specific profile picture removal errors
+    if (lowerMessage.includes('unauthorized') || lowerMessage.includes('session')) {
+      return 'Your session has expired. Please refresh the page and try again.';
+    }
+
+    // Handle HTTP status codes
+    switch (statusCode) {
+      case 401:
+        return 'Your session has expired. Please refresh the page and try again.';
+      case 403:
+        return 'You do not have permission to remove the profile picture.';
+      case 404:
+        return 'Profile picture not found. It may have already been removed.';
+      case 500:
+        return 'Server error occurred while removing profile picture. Please try again.';
+      default:
+        return 'Failed to remove profile picture. Please try again.';
+    }
   }
 }
