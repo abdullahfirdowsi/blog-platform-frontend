@@ -92,12 +92,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getFirstName(fullName?: string): string {
     if (!fullName) return 'Unknown';
-    // If it's an email, take the part before @
-    if (fullName.includes('@')) {
-      return fullName.split('@')[0];
-    }
-    // If it's a full name, take the first word
-    return fullName.split(' ')[0];
+    // Return the full username as-is
+    return fullName;
   }
 
   private loadInitialData(): void {
