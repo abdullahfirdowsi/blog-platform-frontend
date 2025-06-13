@@ -58,7 +58,7 @@ export class ProfilePictureService {
   /**
    * Get user initials as fallback
    * @param user - User object with username
-   * @returns User initials (max 2 characters)
+   * @returns User initial (first letter only)
    */
   getUserInitials(user: any): string {
     if (!user) return 'U';
@@ -66,8 +66,8 @@ export class ProfilePictureService {
     // Use username (which is now always available after registration fix)
     const name = user.username || user.name || 'U';
     
-    // Take first 2 characters and make uppercase
-    return name.slice(0, 2).toUpperCase();
+    // Take first character only and make uppercase
+    return name.slice(0, 1).toUpperCase();
   }
 
   /**
