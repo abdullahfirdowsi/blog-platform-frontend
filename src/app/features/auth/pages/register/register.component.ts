@@ -238,8 +238,8 @@ export class RegisterComponent implements OnInit, OnDestroy {
     const statusCode = error.status;
 
     // Handle specific server error messages
-    if (errorData.message) {
-      const message = errorData.message.toLowerCase();
+    if (errorData.message || errorData.detail) {
+      const message = (errorData.message || errorData.detail).toLowerCase();
       
       // Email already exists
       if (message.includes('email') && (message.includes('already') || message.includes('exists') || message.includes('taken'))) {
