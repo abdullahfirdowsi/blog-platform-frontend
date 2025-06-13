@@ -48,6 +48,22 @@ export function passwordStrengthValidator(): ValidatorFn {
   };
 }
 
+// Custom validator to disallow spaces in username
+export function noSpacesValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+    
+    if (value.includes(' ')) {
+      return { noSpaces: true };
+    }
+    
+    return null;
+  };
+}
+
 @Component({
   selector: 'app-profile',
   imports: [CommonModule, ReactiveFormsModule, FooterComponent, InterestsComponent],
@@ -86,7 +102,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   ) {
     this.profileForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      username: ['', [Validators.required, Validators.minLength(2)]]
+      username: ['', [Validators.required, Validators.minLength(2), noSpacesValidator()]]
     });
 
     this.passwordForm = this.fb.group({
@@ -285,6 +301,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
       }
       if (field.errors['passwordMismatch']) {
         return 'Passwords do not match';
+      }
+      if (field.errors['noSpaces']) {
+        return 'Username cannot contain spaces';
       }
     }
     return '';
