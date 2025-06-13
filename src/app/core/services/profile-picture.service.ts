@@ -67,11 +67,8 @@ export class ProfilePictureService {
     const name = user.username || user.name || user.email;
     if (!name) return 'U';
     
-    // If it's an email, use the part before @
-    const displayName = name.includes('@') ? name.split('@')[0] : name;
-    
     // Take first 2 characters and make uppercase
-    return displayName.slice(0, 2).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
   }
 
   /**

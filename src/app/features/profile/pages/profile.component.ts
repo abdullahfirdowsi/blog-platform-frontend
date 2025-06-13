@@ -128,7 +128,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (user) {
           this.profileForm.patchValue({
             email: user.email,
-            username: user.username || this.generateUsernameFromEmail(user.email)
+            username: user.username || user.email
           });
         }
       });
@@ -341,11 +341,6 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.router.navigate(['/home']);
   }
 
-  // Generate username from email (part before @)
-  private generateUsernameFromEmail(email: string): string {
-    if (!email) return '';
-    return email.split('@')[0];
-  }
 
   // Profile picture upload functionality
   selectProfilePicture(): void {

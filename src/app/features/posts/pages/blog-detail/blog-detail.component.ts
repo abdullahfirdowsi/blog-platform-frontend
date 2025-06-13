@@ -132,7 +132,7 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   }
 
   getFirstName(fullName?: string): string {
-    return fullName?.split('@')[0] || '';
+    return fullName || '';
   }
 
   loadBlog(): void {
