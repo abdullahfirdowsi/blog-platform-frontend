@@ -69,7 +69,7 @@
 
 /* Global styles */
 html {
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%); /* Match theme gradient */
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
   min-height: 100%;
 }
 
@@ -79,13 +79,12 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
   color: #ffffff;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%); /* Exact match with blog writer */
-  background-attachment: fixed; /* Prevent background movement during scroll */
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  background-attachment: fixed;
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
-  /* Remove flex layout to prevent issues with fixed footer */
 }
 
 /* Layout structure */
@@ -107,11 +106,6 @@ app-blog-writer {
   flex-direction: column;
 }
 
-/* Exception for blog writer - it has its own layout management */
-.blog-writer {
-  padding-top: 0 !important;
-  min-height: 100vh !important;
-}
 
 /* Main content area should grow */
 .main-content {
