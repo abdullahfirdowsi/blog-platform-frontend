@@ -293,23 +293,49 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // Get author profile picture URL for posts (same as blog-detail)
   getAuthorProfilePictureUrl(post: PostSummary): string | null {
+    console.log('🖼️ getAuthorProfilePictureUrl called for post:', {
+      postId: post.id,
+      title: post.title,
+      author: post.author,
+      authorId: post.author_id,
+      username: post.username
+    });
+    
+    console.log('🔍 Author object detailed:', {
+      hasAuthor: !!post.author,
+      authorId: post.author?.id,
+      authorUsername: post.author?.username,
+      authorProfilePicture: post.author?.profile_picture,
+      authorKeys: post.author ? Object.keys(post.author) : null
+    });
+    
     // If the post author is the current user, use current user's profile picture
     const currentUser = this.authService.getCurrentUser();
     
     if (currentUser && post) {
       const currentUserId = currentUser._id || currentUser.id;
+      console.log('🔍 Current user check:', { currentUserId, postAuthorId: post.author_id });
       
       if (currentUserId === post.author_id) {
         // Use live current user data for own posts
-        return this.profilePictureService.getUserProfilePictureUrl(currentUser);
+        const profileUrl = this.profilePictureService.getUserProfilePictureUrl(currentUser);
+        console.log('✅ Using current user profile picture:', profileUrl);
+        return profileUrl;
       }
     }
     
-    // For other users' posts, try to use populated author data if available
-    if (post && post.author && post.author.profile_picture) {
-      return this.profilePictureService.getUserProfilePictureUrl(post.author);
+    // For other users' posts, check if we have the profile picture in the author object
+    if (post && post.author) {
+      const profileUrl = this.profilePictureService.getUserProfilePictureUrl(post.author);
+      if (profileUrl) {
+        console.log('✅ Using post author profile picture:', profileUrl);
+        return profileUrl;
+      } else {
+        console.log('⚠️ Author exists but no profile_picture field or it\'s null/undefined');
+      }
     }
     
+    console.log('❌ No profile picture found for post');
     return null;
   }
 
