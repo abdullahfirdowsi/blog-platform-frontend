@@ -500,10 +500,19 @@
 
 /* Add Block Container */
 .add-block-container {
-  position: relative;
+  position: relative; /* Positioning context for absolute positioned add-menu */
   text-align: center;
   margin: 1.5rem 0;
   margin-bottom: 4rem; /* Extra bottom margin to ensure space above footer */
+  isolation: isolate; /* Create stacking context */
+  min-height: 40px; /* Minimum height for the button */
+  transition: all 0.3s ease; /* Smooth transition for spacing changes */
+}
+
+/* Add extra space when menu is open - using CSS class that will be toggled via Angular */
+.add-block-container.menu-open {
+  margin-bottom: 150px; /* Extra space when menu is open to prevent overlap */
+  padding-bottom: 20px; /* Additional padding for menu space */
 }
 
 .add-block-btn {
@@ -549,16 +558,16 @@
 
 /* Add Menu */
 .add-menu {
-  position: fixed; /* Use fixed positioning */
-  top: 50%;
+  position: absolute; /* Use absolute positioning relative to container */
+  top: 50px; /* Position below the add button */
   left: 50%;
-  transform: translate(-50%, -50%); /* Center the menu */
+  transform: translateX(-50%); /* Center horizontally only */
   background: rgba(31, 41, 55, 0.98);
   border: 1px solid rgba(102, 126, 234, 0.3);
   border-radius: 12px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
-  z-index: 99999; /* Maximum z-index */
+  z-index: 100; /* High but reasonable z-index */
   width: 240px; /* Fixed smaller width */
   max-height: 60vh; /* Limit height to 60% of viewport */
   overflow-y: auto; /* Allow scrolling if needed */

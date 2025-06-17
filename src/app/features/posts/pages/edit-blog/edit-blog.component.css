@@ -486,6 +486,13 @@
   justify-content: center;
   margin: 1rem 0;
   position: relative;
+  transition: all 0.3s ease; /* Smooth transition for spacing changes */
+}
+
+/* Add extra space when menu is open - using CSS class that will be toggled via Angular */
+.add-block-container.menu-open {
+  margin-bottom: 150px; /* Extra space when menu is open to prevent overlap */
+  padding-bottom: 50px; /* Additional padding for menu space */
 }
 
 .add-block-btn {
