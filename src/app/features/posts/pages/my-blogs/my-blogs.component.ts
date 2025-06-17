@@ -146,7 +146,7 @@ export class MyBlogsComponent implements OnInit, OnDestroy {
   }
 
   navigateToWrite(): void {
-    this.router.navigate(['/write']);
+    this.router.navigate(['/posts/write']);
   }
 
   navigateToHome(): void {

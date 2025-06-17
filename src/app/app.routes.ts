@@ -25,7 +25,8 @@ export const routes: Routes = [
   },
   {
     path: 'write',
-    loadChildren: () => import('./features/blog-editor/blog-editor.routes').then(m => m.blogEditorRoutes)
+    redirectTo: '/posts/write',
+    pathMatch: 'full'
   },
   {
     path: 'posts',
