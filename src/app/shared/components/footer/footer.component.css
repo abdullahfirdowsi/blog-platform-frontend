@@ -1,9 +1,15 @@
 /* Footer - Simplified Design Matching Header */
 .footer-enhanced {
-  background: #0a0a0a;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  position: relative;
+  background: rgba(10, 10, 10, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(102, 126, 234, 0.1);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   min-height: 50px;
+  z-index: 10; /* Lower z-index to stay below menu options */
 }
 
 /* Footer Container */

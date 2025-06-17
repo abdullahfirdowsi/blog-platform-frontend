@@ -4,6 +4,7 @@
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
   color: #ffffff;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding-bottom: 150px; /* Increased space for fixed footer and menu */
 }
 
 /* Message Container Styles */
@@ -203,6 +204,8 @@
 /* Main Editor Area */
 .editor-main {
   padding: 2rem 0;
+  flex: 1; /* Takes up remaining space */
+  padding-bottom: 3rem; /* Extra padding to ensure content doesn't hide behind footer */
 }
 
 .editor-container {
@@ -520,7 +523,7 @@
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px);
-  z-index: 1000;
+  z-index: 9999; /* Much higher z-index to appear above footer */
   min-width: 280px;
   overflow: hidden;
   animation: menuFadeIn 0.2s ease-out;
