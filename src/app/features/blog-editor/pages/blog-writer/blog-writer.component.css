@@ -548,18 +548,21 @@
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
   border-color: rgba(102, 126, 234, 0.4);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 110; /* Higher z-index to stay above the menu */
 }
 
 .add-block-btn.main-add:hover {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
   border-color: rgba(102, 126, 234, 0.6);
   transform: scale(1.05);
+  z-index: 110; /* Maintain high z-index on hover */
 }
 
 /* Add Menu */
 .add-menu {
   position: absolute; /* Use absolute positioning relative to container */
-  top: 50px; /* Position below the add button */
+  top: 75px; /* Position further below the main add button (64px + 11px margin) */
   left: 50%;
   transform: translateX(-50%); /* Center horizontally only */
   background: rgba(31, 41, 55, 0.98);
@@ -567,7 +570,7 @@
   border-radius: 12px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
-  z-index: 100; /* High but reasonable z-index */
+  z-index: 100; /* Lower than the main button */
   width: 240px; /* Fixed smaller width */
   max-height: 60vh; /* Limit height to 60% of viewport */
   overflow-y: auto; /* Allow scrolling if needed */
