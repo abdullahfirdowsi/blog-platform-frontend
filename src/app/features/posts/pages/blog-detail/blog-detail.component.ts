@@ -59,6 +59,8 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   editingCommentText = '';
   updatingComment = false;
   deletingCommentId: string | null = null;
+  showDeleteCommentModal = false;
+  selectedCommentForDelete: string | null = null;
 
   // Like properties
   isLiked = false;
@@ -475,24 +477,35 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   }
 
   deleteComment(commentId: string): void {
-    if (!confirm('Are you sure you want to delete this comment?')) return;
+    this.selectedCommentForDelete = commentId;
+    this.showDeleteCommentModal = true;
+  }
+
+  confirmDeleteComment(): void {
+    if (!this.selectedCommentForDelete) return;
     
     // Validate authentication before proceeding
     if (!this.authService.isAuthenticated()) {
       alert('You must be logged in to delete comments.');
+      this.showDeleteCommentModal = false;
+      this.selectedCommentForDelete = null;
       return;
     }
     
     // Prevent multiple simultaneous delete operations
-    if (this.deletingCommentId === commentId) return;
+    if (this.deletingCommentId === this.selectedCommentForDelete) return;
+
+    this.deletingCommentId = this.selectedCommentForDelete;
+    const commentIdToDelete = this.selectedCommentForDelete;
+
+    this.showDeleteCommentModal = false;
+    this.selectedCommentForDelete = null;
     
-    this.deletingCommentId = commentId;
-    
-    this.commentService.deleteComment(commentId).pipe(
+    this.commentService.deleteComment(this.deletingCommentId).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: () => {
-        this.comments = this.comments.filter(c => c._id !== commentId);
+        this.comments = this.comments.filter(c => c._id !== commentIdToDelete);
         // Update blog comment count
         this.commentCount = Math.max(this.commentCount - 1, 0);
         if (this.blog) {
@@ -501,7 +514,7 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
         this.deletingCommentId = null;
         
         // Cancel edit mode if deleting the comment being edited
-        if (this.editingCommentId === commentId) {
+        if (this.editingCommentId === commentIdToDelete) {
           this.cancelEditComment();
         }
       },
