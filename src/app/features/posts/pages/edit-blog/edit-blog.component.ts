@@ -307,11 +307,6 @@ export class EditBlogComponent implements OnInit, OnDestroy {
   }
 
   saveChanges(): void {
-    if (!this.hasChanges) {
-      this.showMessageContainer('No changes to save.', 'info');
-      return;
-    }
-
     if (!this.blogTitle.trim()) {
       this.showMessageContainer('Please enter a blog title', 'error');
       return;
@@ -322,12 +317,21 @@ export class EditBlogComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Open republish modal to edit main image and tags
+    // Always allow opening republish modal to edit main image and tags
     this.showRepublishModal = true;
   }
   
   // Perform the actual save operation
   performSave(): void {
+    // Final change detection check before saving
+    this.checkForChanges();
+    
+    if (!this.hasChanges) {
+      this.showMessageContainer('No changes detected to save.', 'info');
+      this.showRepublishModal = false;
+      return;
+    }
+    
     this.saving = true;
     this.isRepublishing = true;
     
