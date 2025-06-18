@@ -233,18 +233,52 @@
         <div class="sidebar-section">
           <h3 class="sidebar-title">Recommended Tags</h3>
           
-          <div class="tags-container">
+          <!-- Loading state for recommendations -->
+          <div *ngIf="recommendationLoading" class="loading-tags">
+            <div class="tag-loading-spinner"></div>
+            <p class="loading-tags-text">Loading recommendations...</p>
+          </div>
+          
+          <!-- Enhanced tag recommendations -->
+          <div *ngIf="!recommendationLoading" class="tags-container">
             <button 
-              *ngFor="let tag of recommendedTags" 
-              class="tag-button"
-              (click)="onTagClick(tag)"
+              *ngFor="let recommendation of recommendedTags" 
+              class="tag-button enhanced-tag"
+              [class]="'tag-' + recommendation.reason"
+              [title]="'Recommended because: ' + recommendation.reason + ' (Score: ' + (recommendation.score | number:'1.2-2') + ')'"
+              (click)="onTagClick(recommendation.tag)"
             >
-              {{ tag }}
+              <span class="tag-text">{{ recommendation.tag }}</span>
+              <span class="tag-reason-indicator" [class]="'reason-' + recommendation.reason"></span>
             </button>
           </div>
           
-          <div *ngIf="recommendedTags.length === 0" class="empty-tags">
-            <p>No tags available</p>
+          <!-- Empty state -->
+          <div *ngIf="!recommendationLoading && recommendedTags.length === 0" class="empty-tags">
+            <p>No recommendations available</p>
+            <button class="refresh-recommendations-btn" (click)="refreshRecommendations()">
+              🔄 Refresh
+            </button>
+          </div>
+          
+          <!-- Recommendation legend (optional) -->
+          <div *ngIf="!recommendationLoading && recommendedTags.length > 0" class="recommendation-legend">
+            <div class="legend-item" *ngIf="groupByReason(recommendedTags)['personalized'] > 0">
+              <span class="legend-indicator reason-personalized"></span>
+              <span class="legend-text">For You</span>
+            </div>
+            <div class="legend-item" *ngIf="groupByReason(recommendedTags)['trending'] > 0">
+              <span class="legend-indicator reason-trending"></span>
+              <span class="legend-text">Trending</span>
+            </div>
+            <div class="legend-item" *ngIf="groupByReason(recommendedTags)['popular'] > 0">
+              <span class="legend-indicator reason-popular"></span>
+              <span class="legend-text">Popular</span>
+            </div>
+            <div class="legend-item" *ngIf="groupByReason(recommendedTags)['new'] > 0">
+              <span class="legend-indicator reason-new"></span>
+              <span class="legend-text">New</span>
+            </div>
           </div>
         </div>
       </aside>

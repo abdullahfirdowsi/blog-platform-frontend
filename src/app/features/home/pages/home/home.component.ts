@@ -10,6 +10,7 @@ import { PostSummary } from '../../../../shared/interfaces/post.interface';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { InterestsComponent } from '../../../../shared/components/interests/interests.component';
 import { InterestsService } from '../../../../core/services/interests.service';
+import { TagRecommendationService, TagRecommendation } from '../../../../core/services/tag-recommendation.service';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
 
 @Component({
@@ -25,13 +26,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   
   // Blog data
   posts: PostSummary[] = [];
-  recommendedTags: string[] = [];
-  trendingTags: string[] = [];
-  allTags: string[] = [];
+  recommendedTags: TagRecommendation[] = [];
+  tagStrings: string[] = []; // For backward compatibility with template
   loading = false;
   searchQuery = '';
   currentPage = 1;
   totalPages = 1;
+  
+  // Recommendation state
+  recommendationLoading = false;
   
   // UI state
   isAuthenticated = false;
@@ -48,7 +51,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private profilePictureService: ProfilePictureService,
     private router: Router,
-    private interestsService:InterestsService
+    private interestsService: InterestsService,
+    private tagRecommendationService: TagRecommendationService
   ) {
     // Setup search debouncing
     this.searchSubject.pipe(
@@ -121,8 +125,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.totalPages = response.total_pages;
         this.loading = false;
         
-        // Extract and update trending tags from current posts
-        this.updateTrendingTags();
+        // Posts loaded - recommendations may need refresh based on new content
       },
       error: (error) => {
         console.error('Error loading posts:', error);
@@ -131,69 +134,130 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Load enhanced tag recommendations using the new hybrid system
+   */
   private loadRecommendedTags(): void {
+    this.recommendationLoading = true;
+    
+    // Configuration for different user scenarios
+    const config = {
+      maxTags: 20,
+      trendingWeight: this.isAuthenticated ? 0.3 : 0.5, // Higher trending weight for non-authenticated users
+      personalizedWeight: this.isAuthenticated ? 0.4 : 0, // Only for authenticated users
+      popularWeight: 0.2,
+      diversityThreshold: 0.7,
+      includeNewTags: true
+    };
+    
+    this.tagRecommendationService.getRecommendedTags(config).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (recommendations) => {
+        // Sort recommendations by priority: personalized > trending > popular > new
+        const sortedRecommendations = this.sortRecommendationsByPriority(recommendations);
+        this.recommendedTags = sortedRecommendations;
+        // Extract strings for template compatibility
+        this.tagStrings = sortedRecommendations.map(r => r.tag);
+        this.recommendationLoading = false;
+        
+        console.log('🎯 Enhanced tag recommendations loaded:', {
+          total: sortedRecommendations.length,
+          byReason: this.groupByReason(sortedRecommendations),
+          topRecommendations: sortedRecommendations.slice(0, 5)
+        });
+      },
+      error: (error) => {
+        console.error('Error loading enhanced tag recommendations:', error);
+        this.loadFallbackTags();
+        this.recommendationLoading = false;
+      }
+    });
+  }
+  
+  /**
+   * Fallback to simple tag loading if enhanced system fails
+   */
+  private loadFallbackTags(): void {
     this.blogService.getTagNames().pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (tags) => {
-        this.allTags = tags;
-        this.updateRecommendedTags();
+        // Convert to TagRecommendation format
+        this.recommendedTags = tags.slice(0, 20).map(tag => ({
+          tag,
+          score: 0.5,
+          reason: 'popular' as const
+        }));
+        this.tagStrings = tags.slice(0, 20);
+        
+        console.log('📋 Fallback tags loaded:', this.tagStrings.length);
       },
       error: (error) => {
-        console.error('Error loading tags:', error);
+        console.error('Error loading fallback tags:', error);
+        this.recommendedTags = [];
+        this.tagStrings = [];
       }
     });
   }
-
-  private updateTrendingTags(): void {
-    // Extract all tags from current posts
-    const tagCount = new Map<string, number>();
-    
-    this.posts.forEach(post => {
-      if (post.tags && Array.isArray(post.tags)) {
-        post.tags.forEach(tag => {
-          const normalizedTag = tag.trim().toLowerCase();
-          if (normalizedTag) {
-            tagCount.set(normalizedTag, (tagCount.get(normalizedTag) || 0) + 1);
-          }
-        });
-      }
-    });
-
-    // Sort tags by frequency and get the most popular ones
-    this.trendingTags = Array.from(tagCount.entries())
-      .sort((a, b) => b[1] - a[1]) // Sort by count descending
-      .slice(0, 10) // Take top 10
-      .map(entry => entry[0]); // Get just the tag names
-
-    console.log('🔥 Trending tags from current posts:', this.trendingTags);
-    
-    // Update recommended tags to combine trending and all tags
-    this.updateRecommendedTags();
+  
+  /**
+   * Trigger recommendation refresh (e.g., after user interests change)
+   */
+  refreshRecommendations(): void {
+    console.log('🔄 Refreshing tag recommendations...');
+    this.loadRecommendedTags();
   }
-
-  private updateRecommendedTags(): void {
-    // Combine trending tags (from current posts) with other available tags
-    const combinedTags = new Set<string>();
+  
+  /**
+   * Sort recommendations by priority: personalized > trending > popular > new
+   */
+  private sortRecommendationsByPriority(recommendations: TagRecommendation[]): TagRecommendation[] {
+    const priorityOrder = {
+      'personalized': 1,
+      'trending': 2,
+      'popular': 3,
+      'new': 4,
+      'related': 5 // fallback for any other reason
+    };
     
-    // First, add trending tags (higher priority)
-    this.trendingTags.forEach(tag => combinedTags.add(tag));
-    
-    // Then add other tags from all available tags, avoiding duplicates
-    this.allTags.forEach(tag => {
-      if (!this.trendingTags.includes(tag.toLowerCase())) {
-        combinedTags.add(tag);
+    return recommendations.sort((a, b) => {
+      const aPriority = priorityOrder[a.reason as keyof typeof priorityOrder] || 5;
+      const bPriority = priorityOrder[b.reason as keyof typeof priorityOrder] || 5;
+      
+      // If same priority, sort by score (higher score first)
+      if (aPriority === bPriority) {
+        return b.score - a.score;
       }
+      
+      return aPriority - bPriority;
     });
-    
-    // Convert to array and limit to 20 tags
-    this.recommendedTags = Array.from(combinedTags).slice(0, 20);
-    
-    console.log('✨ Updated recommended tags:', {
-      trending: this.trendingTags,
-      recommended: this.recommendedTags,
-      totalAvailable: this.allTags.length
-    });
+  }
+  
+  /**
+   * Group recommendations by reason for analytics
+   */
+  groupByReason(recommendations: TagRecommendation[]): Record<string, number> {
+    return recommendations.reduce((acc, rec) => {
+      acc[rec.reason] = (acc[rec.reason] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+  }
+  
+  /**
+   * Get recommendation reason for display (optional enhancement)
+   */
+  getTagReason(tag: string): string {
+    const recommendation = this.recommendedTags.find(r => r.tag === tag);
+    return recommendation?.reason || 'unknown';
+  }
+  
+  /**
+   * Get recommendation score for display (optional enhancement)
+   */
+  getTagScore(tag: string): number {
+    const recommendation = this.recommendedTags.find(r => r.tag === tag);
+    return recommendation?.score || 0;
   }
 
   onSearchInput(query: string): void {
@@ -478,6 +542,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Handle interests popup completion
   onInterestsSetupCompleted(): void {
     this.showInterestsPopup = false;
+    // Refresh recommendations after user sets up interests
+    setTimeout(() => {
+      this.refreshRecommendations();
+    }, 1000); // Small delay to ensure backend has processed the changes
   }
  
   // Handle skip interests
