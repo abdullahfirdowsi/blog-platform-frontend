@@ -9,6 +9,7 @@ import { ImageUploadService } from '../../../../core/services/image-upload.servi
 import { FooterComponent } from "../../../../shared/components/footer/footer.component";
 import { Tag } from '../../../../shared/interfaces/post.interface';
 import { DateUtil } from '../../../../shared/utils/date.util';
+import { normalizeTag, normalizeTags, areTagsEqual } from '../../../../shared/utils/tag-utils';
 
 export interface BlogBlock {
   id: string;
@@ -474,7 +475,8 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
       return;
     }
     
-    if (this.selectedTags.includes(tagName)) {
+    const norm = normalizeTag(tagName);
+    if (this.selectedTags.some(t => areTagsEqual(t, norm))) {
       alert('Tag already added');
       return;
     }
@@ -484,7 +486,7 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
       return;
     }
     
-    this.selectedTags.push(tagName);
+    this.selectedTags.push(norm);
     this.newTagInput = '';
   }
 
@@ -498,12 +500,13 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
 
   // Add tag from recommended list
   addRecommendedTag(tagName: string): void {
-    if (!this.selectedTags.includes(tagName)) {
+    const norm = normalizeTag(tagName);
+    if (!this.selectedTags.some(t => areTagsEqual(t, norm))) {
       if (this.selectedTags.length >= 10) {
         alert('Maximum 10 tags allowed');
         return;
       }
-      this.selectedTags.push(tagName);
+      this.selectedTags.push(norm);
     }
   }
 
@@ -526,7 +529,7 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     const blogData = {
       title: this.blogTitle,
       content: contentJsonString,
-      tags: this.selectedTags,
+      tags: normalizeTags(this.selectedTags),
       main_image_url: this.mainImageUrl || '',
       published: true
     };

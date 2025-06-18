@@ -9,6 +9,7 @@ import { ImageUploadService } from '../../../../core/services/image-upload.servi
 import { Blog, UpdateBlogRequest, Tag } from '../../../../shared/interfaces/post.interface';
 import { FooterComponent } from '../../../../shared/components/footer/footer.component';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
+import { normalizeTag, normalizeTags, areTagsEqual } from '../../../../shared/utils/tag-utils';
 
 export interface BlogBlock {
   id: string;
@@ -334,7 +335,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
       title: this.blogTitle,
       content: JSON.stringify(this.blogBlocks),
       main_image_url: this.mainImageUrl,
-      tags: this.selectedTags  // Changed from tag_ids to tags
+      tags: normalizeTags(this.selectedTags)
     };
 
     // Use blogService.updateBlog directly to ensure MongoDB update
@@ -628,7 +629,8 @@ export class EditBlogComponent implements OnInit, OnDestroy {
       return;
     }
     
-    if (this.selectedTags.includes(tagName)) {
+    const norm = normalizeTag(tagName);
+    if (this.selectedTags.some(t => areTagsEqual(t, norm))) {
       this.showMessageContainer('Tag already added', 'error');
       return;
     }
@@ -638,7 +640,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
       return;
     }
     
-    this.selectedTags.push(tagName);
+    this.selectedTags.push(norm);
     this.newTagInput = '';
     this.checkForChanges();
   }
@@ -654,12 +656,13 @@ export class EditBlogComponent implements OnInit, OnDestroy {
 
   // Add tag from recommended list
   addRecommendedTag(tagName: string): void {
-    if (!this.selectedTags.includes(tagName)) {
+    const norm = normalizeTag(tagName);
+    if (!this.selectedTags.some(t => areTagsEqual(t, norm))) {
       if (this.selectedTags.length >= 10) {
         this.showMessageContainer('Maximum 10 tags allowed', 'error');
         return;
       }
-      this.selectedTags.push(tagName);
+      this.selectedTags.push(norm);
       this.checkForChanges();
     }
   }

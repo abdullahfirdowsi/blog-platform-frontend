@@ -4,6 +4,7 @@ import { BlogService } from './blog.service';
 import { AuthService } from './auth.service';
 import { InterestsService } from './interests.service';
 import { Tag } from '../../shared/interfaces/post.interface';
+import { normalizeTag, areTagsEqual } from '../../shared/utils/tag-utils';
 
 export interface TagRecommendation {
   tag: string;
@@ -116,17 +117,17 @@ export class TagRecommendationService {
       map(([interests, availableTags]: [UserInterests, Tag[]]) => {
         const personalizedTags: TagRecommendation[] = [];
         
-        // Create a set of available tag names for quick lookup
-        const availableTagNames = new Set(availableTags.map(tag => tag.name.toLowerCase()));
+        // Create a set of available tag names for quick lookup using normalized tags
+        const availableTagNames = new Set(availableTags.map(tag => normalizeTag(tag.name)));
         
         // Add tags from user interests only if they exist in the blog system
         if (interests && interests.interests) {
           interests.interests.forEach((interest: string) => {
-            // Check if the interest matches any existing tag (case-insensitive)
+            // Check if the interest matches any existing tag using normalized comparison
             const matchingTag = availableTags.find(tag => 
-              tag.name.toLowerCase() === interest.toLowerCase() ||
-              tag.name.toLowerCase().includes(interest.toLowerCase()) ||
-              interest.toLowerCase().includes(tag.name.toLowerCase())
+              areTagsEqual(tag.name, interest) ||
+              normalizeTag(tag.name).includes(normalizeTag(interest)) ||
+              normalizeTag(interest).includes(normalizeTag(tag.name))
             );
             
             if (matchingTag) {
@@ -239,7 +240,8 @@ export class TagRecommendationService {
     tagScores: Map<string, TagRecommendation>
   ): void {
     tags.forEach(tag => {
-      const existing = tagScores.get(tag.tag);
+      const normalizedKey = normalizeTag(tag.tag);
+      const existing = tagScores.get(normalizedKey);
       const weightedScore = tag.score * weight;
       
       if (existing) {
@@ -247,9 +249,11 @@ export class TagRecommendationService {
         // Keep the highest priority reason
         if (this.getReasonPriority(tag.reason) > this.getReasonPriority(existing.reason)) {
           existing.reason = tag.reason;
+          // Update to the new tag format if it has higher priority, preserving original casing
+          existing.tag = tag.tag;
         }
       } else {
-        tagScores.set(tag.tag, {
+        tagScores.set(normalizedKey, {
           ...tag,
           score: weightedScore
         });
@@ -269,10 +273,11 @@ export class TagRecommendationService {
     
     for (const rec of recommendations) {
       let isDiverse = true;
+      const normalizedTag = normalizeTag(rec.tag);
       
-      // Check similarity with already selected tags
+      // Check similarity with already selected tags using normalized forms
       for (const selected of selectedTags) {
-        if (this.calculateTagSimilarity(rec.tag, selected) > threshold) {
+        if (this.calculateTagSimilarity(normalizedTag, selected) > threshold) {
           isDiverse = false;
           break;
         }
@@ -280,7 +285,7 @@ export class TagRecommendationService {
       
       if (isDiverse) {
         diverseRecommendations.push(rec);
-        selectedTags.add(rec.tag);
+        selectedTags.add(normalizedTag);
       }
     }
     
@@ -289,10 +294,11 @@ export class TagRecommendationService {
 
   /**
    * Calculate similarity between two tags (simple string similarity)
+   * Note: tags should already be normalized when passed to this method
    */
   private calculateTagSimilarity(tag1: string, tag2: string): number {
-    const words1 = tag1.toLowerCase().split(/[\s-_]+/);
-    const words2 = tag2.toLowerCase().split(/[\s-_]+/);
+    const words1 = tag1.split(/[\s-_]+/);
+    const words2 = tag2.split(/[\s-_]+/);
     
     let commonWords = 0;
     words1.forEach(word1 => {
@@ -322,19 +328,26 @@ export class TagRecommendationService {
    * Extract tags from user's reading history
    */
   private extractTagsFromHistory(history: ReadingHistory[]): TagRecommendation[] {
-    const tagFrequency = new Map<string, number>();
+    const tagFrequency = new Map<string, { count: number, originalTag: string }>();
     
     history.forEach((item: ReadingHistory) => {
       if (item.tags && Array.isArray(item.tags)) {
         item.tags.forEach((tag: string) => {
-          tagFrequency.set(tag, (tagFrequency.get(tag) || 0) + 1);
+          const normalizedKey = normalizeTag(tag);
+          const existing = tagFrequency.get(normalizedKey);
+          if (existing) {
+            existing.count += 1;
+            // Keep the original tag format, or update if current one seems more canonical
+          } else {
+            tagFrequency.set(normalizedKey, { count: 1, originalTag: tag });
+          }
         });
       }
     });
     
-    return Array.from(tagFrequency.entries()).map(([tag, frequency]) => ({
-      tag,
-      score: Math.min(frequency / 10, 1), // Normalize frequency
+    return Array.from(tagFrequency.entries()).map(([normalizedKey, { count, originalTag }]) => ({
+      tag: originalTag, // Preserve original casing
+      score: Math.min(count / 10, 1), // Normalize frequency
       reason: 'personalized' as const,
       category: 'reading-history'
     }));

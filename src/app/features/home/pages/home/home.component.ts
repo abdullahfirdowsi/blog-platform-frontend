@@ -12,6 +12,7 @@ import { InterestsComponent } from '../../../../shared/components/interests/inte
 import { InterestsService } from '../../../../core/services/interests.service';
 import { TagRecommendationService, TagRecommendation } from '../../../../core/services/tag-recommendation.service';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
+import { normalizeTag, areTagsEqual } from '../../../../shared/utils/tag-utils';
 
 @Component({
   selector: 'app-home',
@@ -40,6 +41,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   isAuthenticated = false;
   currentUser: any = null;
   isUserMenuOpen = false;
+  activeTag: string | null = null; // Store normalized active tag
 
     // Interest popup state
   showInterestsPopup = false;
@@ -109,6 +111,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private loadPosts(page = 1): void {
     this.loading = true;
+    this.activeTag = null; // Clear active tag when loading all posts
     
     const filters = {
       page,
@@ -262,6 +265,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     return recommendation?.score || 0;
   }
 
+  /**
+   * Check if a tag is currently active (case-insensitive comparison)
+   */
+  isTagActive(tag: string): boolean {
+    if (!this.activeTag) return false;
+    return normalizeTag(tag) === this.activeTag;
+  }
+
   onSearchInput(query: string): void {
     console.log('Search input:', query);
     this.searchQuery = query;
@@ -276,6 +287,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     this.currentPage = 1; // Reset to first page for new search
+    this.activeTag = null; // Clear active tag when searching
     this.blogService.searchPosts(query, 1, 10).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
@@ -298,7 +310,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onTagClick(tag: string): void {
     this.loading = true;
-    this.blogService.getPostsByTag(tag, 1, 10).pipe(
+    // Normalize the tag before searching and storing as active
+    const normalizedTag = normalizeTag(tag);
+    this.activeTag = normalizedTag;
+    this.blogService.getPostsByTag(normalizedTag, 1, 10).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (response) => {
@@ -306,7 +321,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.currentPage = response.page;
         this.totalPages = response.total_pages;
         this.loading = false;
-        this.searchQuery = '';
+        this.searchQuery = ''; // Clear search query when filtering by tag
       },
       error: (error) => {
         console.error('Error loading posts by tag:', error);
@@ -318,6 +333,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   onPageChange(page: number): void {
     if (this.searchQuery.trim()) {
       this.blogService.searchPosts(this.searchQuery, page, 10).pipe(
+        takeUntil(this.destroy$)
+      ).subscribe({
+        next: (response) => {
+          this.posts = response.posts;
+          this.currentPage = response.page;
+          this.totalPages = response.total_pages;
+        },
+        error: (error) => {
+          console.error('Error loading page:', error);
+        }
+      });
+    } else if (this.activeTag) {
+      // If filtering by tag, maintain the normalized tag filter across pages
+      this.blogService.getPostsByTag(this.activeTag, page, 10).pipe(
         takeUntil(this.destroy$)
       ).subscribe({
         next: (response) => {

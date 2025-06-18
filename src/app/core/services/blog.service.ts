@@ -17,6 +17,7 @@ import {
   PostSummary 
 } from '../../shared/interfaces/post.interface';
 import { SearchBlogsResponse } from '../../shared/interfaces/blog';
+import { normalizeTags, normalizeTag, areTagsEqual } from '../../shared/utils/tag-utils';
 
 @Injectable({
   providedIn: 'root'
@@ -35,7 +36,7 @@ export class BlogService {
       if (filters.page) params = params.set('page', filters.page.toString());
       if (filters.limit) params = params.set('limit', filters.limit.toString());
       if (filters.published !== undefined) params = params.set('published_only', filters.published.toString());
-      if (filters.tags) params = params.set('tags', filters.tags);
+      if (filters.tags) params = params.set('tags', normalizeTag(filters.tags));
       if (filters.search) params = params.set('search', filters.search);
       if (filters.user_id) params = params.set('user_id', filters.user_id);
     }
@@ -84,7 +85,7 @@ export class BlogService {
   // Get blogs by tag
   getBlogsByTag(tagName: string, page = 1, limit = 10): Observable<BlogsResponse> {
     const params = new HttpParams()
-      .set('tags', tagName)
+      .set('tags', normalizeTag(tagName))
       .set('page', page.toString())
       .set('limit', limit.toString())
       .set('published_only', 'true');
@@ -339,7 +340,7 @@ private createEmptyResponse(page: number, limit: number): PostsResponse {
         username: primaryUsername,
         profile_picture: userInfo?.profile_picture || blog.user?.profile_picture
       },
-      tags: Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : [],
+      tags: normalizeTags(Array.isArray(blog.tags) ? (typeof blog.tags[0] === 'string' ? blog.tags as string[] : (blog.tags as any[]).map(tag => tag.name || tag)) : []),
       views: blog.views || 0,
       likes_count: blog.likes_count || 0,
       comment_count: blog.comment_count || 0,
@@ -391,12 +392,22 @@ private createEmptyResponse(page: number, limit: number): PostsResponse {
 
   // Create new blog
   createBlog(blogData: CreateBlogRequest): Observable<Blog> {
-    return this.http.post<Blog>(`${this.apiUrl}/blogs`, blogData);
+    // Normalize tags before sending to API
+    const normalizedData = {
+      ...blogData,
+      tags: normalizeTags(blogData.tags)
+    };
+    return this.http.post<Blog>(`${this.apiUrl}/blogs`, normalizedData);
   }
 
   // Update existing blog
   updateBlog(blogId: string, blogData: UpdateBlogRequest): Observable<Blog> {
-    return this.http.put<Blog>(`${this.apiUrl}/blogs/${blogId}`, blogData);
+    // Normalize tags before sending to API
+    const normalizedData = {
+      ...blogData,
+      tags: blogData.tags ? normalizeTags(blogData.tags) : undefined
+    };
+    return this.http.put<Blog>(`${this.apiUrl}/blogs/${blogId}`, normalizedData);
   }
 
   // Delete blog

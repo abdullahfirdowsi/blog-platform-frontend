@@ -144,6 +144,7 @@
                 <span 
                   *ngFor="let tag of post.tags.slice(0, 3)" 
                   class="post-tag"
+                  [class.active]="isTagActive(tag)"
                   (click)="onTagClick(tag); $event.stopPropagation()"
                 >
                   {{ tag }}
@@ -245,6 +246,7 @@
               *ngFor="let recommendation of recommendedTags" 
               class="tag-button enhanced-tag"
               [class]="'tag-' + recommendation.reason"
+              [class.active]="isTagActive(recommendation.tag)"
               [title]="'Recommended because: ' + recommendation.reason + ' (Score: ' + (recommendation.score | number:'1.2-2') + ')'"
               (click)="onTagClick(recommendation.tag)"
             >

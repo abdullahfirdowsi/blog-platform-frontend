@@ -691,6 +691,14 @@
   transform: translateY(-1px);
 }
 
+.post-tag.active {
+  background: rgba(102, 126, 234, 0.3);
+  border-color: rgba(102, 126, 234, 0.6);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
+}
+
 /* Post Meta */
 .post-meta {
   display: flex;
@@ -874,6 +882,14 @@
   color: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.tag-button.active {
+  background: rgba(102, 126, 234, 0.3);
+  border-color: rgba(102, 126, 234, 0.6);
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
 /* Enhanced Tag Recommendation Styles */
