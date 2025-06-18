@@ -226,8 +226,22 @@
                       <span class="comment-author">{{ comment.user_name || comment.username }}</span>
                       <span class="comment-date">{{ comment.created_at | dateFormat }}</span>
                       <div class="comment-actions" *ngIf="canEditComment(comment)">
-                        <button class="edit-btn" (click)="startEditComment(comment)" *ngIf="editingCommentId !== comment._id">Edit</button>
-                        <button class="delete-btn" (click)="deleteComment(comment._id)" *ngIf="editingCommentId !== comment._id">Delete</button>
+                        <button 
+                          class="edit-btn" 
+                          (click)="startEditComment(comment)" 
+                          *ngIf="editingCommentId !== comment._id"
+                          [disabled]="deletingCommentId === comment._id"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          class="delete-btn" 
+                          (click)="deleteComment(comment._id)" 
+                          *ngIf="editingCommentId !== comment._id"
+                          [disabled]="deletingCommentId === comment._id"
+                        >
+                          {{ deletingCommentId === comment._id ? 'Deleting...' : 'Delete' }}
+                        </button>
                       </div>
                     </div>
                     
@@ -238,8 +252,20 @@
                     <div class="comment-edit" *ngIf="editingCommentId === comment._id">
                       <textarea [(ngModel)]="editingCommentText" class="edit-textarea"></textarea>
                       <div class="edit-actions">
-                        <button class="update-btn" (click)="updateComment()" [disabled]="!editingCommentText.trim()">Update</button>
-                        <button class="cancel-btn" (click)="cancelEditComment()">Cancel</button>
+                        <button 
+                          class="update-btn" 
+                          (click)="updateComment()" 
+                          [disabled]="!editingCommentText.trim() || updatingComment"
+                        >
+                          {{ updatingComment ? 'Updating...' : 'Update' }}
+                        </button>
+                        <button 
+                          class="cancel-btn" 
+                          (click)="cancelEditComment()"
+                          [disabled]="updatingComment"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
                   </div>

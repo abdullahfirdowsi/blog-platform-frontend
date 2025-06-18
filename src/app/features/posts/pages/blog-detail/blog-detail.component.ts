@@ -57,6 +57,8 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   showComments = false;
   editingCommentId: string | null = null;
   editingCommentText = '';
+  updatingComment = false;
+  deletingCommentId: string | null = null;
 
   // Like properties
   isLiked = false;
@@ -395,6 +397,19 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   }
 
   startEditComment(comment: any): void {
+    // Validate authentication before allowing edit
+    if (!this.authService.isAuthenticated()) {
+      alert('You must be logged in to edit comments.');
+      return;
+    }
+    
+    // Validate permission
+    if (!this.canEditComment(comment)) {
+      alert('You do not have permission to edit this comment.');
+      return;
+    }
+    
+    console.log('Starting edit for comment:', comment._id);
     this.editingCommentId = comment._id;
     this.editingCommentText = comment.text;
   }
@@ -405,8 +420,16 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   }
 
   updateComment(): void {
-    if (!this.editingCommentId || !this.editingCommentText.trim()) return;
+    if (!this.editingCommentId || !this.editingCommentText.trim() || this.updatingComment) return;
     
+    // Validate authentication before proceeding
+    if (!this.authService.isAuthenticated()) {
+      alert('You must be logged in to edit comments.');
+      this.cancelEditComment();
+      return;
+    }
+    
+    this.updatingComment = true;
     const commentData: CommentCreate = {
       text: this.editingCommentText.trim()
     };
@@ -417,18 +440,53 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
       next: (updatedComment: any) => {
         const index = this.comments.findIndex(c => c._id === this.editingCommentId);
         if (index !== -1) {
-          this.comments[index] = updatedComment;
+          // Preserve user information from the original comment if not returned
+          this.comments[index] = {
+            ...this.comments[index],
+            ...updatedComment,
+            updated_at: updatedComment.updated_at || new Date().toISOString()
+          };
         }
+        this.updatingComment = false;
         this.cancelEditComment();
       },
       error: (error: any) => {
         console.error('Error updating comment:', error);
+        this.updatingComment = false;
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to update comment. ';
+        if (error.status === 401) {
+          errorMessage += 'Please log in and try again.';
+          this.cancelEditComment();
+        } else if (error.status === 403) {
+          errorMessage += 'You do not have permission to edit this comment.';
+          this.cancelEditComment();
+        } else if (error.status === 404) {
+          errorMessage += 'Comment not found.';
+          this.loadComments(); // Refresh comments to sync state
+        } else {
+          errorMessage += 'Please try again.';
+        }
+        
+        alert(errorMessage);
       }
     });
   }
 
   deleteComment(commentId: string): void {
     if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    // Validate authentication before proceeding
+    if (!this.authService.isAuthenticated()) {
+      alert('You must be logged in to delete comments.');
+      return;
+    }
+    
+    // Prevent multiple simultaneous delete operations
+    if (this.deletingCommentId === commentId) return;
+    
+    this.deletingCommentId = commentId;
     
     this.commentService.deleteComment(commentId).pipe(
       takeUntil(this.destroy$)
@@ -440,16 +498,48 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
         if (this.blog) {
           this.blog.comment_count = this.commentCount;
         }
+        this.deletingCommentId = null;
+        
+        // Cancel edit mode if deleting the comment being edited
+        if (this.editingCommentId === commentId) {
+          this.cancelEditComment();
+        }
       },
       error: (error: any) => {
         console.error('Error deleting comment:', error);
+        this.deletingCommentId = null;
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to delete comment. ';
+        if (error.status === 401) {
+          errorMessage += 'Please log in and try again.';
+        } else if (error.status === 403) {
+          errorMessage += 'You do not have permission to delete this comment.';
+        } else if (error.status === 404) {
+          errorMessage += 'Comment not found. It may have already been deleted.';
+          this.loadComments(); // Refresh comments to sync state
+        } else {
+          errorMessage += 'Please try again.';
+        }
+        
+        alert(errorMessage);
       }
     });
   }
 
   canEditComment(comment: any): boolean {
-    return this.authService.isAuthenticated() && 
-           comment.user_id === this.authService.getCurrentUser()?._id;
+    const currentUser = this.authService.getCurrentUser();
+    const isAuthenticated = this.authService.isAuthenticated();
+    
+    if (!isAuthenticated || !currentUser || !comment) {
+      return false;
+    }
+    
+    // Handle both _id and id formats for user identification
+    const currentUserId = currentUser._id || currentUser.id;
+    const commentUserId = comment.user_id;
+    
+    return currentUserId === commentUserId;
   }
 
   // Like methods
@@ -583,5 +673,16 @@ export class BlogDetailComponent implements OnInit, OnDestroy {
   // Handle author image error
   onAuthorImageError(event: Event): void {
     this.profilePictureService.onImageError(event);
+  }
+
+  // Debug method for troubleshooting comment issues
+  debugCommentPermissions(comment: any): void {
+    console.log('=== Comment Debug Info ===');
+    console.log('Current User:', this.authService.getCurrentUser());
+    console.log('Is Authenticated:', this.authService.isAuthenticated());
+    console.log('Comment:', comment);
+    console.log('Can Edit Comment:', this.canEditComment(comment));
+    console.log('Auth Token Info:', this.authService.getTokenInfo?.());
+    console.log('========================');
   }
 }
