@@ -463,7 +463,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
         console.log('Full upload response:', response);
         if (response && response.imageUrl) {
           block.data = response.imageUrl;
-          console.log('Image uploaded to S3 successfully:', response.imageUrl);
+          console.log('Image uploaded successfully:', response.imageUrl);
           this.showMessageContainer('Image uploaded successfully!', 'success');
           this.isUploadingImage = false;
           this.checkForChanges(); // Mark as changed
@@ -596,7 +596,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: (response) => {
         this.mainImageUrl = response.imageUrl;
-        console.log('Main image uploaded to S3:', response.imageUrl);
+        console.log('Main image uploaded successfully:', response.imageUrl);
         this.showMessageContainer('Main image uploaded successfully!', 'success');
         this.isUploadingMainImage = false;
         this.checkForChanges();
