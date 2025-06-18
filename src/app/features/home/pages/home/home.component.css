@@ -1047,6 +1047,7 @@
   transform: translateY(-1px);
 }
 
+
 /* Responsive enhancements */
 @media (max-width: 768px) {
   .recommendation-legend {

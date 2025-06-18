@@ -109,9 +109,13 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadRecommendedTags();
   }
 
-  private loadPosts(page = 1): void {
+  private loadPosts(page = 1, clearActiveTag = true): void {
     this.loading = true;
-    this.activeTag = null; // Clear active tag when loading all posts
+    
+    // Only clear active tag if explicitly requested (for initial load or clear filter)
+    if (clearActiveTag) {
+      this.activeTag = null;
+    }
     
     const filters = {
       page,
@@ -309,9 +313,15 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   onTagClick(tag: string): void {
-    this.loading = true;
-    // Normalize the tag before searching and storing as active
     const normalizedTag = normalizeTag(tag);
+    
+    // If clicking the same tag that's already active, deselect it (show all posts)
+    if (this.activeTag === normalizedTag) {
+      this.clearTagFilter();
+      return;
+    }
+    
+    this.loading = true;
     this.activeTag = normalizedTag;
     this.blogService.getPostsByTag(normalizedTag, 1, 10).pipe(
       takeUntil(this.destroy$)
@@ -328,6 +338,15 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+
+  /**
+   * Clear tag filter and show all posts
+   */
+  private clearTagFilter(): void {
+    this.activeTag = null;
+    this.searchQuery = '';
+    this.loadPosts(1);
   }
 
   onPageChange(page: number): void {
@@ -359,7 +378,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       });
     } else {
-      this.loadPosts(page);
+      this.loadPosts(page, false); // Don't clear active tag when just changing pages
     }
   }
 
