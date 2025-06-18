@@ -26,6 +26,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Blog data
   posts: PostSummary[] = [];
   recommendedTags: string[] = [];
+  trendingTags: string[] = [];
+  allTags: string[] = [];
   loading = false;
   searchQuery = '';
   currentPage = 1;
@@ -118,6 +120,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.currentPage = response.page;
         this.totalPages = response.total_pages;
         this.loading = false;
+        
+        // Extract and update trending tags from current posts
+        this.updateTrendingTags();
       },
       error: (error) => {
         console.error('Error loading posts:', error);
@@ -131,11 +136,63 @@ export class HomeComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe({
       next: (tags) => {
-        this.recommendedTags = tags.slice(0, 20); // Limit to 20 tags
+        this.allTags = tags;
+        this.updateRecommendedTags();
       },
       error: (error) => {
         console.error('Error loading tags:', error);
       }
+    });
+  }
+
+  private updateTrendingTags(): void {
+    // Extract all tags from current posts
+    const tagCount = new Map<string, number>();
+    
+    this.posts.forEach(post => {
+      if (post.tags && Array.isArray(post.tags)) {
+        post.tags.forEach(tag => {
+          const normalizedTag = tag.trim().toLowerCase();
+          if (normalizedTag) {
+            tagCount.set(normalizedTag, (tagCount.get(normalizedTag) || 0) + 1);
+          }
+        });
+      }
+    });
+
+    // Sort tags by frequency and get the most popular ones
+    this.trendingTags = Array.from(tagCount.entries())
+      .sort((a, b) => b[1] - a[1]) // Sort by count descending
+      .slice(0, 10) // Take top 10
+      .map(entry => entry[0]); // Get just the tag names
+
+    console.log('🔥 Trending tags from current posts:', this.trendingTags);
+    
+    // Update recommended tags to combine trending and all tags
+    this.updateRecommendedTags();
+  }
+
+  private updateRecommendedTags(): void {
+    // Combine trending tags (from current posts) with other available tags
+    const combinedTags = new Set<string>();
+    
+    // First, add trending tags (higher priority)
+    this.trendingTags.forEach(tag => combinedTags.add(tag));
+    
+    // Then add other tags from all available tags, avoiding duplicates
+    this.allTags.forEach(tag => {
+      if (!this.trendingTags.includes(tag.toLowerCase())) {
+        combinedTags.add(tag);
+      }
+    });
+    
+    // Convert to array and limit to 20 tags
+    this.recommendedTags = Array.from(combinedTags).slice(0, 20);
+    
+    console.log('✨ Updated recommended tags:', {
+      trending: this.trendingTags,
+      recommended: this.recommendedTags,
+      totalAvailable: this.allTags.length
     });
   }
 
