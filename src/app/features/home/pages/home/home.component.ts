@@ -164,7 +164,9 @@ export class HomeComponent implements OnInit, OnDestroy {
         console.log('🎯 Enhanced tag recommendations loaded:', {
           total: sortedRecommendations.length,
           byReason: this.groupByReason(sortedRecommendations),
-          topRecommendations: sortedRecommendations.slice(0, 5)
+          topRecommendations: sortedRecommendations.slice(0, 5),
+          personalizedCount: this.groupByReason(sortedRecommendations)['personalized'] || 0,
+          isAuthenticated: this.isAuthenticated
         });
       },
       error: (error) => {

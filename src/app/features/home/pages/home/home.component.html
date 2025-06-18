@@ -275,6 +275,10 @@
               <span class="legend-indicator reason-popular"></span>
               <span class="legend-text">Popular</span>
             </div>
+            <div class="legend-item" *ngIf="groupByReason(recommendedTags)['related'] > 0">
+              <span class="legend-indicator reason-related"></span>
+              <span class="legend-text">Related</span>
+            </div>
             <div class="legend-item" *ngIf="groupByReason(recommendedTags)['new'] > 0">
               <span class="legend-indicator reason-new"></span>
               <span class="legend-text">New</span>

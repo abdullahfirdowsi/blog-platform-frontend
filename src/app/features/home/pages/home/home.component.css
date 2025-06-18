@@ -925,22 +925,42 @@
 /* Emoji indicators for different recommendation types */
 .reason-personalized::before {
   content: '👤'; /* Person emoji for personalized */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 .reason-trending::before {
   content: '🔥'; /* Fire emoji for trending */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 .reason-popular::before {
   content: '⭐'; /* Star emoji for popular */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 .reason-related::before {
   content: '🔗'; /* Link emoji for related */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 .reason-new::before {
   content: '✨'; /* Sparkles emoji for new */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 /* Recommendation legend */
@@ -962,14 +982,22 @@
 }
 
 .legend-indicator {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
   flex-shrink: 0;
+  font-size: 0.75rem;
+  line-height: 1;
+  position: relative;
 }
 
 .legend-text {
   font-weight: 500;
+  line-height: 16px;
+  display: flex;
+  align-items: center;
 }
 
 /* Empty state enhancements */

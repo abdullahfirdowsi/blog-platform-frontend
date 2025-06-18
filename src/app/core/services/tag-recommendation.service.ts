@@ -109,19 +109,34 @@ export class TagRecommendationService {
       return of([]);
     }
 
-    return this.interestsService.getUserInterests().pipe(
-      map((interests: UserInterests) => {
+    return combineLatest([
+      this.interestsService.getUserInterests(),
+      this.blogService.getTags()
+    ]).pipe(
+      map(([interests, availableTags]: [UserInterests, Tag[]]) => {
         const personalizedTags: TagRecommendation[] = [];
         
-        // Add tags from user interests
+        // Create a set of available tag names for quick lookup
+        const availableTagNames = new Set(availableTags.map(tag => tag.name.toLowerCase()));
+        
+        // Add tags from user interests only if they exist in the blog system
         if (interests && interests.interests) {
           interests.interests.forEach((interest: string) => {
-            personalizedTags.push({
-              tag: interest,
-              score: 0.9,
-              reason: 'personalized',
-              category: 'user-interest'
-            });
+            // Check if the interest matches any existing tag (case-insensitive)
+            const matchingTag = availableTags.find(tag => 
+              tag.name.toLowerCase() === interest.toLowerCase() ||
+              tag.name.toLowerCase().includes(interest.toLowerCase()) ||
+              interest.toLowerCase().includes(tag.name.toLowerCase())
+            );
+            
+            if (matchingTag) {
+              personalizedTags.push({
+                tag: matchingTag.name, // Use the actual tag name from the blog system
+                score: 0.9,
+                reason: 'personalized',
+                category: 'user-interest'
+              });
+            }
           });
         }
         
