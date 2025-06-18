@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, combineLatest, map, catchError, of } from 'rxjs';
+import { Observable, combineLatest, map, catchError, of, BehaviorSubject, timer, Subject } from 'rxjs';
 import { BlogService } from './blog.service';
 import { AuthService } from './auth.service';
 import { InterestsService } from './interests.service';
@@ -50,6 +50,20 @@ export class TagRecommendationService {
     includeNewTags: true
   };
 
+  // Cache for recommendations
+  private recommendationsCache: TagRecommendation[] | null = null;
+  private cacheTimestamp: number = 0;
+  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private readonly SHORT_CACHE_DURATION = 2 * 60 * 1000; // 2 minutes for authenticated users
+  private currentUserId: string | null = null;
+  private cacheKey: string = '';
+  private lastInterestsCheck: number = 0;
+  private lastBlogCountCheck: number = 0;
+  private cachedBlogCount: number = 0;
+  
+  // Event-driven cache invalidation
+  private cacheInvalidationEvent$ = new Subject<string>();
+
   constructor(
     private blogService: BlogService,
     private authService: AuthService,
@@ -57,10 +71,21 @@ export class TagRecommendationService {
   ) {}
 
   /**
-   * Get comprehensive tag recommendations using hybrid approach
+   * Get comprehensive tag recommendations using hybrid approach with caching
    */
   getRecommendedTags(config: Partial<RecommendationConfig> = {}): Observable<TagRecommendation[]> {
     const finalConfig = { ...this.defaultConfig, ...config };
+    const currentUser = this.authService.getCurrentUser();
+    const newUserId = currentUser?._id || currentUser?.id || 'anonymous';
+    const newCacheKey = `${newUserId}_${JSON.stringify(finalConfig)}`;
+    
+    // Check if we have valid cached data
+    if (this.isCacheValid(newCacheKey)) {
+      console.log('🚀 Using cached tag recommendations');
+      return of(this.recommendationsCache!);
+    }
+    
+    console.log('🔄 Fetching fresh tag recommendations...');
     
     return combineLatest([
       this.getTrendingTags(),
@@ -70,7 +95,7 @@ export class TagRecommendationService {
       this.getNewTags()
     ]).pipe(
       map(([trending, personalized, popular, related, newTags]) => {
-        return this.combineAndRankRecommendations(
+        const recommendations = this.combineAndRankRecommendations(
           trending,
           personalized,
           popular,
@@ -78,12 +103,183 @@ export class TagRecommendationService {
           newTags,
           finalConfig
         );
+        
+        // Cache the results
+        this.cacheRecommendations(recommendations, newCacheKey);
+        
+        return recommendations;
       }),
       catchError(error => {
         console.error('Error getting tag recommendations:', error);
         return this.getFallbackRecommendations();
       })
     );
+  }
+
+  /**
+   * Check if cache is valid with intelligent invalidation
+   */
+  private isCacheValid(newCacheKey: string): boolean {
+    const now = Date.now();
+    const isAuthenticated = this.authService.isAuthenticated();
+    
+    // Basic cache validity checks
+    if (!this.recommendationsCache || this.cacheKey !== newCacheKey) {
+      return false;
+    }
+    
+    // Use shorter cache duration for authenticated users (more dynamic content)
+    const cacheDuration = isAuthenticated ? this.SHORT_CACHE_DURATION : this.CACHE_DURATION;
+    
+    // Check if cache has expired
+    if ((now - this.cacheTimestamp) >= cacheDuration) {
+      console.log('🕐 Cache expired due to time');
+      return false;
+    }
+    
+    // For authenticated users, also check for content and interest changes
+    if (isAuthenticated) {
+      return this.checkContentFreshness();
+    }
+    
+    return true;
+  }
+  
+  /**
+   * Check if content has changed since cache was created
+   * Only validates on-demand to reduce background polling
+   */
+  private checkContentFreshness(): boolean {
+    const now = Date.now();
+    
+    // Only check blog count if cache is older than 5 minutes (reduce frequent checks)
+    if ((now - this.lastBlogCountCheck) > 5 * 60 * 1000) {
+      this.validateBlogCount();
+      this.lastBlogCountCheck = now;
+    }
+    
+    // Only check user interests if cache is older than 5 minutes
+    if ((now - this.lastInterestsCheck) > 5 * 60 * 1000) {
+      this.validateUserInterests();
+      this.lastInterestsCheck = now;
+    }
+    
+    return true; // Return true for now, async validation will clear cache if needed
+  }
+  
+  /**
+   * Validate if blog count has changed (indicates new content)
+   */
+  private validateBlogCount(): void {
+    this.blogService.getPosts({ limit: 1, status: 'published' }).subscribe({
+      next: (response) => {
+        const currentBlogCount = response.total || 0;
+        
+        if (this.cachedBlogCount === 0) {
+          // First time, just store the count
+          this.cachedBlogCount = currentBlogCount;
+        } else if (currentBlogCount !== this.cachedBlogCount) {
+          // Blog count changed, clear cache
+          console.log('📝 New blogs detected, clearing cache');
+          this.clearCache();
+          this.cachedBlogCount = currentBlogCount;
+        }
+      },
+      error: (error) => {
+        console.warn('Could not check blog count:', error);
+      }
+    });
+  }
+  
+  /**
+   * Validate if user interests have changed
+   */
+  private validateUserInterests(): void {
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
+    
+    this.interestsService.getUserInterests().subscribe({
+      next: (interests) => {
+        const currentInterests = interests?.interests || [];
+        const interestsHash = this.hashInterests(currentInterests);
+        const cachedInterestsHash = localStorage.getItem('cached_interests_hash');
+        
+        if (cachedInterestsHash && cachedInterestsHash !== interestsHash) {
+          console.log('👤 User interests changed, clearing cache');
+          this.clearCache();
+        }
+        
+        // Update stored hash
+        localStorage.setItem('cached_interests_hash', interestsHash);
+      },
+      error: (error) => {
+        // 404 is expected if user has no interests yet
+        if (error.status !== 404) {
+          console.warn('Could not check user interests:', error);
+        }
+      }
+    });
+  }
+  
+  /**
+   * Create a hash of user interests for comparison
+   */
+  private hashInterests(interests: string[]): string {
+    return interests.sort().join('|');
+  }
+  
+  /**
+   * Force refresh recommendations (useful for manual refresh)
+   */
+  forceRefresh(): void {
+    console.log('🔄 Force refreshing tag recommendations');
+    this.clearCache();
+    this.lastInterestsCheck = 0;
+    this.lastBlogCountCheck = 0;
+  }
+  
+  /**
+   * Event-driven cache invalidation for when a new blog is published
+   * Call this method from BlogService when a blog is published
+   */
+  onBlogPublished(): void {
+    console.log('📝 Blog published, clearing cache immediately');
+    this.clearCache();
+    this.cachedBlogCount = 0; // Reset to force recheck
+    this.cacheInvalidationEvent$.next('blog_published');
+  }
+  
+  /**
+   * Event-driven cache invalidation for when user interests are updated
+   * Call this method from InterestsService when interests are saved
+   */
+  onInterestsUpdated(): void {
+    console.log('👤 User interests updated, clearing cache immediately');
+    this.clearCache();
+    this.lastInterestsCheck = 0; // Reset to force recheck
+    localStorage.removeItem('cached_interests_hash'); // Clear stored hash
+    this.cacheInvalidationEvent$.next('interests_updated');
+  }
+
+  /**
+   * Cache recommendations
+   */
+  private cacheRecommendations(recommendations: TagRecommendation[], cacheKey: string): void {
+    this.recommendationsCache = recommendations;
+    this.cacheTimestamp = Date.now();
+    this.cacheKey = cacheKey;
+    console.log('💾 Cached tag recommendations:', recommendations.length);
+  }
+
+  /**
+   * Clear cache (useful when user interests change)
+   */
+  clearCache(): void {
+    this.recommendationsCache = null;
+    this.cacheTimestamp = 0;
+    this.cacheKey = '';
+    console.log('🗑️ Tag recommendations cache cleared');
   }
 
   /**

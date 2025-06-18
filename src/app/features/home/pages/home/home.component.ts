@@ -215,6 +215,7 @@ export class HomeComponent implements OnInit, OnDestroy {
    */
   refreshRecommendations(): void {
     console.log('🔄 Refreshing tag recommendations...');
+    this.tagRecommendationService.forceRefresh();
     this.loadRecommendedTags();
   }
   
@@ -592,10 +593,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   // Handle interests popup completion
   onInterestsSetupCompleted(): void {
     this.showInterestsPopup = false;
-    // Refresh recommendations after user sets up interests
-    setTimeout(() => {
-      this.refreshRecommendations();
-    }, 1000); // Small delay to ensure backend has processed the changes
+    // Use event-driven cache invalidation for immediate updates
+    console.log('🎯 Interests setup completed, triggering immediate cache update');
+    this.tagRecommendationService.onInterestsUpdated();
+    // Refresh recommendations immediately - cache will be empty so fresh data loads
+    this.refreshRecommendations();
   }
  
   // Handle skip interests
