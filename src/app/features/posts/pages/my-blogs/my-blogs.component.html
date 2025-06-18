@@ -79,7 +79,7 @@
         </div>
 
         <div class="blogs-grid">
-          <article *ngFor="let blog of blogs; trackBy: trackByBlogId" class="blog-card">
+          <article *ngFor="let blog of blogs; trackBy: trackByBlogId" class="blog-card" (click)="navigateToBlogDetail(blog)">
             <!-- Blog Image -->
             <div class="blog-image-container">
               <img 
@@ -132,14 +132,14 @@
               
               <!-- Action Buttons -->
               <div class="blog-actions">
-                <button class="action-btn secondary" (click)="onEditBlog(blog)">
+                <button class="action-btn secondary" (click)="onEditBlog(blog); $event.stopPropagation()">
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                     <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" fill="currentColor"/>
                   </svg>
                   Edit
                 </button>
                 
-                <button class="action-btn danger" (click)="onDeleteBlog(blog)">
+                <button class="action-btn danger" (click)="onDeleteBlog(blog); $event.stopPropagation()">
                   <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                     <path d="M4 7h12M6 7V4a1 1 0 011-1h4a1 1 0 011 1v3M8 11v4M12 11v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>

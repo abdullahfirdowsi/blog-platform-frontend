@@ -171,7 +171,9 @@
               </div>
                 
                 <div class="post-dates">
-                  <span class="post-date">Created: {{ post.created_at | dateFormat }}</span>
+                  <span class="post-date" *ngIf="!post.updated_at || post.updated_at === post.created_at">
+                    Created: {{ post.created_at | dateFormat }}
+                  </span>
                   <span class="post-date" *ngIf="post.updated_at && post.updated_at !== post.created_at">
                     Updated: {{ post.updated_at | dateFormat }}
                   </span>
