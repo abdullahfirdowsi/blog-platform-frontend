@@ -16,6 +16,7 @@ export class InterestsComponent implements OnInit, OnDestroy {
   @Input() isFirstTimeSetup = false;
   @Output() interestsSelected = new EventEmitter<string[]>();
   @Output() setupCompleted = new EventEmitter<void>();
+  @Output() interestsUpdated = new EventEmitter<void>();
 
   userInterests: UserInterests | null = null;
   suggestions: string[] = [];
@@ -141,6 +142,9 @@ export class InterestsComponent implements OnInit, OnDestroy {
           this.userInterests = interests;
           this.successMessage = 'Interests saved successfully!';
           this.isLoading = false;
+          
+          // Always emit interestsUpdated event for reactive cache management
+          this.interestsUpdated.emit();
           
           if (this.isFirstTimeSetup) {
             setTimeout(() => {

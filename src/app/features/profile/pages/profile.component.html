@@ -417,7 +417,12 @@
       <!-- Interests Tab Content -->
       @if (activeTab === 'interests') {
         <div class="form-section">
-          <app-interests [isFirstTimeSetup]="false"></app-interests>
+          <app-interests 
+            [isFirstTimeSetup]="false"
+            (interestsSelected)="onInterestsSelected($event)"
+            (setupCompleted)="onInterestsUpdated()"
+            (interestsUpdated)="onInterestsUpdated()"
+          ></app-interests>
         </div>
       }
       

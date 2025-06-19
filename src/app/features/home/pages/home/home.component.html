@@ -242,18 +242,19 @@
             <p class="loading-tags-text">Loading recommendations...</p>
           </div>
           
-          <!-- Enhanced tag recommendations -->
+          <!-- Enhanced tag recommendations with abbreviation support -->
           <div *ngIf="!recommendationLoading" class="tags-container">
             <button 
               *ngFor="let recommendation of recommendedTags" 
               class="tag-button enhanced-tag"
-              [class]="'tag-' + recommendation.reason"
+              [class]="getTagClasses(recommendation.tag).join(' ')"
               [class.active]="isTagActive(recommendation.tag)"
-              [title]="'Recommended because: ' + recommendation.reason + ' (Score: ' + (recommendation.score | number:'1.2-2') + ')'"
+              [title]="getTagTooltip(recommendation.tag) || getRecommendationExplanation(recommendation.tag)"
               (click)="onTagClick(recommendation.tag)"
             >
-              <span class="tag-text">{{ recommendation.tag }}</span>
+              <span class="tag-text">{{ getTagDisplayText(recommendation.tag) }}</span>
               <span class="tag-reason-indicator" [class]="'reason-' + recommendation.reason"></span>
+              <span class="tag-confidence" *ngIf="recommendation.score >= 0.9">✨</span>
             </button>
           </div>
           
@@ -330,6 +331,7 @@
       <app-interests
         [isFirstTimeSetup]="true"
         (setupCompleted)="onInterestsSetupCompleted()"
+        (interestsUpdated)="onInterestsSetupCompleted()"
       ></app-interests>
     </div>
    

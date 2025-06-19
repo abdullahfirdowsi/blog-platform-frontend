@@ -12,7 +12,14 @@ import { InterestsComponent } from '../../../../shared/components/interests/inte
 import { InterestsService } from '../../../../core/services/interests.service';
 import { TagRecommendationService, TagRecommendation } from '../../../../core/services/tag-recommendation.service';
 import { DateFormatPipe } from '../../../../shared/pipes/date-format.pipe';
-import { normalizeTag, areTagsEqual } from '../../../../shared/utils/tag-utils';
+import { 
+  normalizeTag, 
+  areTagsEqual, 
+  getTagDisplayText,
+  getTagTooltipText,
+  getTagCssClasses,
+  getRecommendationExplanation 
+} from '../../../../shared/utils/tag-utils';
 
 @Component({
   selector: 'app-home',
@@ -95,6 +102,15 @@ export class HomeComponent implements OnInit, OnDestroy {
       takeUntil(this.destroy$)
     ).subscribe((user: any) => {
       this.currentUser = user;
+    });
+    
+    // Subscribe to interests changes for immediate recommendation updates
+    this.interestsService.interestsUpdated$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe((action) => {
+      console.log('🔔 HomeComponent detected interests update:', action);
+      // Automatically refresh recommendations when interests change
+      this.refreshRecommendations();
     });
   }
 
@@ -268,6 +284,82 @@ export class HomeComponent implements OnInit, OnDestroy {
   getTagScore(tag: string): number {
     const recommendation = this.recommendedTags.find(r => r.tag === tag);
     return recommendation?.score || 0;
+  }
+
+  // =============================================================================
+  // ENHANCED TAG DISPLAY METHODS
+  // =============================================================================
+
+  /**
+   * Get display text for a tag (shows exact blog post tag)
+   */
+  getTagDisplayText(tag: string): string {
+    return tag; // Show exact tag as it exists in blog posts
+  }
+
+  /**
+   * Get tooltip text for a tag showing abbreviation info
+   */
+  getTagTooltip(tag: string): string | null {
+    const tooltip = getTagTooltipText(tag);
+    
+    // Add recommendation reason if available
+    const recommendation = this.recommendedTags.find(r => r.tag === tag);
+    if (recommendation && tooltip) {
+      return `${tooltip}\n\nRecommended: ${this.getReasonDisplayText(recommendation.reason)}`;
+    } else if (recommendation) {
+      return `Recommended: ${this.getReasonDisplayText(recommendation.reason)}`;
+    }
+    
+    return tooltip;
+  }
+
+  /**
+   * Get CSS classes for a tag based on its properties
+   */
+  getTagClasses(tag: string): string[] {
+    const baseClasses = getTagCssClasses(tag, 'tag-button');
+    
+    // Add recommendation reason class
+    const recommendation = this.recommendedTags.find(r => r.tag === tag);
+    if (recommendation) {
+      baseClasses.push(`tag-${recommendation.reason}`);
+    }
+    
+    return baseClasses;
+  }
+
+  /**
+   * Get human-readable text for recommendation reason
+   */
+  private getReasonDisplayText(reason: string): string {
+    const reasonMap: Record<string, string> = {
+      'personalized': 'For You (based on your interests)',
+      'trending': 'Trending Now',
+      'popular': 'Popular',
+      'related': 'Related to your activity',
+      'new': 'New & Emerging'
+    };
+    return reasonMap[reason] || reason;
+  }
+
+  /**
+   * Get explanation for why a tag was recommended
+   */
+  getRecommendationExplanation(tag: string): string | null {
+    const recommendation = this.recommendedTags.find(r => r.tag === tag);
+    if (!recommendation) {
+      return null;
+    }
+
+    // For personalized recommendations, try to find the matching user interest
+    if (recommendation.reason === 'personalized' && this.isAuthenticated) {
+      // This would require storing the original interest mapping in the recommendation
+      // For now, provide a generic explanation
+      return `Recommended based on your interests`;
+    }
+
+    return this.getReasonDisplayText(recommendation.reason);
   }
 
   /**

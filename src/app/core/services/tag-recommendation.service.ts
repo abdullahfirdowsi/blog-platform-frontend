@@ -4,7 +4,14 @@ import { BlogService } from './blog.service';
 import { AuthService } from './auth.service';
 import { InterestsService } from './interests.service';
 import { Tag } from '../../shared/interfaces/post.interface';
-import { normalizeTag, areTagsEqual } from '../../shared/utils/tag-utils';
+import { 
+  normalizeTag, 
+  areTagsEqual, 
+  findBestTagMatch, 
+  getPreferredTagFormat, 
+  areTagsEquivalent,
+  TagMatchResult 
+} from '../../shared/utils/tag-utils';
 
 export interface TagRecommendation {
   tag: string;
@@ -68,7 +75,13 @@ export class TagRecommendationService {
     private blogService: BlogService,
     private authService: AuthService,
     private interestsService: InterestsService
-  ) {}
+  ) {
+    // Subscribe to interests changes for automatic cache invalidation
+    this.interestsService.interestsUpdated$.subscribe((action) => {
+      console.log('🔔 Interests updated detected, action:', action);
+      this.onInterestsUpdated();
+    });
+  }
 
   /**
    * Get comprehensive tag recommendations using hybrid approach with caching
@@ -300,6 +313,7 @@ export class TagRecommendationService {
 
   /**
    * Get personalized tags based on user interests and reading history
+   * Only recommends tags that exist in actual blog posts
    */
   private getPersonalizedTags(): Observable<TagRecommendation[]> {
     if (!this.authService.isAuthenticated()) {
@@ -313,26 +327,48 @@ export class TagRecommendationService {
       map(([interests, availableTags]: [UserInterests, Tag[]]) => {
         const personalizedTags: TagRecommendation[] = [];
         
-        // Create a set of available tag names for quick lookup using normalized tags
-        const availableTagNames = new Set(availableTags.map(tag => normalizeTag(tag.name)));
-        
-        // Add tags from user interests only if they exist in the blog system
+        // Only match tags that exist in actual blog posts
         if (interests && interests.interests) {
+          const availableTagNames = availableTags.map(tag => tag.name);
+          
           interests.interests.forEach((interest: string) => {
-            // Check if the interest matches any existing tag using normalized comparison
-            const matchingTag = availableTags.find(tag => 
-              areTagsEqual(tag.name, interest) ||
-              normalizeTag(tag.name).includes(normalizeTag(interest)) ||
-              normalizeTag(interest).includes(normalizeTag(tag.name))
-            );
+            console.log(`🔍 Looking for exact matches for interest: "${interest}"`);
             
-            if (matchingTag) {
-              personalizedTags.push({
-                tag: matchingTag.name, // Use the actual tag name from the blog system
-                score: 0.9,
-                reason: 'personalized',
-                category: 'user-interest'
-              });
+            // Find exact matches only - only recommend tags that exist in blog posts
+            const exactMatches = availableTagNames.filter(tagName => {
+              // Check for exact match (case-insensitive)
+              if (normalizeTag(tagName) === normalizeTag(interest)) {
+                return true;
+              }
+              
+              // Check if the blog tag is contained in the interest or vice versa
+              const normalizedTag = normalizeTag(tagName).toLowerCase();
+              const normalizedInterest = normalizeTag(interest).toLowerCase();
+              
+              return normalizedTag.includes(normalizedInterest) || 
+                     normalizedInterest.includes(normalizedTag);
+            });
+            
+            exactMatches.forEach(matchedTag => {
+              console.log(`✅ Found exact match for "${interest}": "${matchedTag}"`);
+              
+              // Check if we already have this tag to avoid duplicates
+              const existingTag = personalizedTags.find(tag => 
+                normalizeTag(tag.tag) === normalizeTag(matchedTag)
+              );
+              
+              if (!existingTag) {
+                personalizedTags.push({
+                  tag: matchedTag, // Use the exact tag from blog posts
+                  score: 0.9, // High score for personalized matches
+                  reason: 'personalized',
+                  category: 'user-interest'
+                });
+              }
+            });
+            
+            if (exactMatches.length === 0) {
+              console.log(`❌ No exact match found for interest: "${interest}"`);
             }
           });
         }

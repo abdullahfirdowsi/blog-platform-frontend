@@ -5,6 +5,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { AuthService } from '../../../core/services/auth.service';
 import { ImageUploadService } from '../../../core/services/image-upload.service';
 import { ProfilePictureService } from '../../../core/services/profile-picture.service';
+import { InterestsService } from '../../../core/services/interests.service';
+import { TagRecommendationService } from '../../../core/services/tag-recommendation.service';
 import { takeUntil, Subject } from 'rxjs';
 import { User } from './../../../shared/interfaces/user.interface'
 import { FooterComponent } from '../../../shared/components/footer/footer.component';
@@ -98,7 +100,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private imageUploadService: ImageUploadService,
-    private profilePictureService: ProfilePictureService
+    private profilePictureService: ProfilePictureService,
+    private interestsService: InterestsService,
+    private tagRecommendationService: TagRecommendationService
   ) {
     this.profileForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -339,6 +343,19 @@ export class ProfileComponent implements OnInit, OnDestroy {
   
   navigateToHome(): void {
     this.router.navigate(['/home']);
+  }
+
+  // Handle interests selection events from the interests component
+  onInterestsSelected(interests: string[]): void {
+    console.log('🎯 ProfileComponent - Interests selected:', interests);
+    // The interests component will handle the API call, we just listen for the completion
+  }
+
+  // Handle interests update completion from the interests component
+  onInterestsUpdated(): void {
+    console.log('🎯 ProfileComponent - Interests updated, triggering cache refresh');
+    // Trigger immediate cache invalidation for tag recommendations
+    this.tagRecommendationService.onInterestsUpdated();
   }
 
 

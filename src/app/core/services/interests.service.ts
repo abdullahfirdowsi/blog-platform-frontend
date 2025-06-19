@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { UserInterests, UserInterestsCreate, UserInterestsUpdate } from '../../shared/interfaces/user.interface';
 import { environment } from '../../../environments/environment';
@@ -12,7 +12,13 @@ export class InterestsService {
   private apiUrl = `${environment.apiUrl}/interests`;
   private userInterestsSubject = new BehaviorSubject<UserInterests | null>(null);
   
+  // Event streams for reactive updates
+  private interestsChangeSubject = new Subject<UserInterests>();
+  private interestsUpdatedSubject = new Subject<'created' | 'updated' | 'deleted'>();
+  
   public userInterests$ = this.userInterestsSubject.asObservable();
+  public interestsChange$ = this.interestsChangeSubject.asObservable();
+  public interestsUpdated$ = this.interestsUpdatedSubject.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -26,14 +32,24 @@ export class InterestsService {
   // Create user interests (first time)
   createUserInterests(interests: UserInterestsCreate): Observable<UserInterests> {
     return this.http.post<UserInterests>(this.apiUrl, interests).pipe(
-      tap(interests => this.userInterestsSubject.next(interests))
+      tap(interests => {
+        this.userInterestsSubject.next(interests);
+        this.interestsChangeSubject.next(interests);
+        this.interestsUpdatedSubject.next('created');
+        console.log('🎯 Interests created, notifying subscribers:', interests.interests);
+      })
     );
   }
 
   // Update user interests (replace all)
   updateUserInterests(interests: UserInterestsUpdate): Observable<UserInterests> {
     return this.http.put<UserInterests>(this.apiUrl, interests).pipe(
-      tap(interests => this.userInterestsSubject.next(interests))
+      tap(interests => {
+        this.userInterestsSubject.next(interests);
+        this.interestsChangeSubject.next(interests);
+        this.interestsUpdatedSubject.next('updated');
+        console.log('🎯 Interests updated, notifying subscribers:', interests.interests);
+      })
     );
   }
 
