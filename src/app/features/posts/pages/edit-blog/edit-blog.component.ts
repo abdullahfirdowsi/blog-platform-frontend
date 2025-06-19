@@ -45,6 +45,7 @@ export class EditBlogComponent implements OnInit, OnDestroy {
   showUnsavedChangesModal = false;
   pendingNavigation: string | null = null;
   isUploadingImage = false;
+  private hoverTimeout: any = null;
   
   // Republish modal state
   showRepublishModal = false;
@@ -228,14 +229,28 @@ export class EditBlogComponent implements OnInit, OnDestroy {
 
   // Toggle add menu
   toggleAddMenu(blockId?: string): void {
+    // Clear any pending close timeout
+    if (this.hoverTimeout) {
+      clearTimeout(this.hoverTimeout);
+      this.hoverTimeout = null;
+    }
+    
     this.currentBlockId = blockId || null;
-    this.showAddMenu = !this.showAddMenu;
+    this.showAddMenu = true; // Always show on hover/click
   }
 
-  // Close add menu
+  // Close add menu with delay to prevent accidental closing
   closeAddMenu(): void {
-    this.showAddMenu = false;
-    this.currentBlockId = null;
+    // Clear any existing timeout
+    if (this.hoverTimeout) {
+      clearTimeout(this.hoverTimeout);
+    }
+    
+    // Add a small delay before closing to prevent accidental closing
+    this.hoverTimeout = setTimeout(() => {
+      this.showAddMenu = false;
+      this.currentBlockId = null;
+    }, 200); // 200ms delay
   }
 
   // Add new block

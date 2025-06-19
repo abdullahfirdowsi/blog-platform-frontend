@@ -72,8 +72,13 @@
           </div>
           
           <!-- Main Add Button -->
-          <div class="add-block-container add-menu-container" [class.menu-open]="showAddMenu && currentBlockId === null">
-            <button class="add-block-btn main-add" (click)="toggleAddMenu()">
+          <div class="add-block-container add-menu-container" 
+               [class.menu-open]="showAddMenu && currentBlockId === null"
+               (mouseenter)="toggleAddMenu()"
+               (mouseleave)="closeAddMenu()">
+            <button class="add-block-btn main-add" 
+                    (click)="toggleAddMenu()"
+                    (mouseenter)="toggleAddMenu()">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                 <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -213,8 +218,13 @@
           </div>
 
           <!-- Add Block Between Elements -->
-          <div class="add-block-container add-menu-container" [class.menu-open]="showAddMenu && currentBlockId === block.id">
-            <button class="add-block-btn" (click)="toggleAddMenu(block.id)">
+          <div class="add-block-container add-menu-container" 
+               [class.menu-open]="showAddMenu && currentBlockId === block.id"
+               (mouseenter)="toggleAddMenu(block.id)"
+               (mouseleave)="closeAddMenu()">
+            <button class="add-block-btn" 
+                    (click)="toggleAddMenu(block.id)"
+                    (mouseenter)="toggleAddMenu(block.id)">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>

@@ -491,8 +491,8 @@
 
 /* Add extra space when menu is open - using CSS class that will be toggled via Angular */
 .add-block-container.menu-open {
-  margin-bottom: 150px; /* Extra space when menu is open to prevent overlap */
-  padding-bottom: 50px; /* Additional padding for menu space */
+  margin-bottom: 150px; /* Increased space when menu is open to prevent overlap */
+  padding-bottom: 20px; /* Additional padding for menu space */
 }
 
 .add-block-btn {
@@ -509,6 +509,8 @@
   color: #9ca3af;
   opacity: 0.6;
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1001; /* Ensure plus buttons are always clickable */
 }
 
 .add-block-btn:hover {
@@ -526,6 +528,7 @@
   border-color: #667eea;
   color: #667eea;
   background: rgba(102, 126, 234, 0.1);
+  z-index: 1001; /* Slightly higher than menu to stay clickable */
 }
 
 /* Add Menu */
@@ -542,9 +545,10 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  z-index: 10;
+  z-index: 1000; /* Much higher z-index to ensure it's always on top */
   min-width: 150px;
   backdrop-filter: blur(20px);
+  pointer-events: auto; /* Ensure menu can receive interactions */
 }
 
 .menu-item {
@@ -626,7 +630,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1010;
   padding: 1rem;
 }
 
@@ -918,7 +922,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1011;
   padding: 1.5rem;
 }
 

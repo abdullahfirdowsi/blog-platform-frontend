@@ -145,6 +145,8 @@
 
 .custom-interest-section .input-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .add-custom-btn {
@@ -163,12 +165,12 @@
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  z-index: 10;
 }
 
 .add-custom-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-  transform: translateY(-50%) scale(1.05);
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
@@ -179,7 +181,6 @@
 }
 
 .add-custom-btn:disabled:hover {
-  transform: translateY(-50%);
   box-shadow: none;
 }
 

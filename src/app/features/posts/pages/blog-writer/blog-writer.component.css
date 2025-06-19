@@ -511,8 +511,8 @@
 
 /* Add extra space when menu is open - using CSS class that will be toggled via Angular */
 .add-block-container.menu-open {
-  margin-bottom: 150px; /* Extra space when menu is open to prevent overlap */
-  padding-bottom: 20px; /* Additional padding for menu space */
+  margin-bottom: 250px; /* Increased space when menu is open to prevent overlap */
+  padding-bottom: 60px; /* Additional padding for menu space */
 }
 
 .add-block-btn {
@@ -529,6 +529,8 @@
   transition: all 0.3s ease;
   opacity: 0.7;
   backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1001; /* Ensure plus buttons are always clickable */
 }
 
 .add-block-btn:hover {
@@ -549,14 +551,14 @@
   border-color: rgba(102, 126, 234, 0.4);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   position: relative;
-  z-index: 110; /* Higher z-index to stay above the menu */
+  z-index: 1001; /* Slightly higher than menu to stay clickable */
 }
 
 .add-block-btn.main-add:hover {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
   border-color: rgba(102, 126, 234, 0.6);
   transform: scale(1.05);
-  z-index: 110; /* Maintain high z-index on hover */
+  z-index: 1001; /* Maintain high z-index on hover */
 }
 
 /* Add Menu */
@@ -570,11 +572,12 @@
   border-radius: 12px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(20px);
-  z-index: 100; /* Lower than the main button */
+  z-index: 1000; /* Much higher z-index to ensure it's always on top */
   width: 240px; /* Fixed smaller width */
   max-height: 60vh; /* Limit height to 60% of viewport */
   overflow-y: auto; /* Allow scrolling if needed */
   animation: menuFadeIn 0.2s ease-out;
+  pointer-events: auto; /* Ensure menu can receive interactions */
 }
 
 @keyframes menuFadeIn {
@@ -911,7 +914,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1010;
   padding: 1.5rem;
 }
 
