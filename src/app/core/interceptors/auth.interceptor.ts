@@ -7,9 +7,9 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Always include credentials for cookie-based refresh tokens
+  // Only include credentials for endpoints that require authentication
   let authReq = req.clone({
-    withCredentials: true
+    withCredentials: !isPublicEndpoint(req.url)
   });
 
   // Add token to requests (except auth endpoints)
@@ -44,16 +44,26 @@ function isAuthEndpoint(url: string): boolean {
 }
 
 function isPublicEndpoint(url: string): boolean {
-  const publicEndpoints = ['/blogs', '/tags'];
-  return publicEndpoints.some(endpoint => url.includes(endpoint)) && !url.includes('/my-blogs');
+  const publicEndpoints = ['/blogs', '/tags', '/interests/suggestions', '/interests'];
+  
+  // Check if URL contains any public endpoint pattern
+  const isPublic = publicEndpoints.some(endpoint => url.includes(endpoint));
+  
+  // Exceptions: these endpoints require authentication despite having similar patterns
+  const authExceptions = ['/my-blogs', '/blogs/my'];
+  const isException = authExceptions.some(exception => url.includes(exception));
+  
+  return isPublic && !isException;
 }
 
 function addTokenToRequest(req: any, token: string) {
+  // Preserve the existing withCredentials setting from the request
   return req.clone({
     setHeaders: {
       Authorization: `Bearer ${token}`
     },
-    withCredentials: true
+    // Only set withCredentials for authenticated endpoints
+    withCredentials: !isPublicEndpoint(req.url)
   });
 }
 

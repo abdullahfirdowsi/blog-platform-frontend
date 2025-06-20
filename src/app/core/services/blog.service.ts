@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of, forkJoin } from 'rxjs';
+import { Observable, of, forkJoin, throwError } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
@@ -405,12 +405,30 @@ private createEmptyResponse(page: number, limit: number): PostsResponse {
   }
 
   // Get user's blogs (both published and drafts)
-  getMyBlogs(page = 1, pageSize = 10): Observable<Blog[]> {
-    const params = new HttpParams()
+  getMyBlogs(page = 1, pageSize = 10, published_only?: boolean): Observable<BlogsResponse> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('page_size', pageSize.toString());
     
-    return this.http.get<Blog[]>(`${this.apiUrl}/blogs/my-blogs`, { params });
+    // If published_only is specified, add it to params
+    if (published_only !== undefined) {
+      params = params.set('published_only', published_only.toString());
+    }
+    
+    return this.http.get<BlogsResponse>(`${this.apiUrl}/blogs/my-blogs`, { params })
+      .pipe(
+        catchError(error => {
+          console.error('Error fetching my blogs:', error);
+          
+          // Handle API connectivity issues that might be related to URL changes
+          if (error.status === 0) {
+            console.error('Could not connect to the API. The service might be down or the URL has changed.');
+          }
+          
+          // Return a default empty response structure
+          return throwError(() => error);
+        })
+      );
   }
 
   // Save blog as draft

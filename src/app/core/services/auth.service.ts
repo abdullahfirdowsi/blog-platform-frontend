@@ -16,6 +16,7 @@ export class AuthService {
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   private refreshTokenTimer: any;
   private router = inject(Router);
+  private currentApiDomain: string;
 
   public currentUser$ = this.currentUserSubject.asObservable();
   public token$ = this.tokenSubject.asObservable();
@@ -25,15 +26,73 @@ export class AuthService {
   );
 
   constructor(private http: HttpClient) {
+    this.currentApiDomain = this.extractDomain(environment.apiUrl);
+    this.checkApiUrlChange();
     this.loadStoredAuth();
+  }
+
+  /**
+   * Extracts domain from a URL
+   */
+  private extractDomain(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.hostname;
+    } catch (error) {
+      console.error('Invalid URL format:', url);
+      return '';
+    }
+  }
+
+  /**
+   * Checks if API URL has changed since last use
+   */
+  private checkApiUrlChange(): void {
+    const storedApiDomain = sessionStorage.getItem('api_domain');
+    
+    if (storedApiDomain && storedApiDomain !== this.currentApiDomain) {
+      console.warn(`API domain changed from ${storedApiDomain} to ${this.currentApiDomain}`);
+      this.handleApiUrlChange();
+    }
+    
+    // Store current API domain
+    sessionStorage.setItem('api_domain', this.currentApiDomain);
+  }
+
+  /**
+   * Handles API URL change by clearing auth data and redirecting to login
+   */
+  private handleApiUrlChange(): void {
+    console.log('API URL changed - clearing authentication data');
+    this.clearStoredAuth();
+    this.tokenSubject.next(null);
+    this.currentUserSubject.next(null);
+    
+    // Show a notification about the API change (optional)
+    // Can be enhanced with a proper notification service
+    setTimeout(() => {
+      alert('The application has been updated. Please log in again.');
+    }, 1000);
+    
+    // Redirect to login page
+    this.router.navigate(['/auth/login']);
   }
 
 
   private loadStoredAuth(): void {
     const token = sessionStorage.getItem('access_token');
     const user = sessionStorage.getItem('current_user');
+    const tokenDomain = sessionStorage.getItem('token_domain');
     
+    // Check if token exists, is valid, and the domain matches
     if (token && user && this.isTokenValid(token)) {
+      // Verify that token was issued for the current API domain
+      if (tokenDomain && tokenDomain !== this.currentApiDomain) {
+        console.warn(`Token domain mismatch: token from ${tokenDomain}, current API is ${this.currentApiDomain}`);
+        this.clearStoredAuth();
+        return;
+      }
+      
       console.log('Loading stored authentication');
       this.tokenSubject.next(token);
       this.currentUserSubject.next(JSON.parse(user));
@@ -109,6 +168,7 @@ export class AuthService {
     // Store access token in session storage (cleared on browser close)
     sessionStorage.setItem('access_token', response.access_token);
     sessionStorage.setItem('current_user', JSON.stringify(response.user));
+    sessionStorage.setItem('token_domain', this.currentApiDomain);
     
     // Refresh token is handled via HTTP-only cookies on the backend
     this.tokenSubject.next(response.access_token);
@@ -120,6 +180,8 @@ export class AuthService {
     sessionStorage.removeItem('access_token');
     sessionStorage.removeItem('current_user');
     sessionStorage.removeItem('refresh_token'); // Clear any existing refresh token
+    sessionStorage.removeItem('token_domain'); // Clear token domain
+    // Don't remove api_domain as we want to track changes
     this.clearRefreshTimer();
   }
 
@@ -141,9 +203,27 @@ export class AuthService {
       }),
       catchError(error => {
         this.isLoadingSubject.next(false);
+        
+        // Check if error is related to API access
+        if (error.status === 0) {
+          console.error('Could not connect to the API. The service might be down or the URL has changed.');
+          // Handle as potential API URL change
+          this.handleApiAccessError();
+        }
+        
         return throwError(() => error);
       })
     );
+  }
+
+  /**
+   * Handle API access errors that might be related to URL changes
+   */
+  private handleApiAccessError(): void {
+    // Clear any stored auth data as it might be for the wrong domain
+    this.clearStoredAuth();
+    this.tokenSubject.next(null);
+    this.currentUserSubject.next(null);
   }
 
   register(userData: CreateUserRequest): Observable<any> {
@@ -203,6 +283,7 @@ export class AuthService {
       tap(response => {
         console.log('Token refresh response received');
         sessionStorage.setItem('access_token', response.access_token);
+        sessionStorage.setItem('token_domain', this.currentApiDomain);
         this.tokenSubject.next(response.access_token);
         if (response.user) {
           sessionStorage.setItem('current_user', JSON.stringify(response.user));
@@ -211,7 +292,16 @@ export class AuthService {
       }),
       catchError(error => {
         console.error('Token refresh error:', error);
-        this.logout();
+        
+        // Special handling for connection errors - might be API URL change
+        if (error.status === 0) {
+          console.error('Could not connect to API during token refresh. The service might be down or the URL has changed.');
+          this.handleApiAccessError();
+        } else {
+          // Standard logout for other errors
+          this.logout();
+        }
+        
         return throwError(() => error);
       })
     );
@@ -288,6 +378,20 @@ export class AuthService {
   // Debug methods
   getRefreshTimerStatus(): boolean {
     return !!this.refreshTokenTimer;
+  }
+
+  /**
+   * Force check for API URL change - useful for manual troubleshooting
+   */
+  checkApiConfiguration(): {currentDomain: string, storedDomain: string | null, tokenDomain: string | null} {
+    const storedApiDomain = sessionStorage.getItem('api_domain');
+    const tokenDomain = sessionStorage.getItem('token_domain');
+    
+    return {
+      currentDomain: this.currentApiDomain,
+      storedDomain: storedApiDomain,
+      tokenDomain: tokenDomain
+    };
   }
 
   manualClearRefreshTimer(): void {

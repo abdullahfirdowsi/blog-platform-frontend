@@ -62,13 +62,27 @@ export class BlogStateService {
   loadMyBlogs(): Observable<Blog[]> {
     this.updateState({ loading: true, error: null });
     
-    // Only fetch from API (MongoDB)
-    return this.blogService.getMyBlogs(1, 100).pipe(
-      tap(blogs => {
+    // Fetch from API (MongoDB), explicitly requesting both published and unpublished posts
+    // by NOT setting the published_only parameter
+    return this.blogService.getMyBlogs(1, 100, undefined).pipe(
+      map(response => {
+        // Properly extract blogs from the response
+        // This handles both old API format (direct array) and new format (BlogsResponse)
+        const blogs = Array.isArray(response) 
+          ? response 
+          : (response.blogs || []);
+        
         console.log('Successfully loaded blogs from API:', blogs);
-        this.updateState({ blogs, loading: false });
+        return blogs;
+      }),
+      map(blogs => {
+        // Map blogs to ensure consistent format
+        return blogs.map(blog => this.convertApiResponseToBlog(blog));
+      }),
+      tap(formattedBlogs => {
+        this.updateState({ blogs: formattedBlogs, loading: false });
         // Save to localStorage as cache after successful API call
-        this.saveBlogsToLocalStorage(blogs);
+        this.saveBlogsToLocalStorage(formattedBlogs);
       }),
       catchError(error => {
         console.error('Failed to load blogs from API:', error);
@@ -77,7 +91,11 @@ export class BlogStateService {
         if (error.status === 401) {
           errorMessage = 'Please log in to view your blogs';
         } else if (error.status === 0) {
-          errorMessage = 'Cannot connect to server. Please check your connection.';
+          errorMessage = 'Cannot connect to server. Check your connection or try logging in again.';
+          
+          // This could be an API URL change issue - handle appropriately
+          // Local user blogs might be for the old API, so clear those too
+          localStorage.removeItem('user_blogs');
         } else if (error.error?.detail) {
           errorMessage = error.error.detail;
         }
@@ -338,11 +356,11 @@ export class BlogStateService {
       _id: apiResponse.id || apiResponse._id,
       user_id: apiResponse.user_id,
       title: apiResponse.title,
-      username:apiResponse.username,
+      username: apiResponse.username,
       content: apiResponse.blog_body || apiResponse.content || '',
       tags: apiResponse.tags || [],  // Changed from tag_ids to tags
       main_image_url: apiResponse.main_image_url,
-      published: apiResponse.published,
+      published: typeof apiResponse.published === 'boolean' ? apiResponse.published : true, // Default to published if not specified
       created_at: apiResponse.created_at,
       updated_at: apiResponse.updated_at
     };
