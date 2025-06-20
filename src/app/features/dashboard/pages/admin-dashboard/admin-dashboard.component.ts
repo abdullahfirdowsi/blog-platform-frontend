@@ -93,6 +93,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
 
   ngAfterViewInit(): void {
     // Charts will be initialized when data is loaded
+    // This ensures proper timing and avoids duplicate initialization
   }
 
   private initializeCharts(): void {
@@ -260,19 +261,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     const ctx = this.pieChartRef.nativeElement.getContext('2d');
     if (!ctx) return;
 
-    const colors = [
-      '#4299E1', '#48BB78', '#F6AD55', '#F56565', 
-      '#9F7AEA', '#ED64A6', '#38B2AC', '#667EEA'
-    ];
-
     this.pieChart = new Chart(ctx, {
       type: 'pie',
       data: {
         labels: this.postsByCategory.map(item => item.category),
         datasets: [{
           data: this.postsByCategory.map(item => item.count),
-          backgroundColor: this.postsByCategory.map((_, index) => colors[index % colors.length]),
-          borderWidth: 1,
+          backgroundColor: [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
+          ],
+          borderWidth: 2,
           borderColor: '#fff'
         }]
       },
@@ -281,27 +280,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'bottom',
-            labels: {
-              padding: 20,
-              usePointStyle: true,
-              font: {
-                size: 12
-              }
-            }
+            position: 'bottom'
           },
           title: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            titleColor: '#1F2937',
-            bodyColor: '#4B5563',
-            borderColor: '#E5E7EB',
-            borderWidth: 1,
-            padding: 12,
-            cornerRadius: 8,
-            boxPadding: 6
+            display: true,
+            text: 'Posts by Category'
           }
         }
       }
@@ -325,50 +308,24 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
         datasets: [{
           label: 'Posts Published',
           data: this.postsOverTime.map(item => item.count),
-          borderColor: '#3B82F6',
-          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderColor: '#36A2EB',
+          backgroundColor: 'rgba(54, 162, 235, 0.1)',
           fill: true,
-          tension: 0.3,
-          borderWidth: 2,
-          pointBackgroundColor: '#3B82F6',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 1,
-          pointRadius: 4,
-          pointHoverRadius: 6
+          tension: 0.4
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            titleColor: '#1F2937',
-            bodyColor: '#4B5563',
-            borderColor: '#E5E7EB',
-            borderWidth: 1,
-            padding: 12,
-            cornerRadius: 8,
-            boxPadding: 6
+          title: {
+            display: true,
+            text: `Posts Published Over Time (${this.selectedTimePeriod})`
           }
         },
         scales: {
           y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(226, 232, 240, 0.6)'
-            },
-            ticks: {
-              precision: 0
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
+            beginAtZero: true
           }
         }
       }
@@ -388,55 +345,27 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     this.likesChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: this.mostLikedPosts.map(post => this.truncateTitle(post.title, 20)),
+        labels: this.mostLikedPosts.map(post => post.title.substring(0, 20) + '...'),
         datasets: [{
           label: 'Likes',
           data: this.mostLikedPosts.map(post => post.likes_count),
-          backgroundColor: '#F87171',
-          borderColor: '#F87171',
-          borderWidth: 0,
-          borderRadius: 4
+          backgroundColor: '#FF6384',
+          borderColor: '#FF6384',
+          borderWidth: 1
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        indexAxis: 'y',
         plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            titleColor: '#1F2937',
-            bodyColor: '#4B5563',
-            borderColor: '#E5E7EB',
-            borderWidth: 1,
-            padding: 12,
-            cornerRadius: 8,
-            boxPadding: 6,
-            callbacks: {
-              title: (tooltipItems) => {
-                const index = tooltipItems[0].dataIndex;
-                return this.mostLikedPosts[index].title;
-              }
-            }
+          title: {
+            display: true,
+            text: 'Most Liked Posts'
           }
         },
         scales: {
           y: {
-            grid: {
-              display: false
-            }
-          },
-          x: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(226, 232, 240, 0.6)'
-            },
-            ticks: {
-              precision: 0
-            }
+            beginAtZero: true
           }
         }
       }
@@ -456,64 +385,32 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     this.commentsChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: this.mostCommentedPosts.map(post => this.truncateTitle(post.title, 20)),
+        labels: this.mostCommentedPosts.map(post => post.title.substring(0, 20) + '...'),
         datasets: [{
           label: 'Comments',
           data: this.mostCommentedPosts.map(post => post.comment_count),
-          backgroundColor: '#60A5FA',
-          borderColor: '#60A5FA',
-          borderWidth: 0,
-          borderRadius: 4
+          backgroundColor: '#FFCE56',
+          borderColor: '#FFCE56',
+          borderWidth: 1
         }]
       },
       options: {
+        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        indexAxis: 'y',
         plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            titleColor: '#1F2937',
-            bodyColor: '#4B5563',
-            borderColor: '#E5E7EB',
-            borderWidth: 1,
-            padding: 12,
-            cornerRadius: 8,
-            boxPadding: 6,
-            callbacks: {
-              title: (tooltipItems) => {
-                const index = tooltipItems[0].dataIndex;
-                return this.mostCommentedPosts[index].title;
-              }
-            }
+          title: {
+            display: true,
+            text: 'Most Commented Posts'
           }
         },
         scales: {
-          y: {
-            grid: {
-              display: false
-            }
-          },
           x: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(226, 232, 240, 0.6)'
-            },
-            ticks: {
-              precision: 0
-            }
+            beginAtZero: true
           }
         }
       }
     });
-  }
-
-  // Helper method to truncate post titles
-  private truncateTitle(title: string, maxLength: number): string {
-    return title.length > maxLength ? title.substring(0, maxLength) + '...' : title;
   }
 
   toggleView(): void {
@@ -524,26 +421,22 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     const doc = new jsPDF();
     
     // Add title
-    doc.setFontSize(18);
-    doc.setTextColor(33, 33, 33);
+    doc.setFontSize(20);
     doc.text('Blog Platform Dashboard Report', 20, 20);
     
     // Add date
-    doc.setFontSize(11);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 35);
     
     // Add totals
     if (this.totals) {
       doc.setFontSize(14);
-      doc.setTextColor(33, 33, 33);
-      doc.text('Summary Statistics:', 20, 45);
-      doc.setFontSize(11);
-      doc.setTextColor(60, 60, 60);
-      doc.text(`Total Users: ${this.totals.total_users}`, 20, 55);
-      doc.text(`Total Posts: ${this.totals.total_posts}`, 20, 65);
-      doc.text(`Total Comments: ${this.totals.total_comments}`, 20, 75);
-      doc.text(`Total Likes: ${this.totals.total_likes}`, 20, 85);
+      doc.text('Summary Statistics:', 20, 50);
+      doc.setFontSize(12);
+      doc.text(`Total Users: ${this.totals.total_users}`, 20, 65);
+      doc.text(`Total Posts: ${this.totals.total_posts}`, 20, 75);
+      doc.text(`Total Comments: ${this.totals.total_comments}`, 20, 85);
+      doc.text(`Total Likes: ${this.totals.total_likes}`, 20, 95);
     }
     
     // Add top contributors table
@@ -558,20 +451,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
       doc.autoTable({
         head: [['Username', 'Posts', 'Comments', 'Score']],
         body: tableData,
-        startY: 100,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [59, 130, 246],
-          textColor: [255, 255, 255],
-          fontStyle: 'bold'
-        },
-        styles: {
-          fontSize: 10,
-          cellPadding: 5
-        },
-        alternateRowStyles: {
-          fillColor: [245, 247, 250]
-        }
+        startY: 110,
+        theme: 'grid'
       });
     }
     
@@ -613,26 +494,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getFilteredActivity(): Activity[] {
-    if (!this.searchTerm.trim()) {
-      return this.recentActivity;
-    }
-    
-    const searchLower = this.searchTerm.toLowerCase();
     return this.recentActivity.filter(activity => 
-      activity.description.toLowerCase().includes(searchLower) ||
-      activity.user.toLowerCase().includes(searchLower) ||
-      activity.type.toLowerCase().includes(searchLower)
+      activity.description.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+      activity.user.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
   }
 
   getFilteredTags(): TopTag[] {
-    if (!this.searchTerm.trim()) {
-      return this.topTags;
-    }
-    
-    const searchLower = this.searchTerm.toLowerCase();
     return this.topTags.filter(tag => 
-      tag.tag.toLowerCase().includes(searchLower)
+      tag.tag.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
   }
 
