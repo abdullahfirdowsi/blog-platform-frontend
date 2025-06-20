@@ -61,9 +61,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
 
   // UI state
   isLoading = true;
-  isUserView = false;
   isExportDropdownOpen = false;
   hasError = false;
+  isDarkTheme = false;
   
   // Filters
   selectedTimePeriod = 'week';
@@ -85,7 +85,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService
-  ) {}
+  ) {
+    // Check for user's theme preference
+    this.isDarkTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -93,7 +96,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
 
   ngAfterViewInit(): void {
     // Charts will be initialized when data is loaded
-    // This ensures proper timing and avoids duplicate initialization
   }
 
   private initializeCharts(): void {
@@ -261,18 +263,20 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     const ctx = this.pieChartRef.nativeElement.getContext('2d');
     if (!ctx) return;
 
+    // Define colors based on theme
+    const colors = this.isDarkTheme ? 
+      ['#64b5f6', '#81c784', '#ffb74d', '#e57373', '#ba68c8', '#4fc3f7', '#aed581', '#ff8a65'] :
+      ['#1976d2', '#2e7d32', '#f57f17', '#c62828', '#7b1fa2', '#0288d1', '#689f38', '#d84315'];
+
     this.pieChart = new Chart(ctx, {
       type: 'pie',
       data: {
         labels: this.postsByCategory.map(item => item.category),
         datasets: [{
           data: this.postsByCategory.map(item => item.count),
-          backgroundColor: [
-            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF'
-          ],
-          borderWidth: 2,
-          borderColor: '#fff'
+          backgroundColor: colors,
+          borderWidth: 1,
+          borderColor: this.isDarkTheme ? '#2a2a2a' : '#fff'
         }]
       },
       options: {
@@ -280,11 +284,25 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            position: 'bottom'
+            position: 'right',
+            labels: {
+              color: this.isDarkTheme ? '#e0e0e0' : '#333',
+              padding: 15,
+              usePointStyle: true,
+              font: {
+                size: 11
+              }
+            }
           },
-          title: {
-            display: true,
-            text: 'Posts by Category'
+          tooltip: {
+            backgroundColor: this.isDarkTheme ? 'rgba(42, 42, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            titleColor: this.isDarkTheme ? '#e0e0e0' : '#333',
+            bodyColor: this.isDarkTheme ? '#e0e0e0' : '#333',
+            borderColor: this.isDarkTheme ? '#333' : '#e0e0e0',
+            borderWidth: 1,
+            padding: 10,
+            cornerRadius: 4,
+            displayColors: true
           }
         }
       }
@@ -301,6 +319,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     const ctx = this.lineChartRef.nativeElement.getContext('2d');
     if (!ctx) return;
 
+    // Define colors based on theme
+    const primaryColor = this.isDarkTheme ? '#64b5f6' : '#1976d2';
+    const gridColor = this.isDarkTheme ? '#333' : '#e0e0e0';
+    const textColor = this.isDarkTheme ? '#e0e0e0' : '#333';
+
     this.lineChart = new Chart(ctx, {
       type: 'line',
       data: {
@@ -308,24 +331,59 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
         datasets: [{
           label: 'Posts Published',
           data: this.postsOverTime.map(item => item.count),
-          borderColor: '#36A2EB',
-          backgroundColor: 'rgba(54, 162, 235, 0.1)',
+          borderColor: primaryColor,
+          backgroundColor: this.isDarkTheme ? 'rgba(100, 181, 246, 0.1)' : 'rgba(25, 118, 210, 0.1)',
           fill: true,
-          tension: 0.4
+          tension: 0.3,
+          borderWidth: 2,
+          pointBackgroundColor: primaryColor,
+          pointRadius: 3,
+          pointHoverRadius: 5
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          title: {
+          legend: {
             display: true,
-            text: `Posts Published Over Time (${this.selectedTimePeriod})`
+            labels: {
+              color: textColor,
+              font: {
+                size: 12
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: this.isDarkTheme ? 'rgba(42, 42, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            titleColor: this.isDarkTheme ? '#e0e0e0' : '#333',
+            bodyColor: this.isDarkTheme ? '#e0e0e0' : '#333',
+            borderColor: this.isDarkTheme ? '#333' : '#e0e0e0',
+            borderWidth: 1
           }
         },
         scales: {
+          x: {
+            grid: {
+              color: gridColor,
+              drawBorder: true,
+              drawOnChartArea: true
+            },
+            ticks: {
+              color: textColor
+            }
+          },
           y: {
-            beginAtZero: true
+            beginAtZero: true,
+            grid: {
+              color: gridColor,
+              drawBorder: true,
+              drawOnChartArea: true
+            },
+            ticks: {
+              color: textColor,
+              precision: 0
+            }
           }
         }
       }
@@ -342,30 +400,66 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     const ctx = this.likesChartRef.nativeElement.getContext('2d');
     if (!ctx) return;
 
+    // Define colors based on theme
+    const barColor = this.isDarkTheme ? '#e57373' : '#c62828';
+    const gridColor = this.isDarkTheme ? '#333' : '#e0e0e0';
+    const textColor = this.isDarkTheme ? '#e0e0e0' : '#333';
+
     this.likesChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: this.mostLikedPosts.map(post => post.title.substring(0, 20) + '...'),
+        labels: this.mostLikedPosts.map(post => this.truncateTitle(post.title, 20)),
         datasets: [{
           label: 'Likes',
           data: this.mostLikedPosts.map(post => post.likes_count),
-          backgroundColor: '#FF6384',
-          borderColor: '#FF6384',
-          borderWidth: 1
+          backgroundColor: barColor,
+          borderWidth: 0,
+          borderRadius: 4,
+          maxBarThickness: 40
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        indexAxis: 'y',
         plugins: {
-          title: {
-            display: true,
-            text: 'Most Liked Posts'
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: this.isDarkTheme ? 'rgba(42, 42, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            titleColor: this.isDarkTheme ? '#e0e0e0' : '#333',
+            bodyColor: this.isDarkTheme ? '#e0e0e0' : '#333',
+            borderColor: this.isDarkTheme ? '#333' : '#e0e0e0',
+            borderWidth: 1,
+            callbacks: {
+              title: (tooltipItems) => {
+                const post = this.mostLikedPosts[tooltipItems[0].dataIndex];
+                return post.title;
+              }
+            }
           }
         },
         scales: {
+          x: {
+            beginAtZero: true,
+            grid: {
+              color: gridColor,
+              drawBorder: true,
+              drawOnChartArea: true
+            },
+            ticks: {
+              color: textColor,
+              precision: 0
+            }
+          },
           y: {
-            beginAtZero: true
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: textColor
+            }
           }
         }
       }
@@ -382,39 +476,82 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     const ctx = this.commentsChartRef.nativeElement.getContext('2d');
     if (!ctx) return;
 
+    // Define colors based on theme
+    const barColor = this.isDarkTheme ? '#ffb74d' : '#f57f17';
+    const gridColor = this.isDarkTheme ? '#333' : '#e0e0e0';
+    const textColor = this.isDarkTheme ? '#e0e0e0' : '#333';
+
     this.commentsChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: this.mostCommentedPosts.map(post => post.title.substring(0, 20) + '...'),
+        labels: this.mostCommentedPosts.map(post => this.truncateTitle(post.title, 20)),
         datasets: [{
           label: 'Comments',
           data: this.mostCommentedPosts.map(post => post.comment_count),
-          backgroundColor: '#FFCE56',
-          borderColor: '#FFCE56',
-          borderWidth: 1
+          backgroundColor: barColor,
+          borderWidth: 0,
+          borderRadius: 4,
+          maxBarThickness: 40
         }]
       },
       options: {
-        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        indexAxis: 'y',
         plugins: {
-          title: {
-            display: true,
-            text: 'Most Commented Posts'
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: this.isDarkTheme ? 'rgba(42, 42, 42, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+            titleColor: this.isDarkTheme ? '#e0e0e0' : '#333',
+            bodyColor: this.isDarkTheme ? '#e0e0e0' : '#333',
+            borderColor: this.isDarkTheme ? '#333' : '#e0e0e0',
+            borderWidth: 1,
+            callbacks: {
+              title: (tooltipItems) => {
+                const post = this.mostCommentedPosts[tooltipItems[0].dataIndex];
+                return post.title;
+              }
+            }
           }
         },
         scales: {
           x: {
-            beginAtZero: true
+            beginAtZero: true,
+            grid: {
+              color: gridColor,
+              drawBorder: true,
+              drawOnChartArea: true
+            },
+            ticks: {
+              color: textColor,
+              precision: 0
+            }
+          },
+          y: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: textColor
+            }
           }
         }
       }
     });
   }
 
-  toggleView(): void {
-    this.isUserView = !this.isUserView;
+  toggleTheme(): void {
+    this.isDarkTheme = !this.isDarkTheme;
+    
+    // Reinitialize charts with new theme
+    setTimeout(() => {
+      this.updatePieChart();
+      this.updateLineChart();
+      this.updateLikesChart();
+      this.updateCommentsChart();
+    }, 100);
   }
 
   exportToPDF(): void {
@@ -422,6 +559,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     
     // Add title
     doc.setFontSize(20);
+    doc.setTextColor(this.isDarkTheme ? 255 : 0);
     doc.text('Blog Platform Dashboard Report', 20, 20);
     
     // Add date
@@ -441,7 +579,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     
     // Add top contributors table
     if (this.topContributors.length > 0) {
-      const tableData = this.topContributors.map(contributor => [
+      const tableData = this.topContributors.map((contributor, index) => [
+        (index + 1).toString(),
         contributor.username,
         contributor.post_count.toString(),
         contributor.comment_count.toString(),
@@ -449,14 +588,23 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
       ]);
       
       doc.autoTable({
-        head: [['Username', 'Posts', 'Comments', 'Score']],
+        head: [['Rank', 'Username', 'Posts', 'Comments', 'Score']],
         body: tableData,
         startY: 110,
-        theme: 'grid'
+        theme: 'grid',
+        headStyles: {
+          fillColor: [25, 118, 210],
+          textColor: 255,
+          fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        }
       });
     }
     
     doc.save('dashboard-report.pdf');
+    this.isExportDropdownOpen = false;
   }
 
   exportToCSV(): void {
@@ -474,9 +622,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     // Add top contributors
     if (this.topContributors.length > 0) {
       csvContent += 'Top Contributors\n';
-      csvContent += 'Username,Posts,Comments,Score\n';
-      this.topContributors.forEach(contributor => {
-        csvContent += `${contributor.username},${contributor.post_count},${contributor.comment_count},${contributor.total_score}\n`;
+      csvContent += 'Rank,Username,Posts,Comments,Score\n';
+      this.topContributors.forEach((contributor, index) => {
+        csvContent += `${index + 1},${contributor.username},${contributor.post_count},${contributor.comment_count},${contributor.total_score}\n`;
       });
     }
     
@@ -487,6 +635,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    this.isExportDropdownOpen = false;
   }
 
   refreshData(): void {
@@ -494,6 +643,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getFilteredActivity(): Activity[] {
+    if (!this.searchTerm) return this.recentActivity;
+    
     return this.recentActivity.filter(activity => 
       activity.description.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
       activity.user.toLowerCase().includes(this.searchTerm.toLowerCase())
@@ -501,6 +652,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   getFilteredTags(): TopTag[] {
+    if (!this.searchTerm) return this.topTags;
+    
     return this.topTags.filter(tag => 
       tag.tag.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
@@ -514,15 +667,16 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
     this.isExportDropdownOpen = !this.isExportDropdownOpen;
   }
 
-  closeExportDropdown(): void {
-    this.isExportDropdownOpen = false;
+  // Helper method to truncate post titles
+  private truncateTitle(title: string, maxLength: number): string {
+    return title.length > maxLength ? title.substring(0, maxLength) + '...' : title;
   }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('.relative')) {
-      this.closeExportDropdown();
+    if (!target.closest('.dropdown')) {
+      this.isExportDropdownOpen = false;
     }
   }
 }
