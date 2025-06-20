@@ -366,7 +366,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
           x: {
             grid: {
               color: gridColor,
-              drawBorder: true,
+              display: true,
               drawOnChartArea: true
             },
             ticks: {
@@ -377,7 +377,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
             beginAtZero: true,
             grid: {
               color: gridColor,
-              drawBorder: true,
+              display: true,
               drawOnChartArea: true
             },
             ticks: {
@@ -445,7 +445,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
             beginAtZero: true,
             grid: {
               color: gridColor,
-              drawBorder: true,
+              display: true,
               drawOnChartArea: true
             },
             ticks: {
@@ -521,7 +521,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy, AfterViewInit
             beginAtZero: true,
             grid: {
               color: gridColor,
-              drawBorder: true,
+              display: true,
               drawOnChartArea: true
             },
             ticks: {
