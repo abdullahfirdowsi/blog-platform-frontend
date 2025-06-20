@@ -1,0 +1,155 @@
+<div class="interests-section">
+  <!-- Header -->
+  <div class="form-header">
+    <h3 class="form-title">
+      <i class="fas fa-heart tab-icon"></i>
+      {{ isFirstTimeSetup ? 'Tell us about your interests' : 'Your Interests' }}
+    </h3>
+    <p class="form-subtitle">
+      {{ isFirstTimeSetup ? 
+        'Select topics you\'re interested in to get personalized blog recommendations' : 
+        'Update your interests to improve your blog recommendations' }}
+    </p>
+  </div>
+
+  <!-- Success/Error Messages -->
+  @if (successMessage) {
+    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-md mb-6 animate-fade-in">
+      <div class="flex items-center">
+        <i class="fas fa-check-circle text-green-500 mr-3"></i>
+        <span class="text-green-700 text-sm">{{ successMessage }}</span>
+      </div>
+    </div>
+  }
+  
+  @if (errorMessage) {
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-md mb-6 animate-fade-in">
+      <div class="flex items-center">
+        <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+        <span class="text-red-700 text-sm">{{ errorMessage }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+      <p class="text-center text-gray-400">{{ isFirstTimeSetup ? 'Setting up your interests...' : 'Loading...' }}</p>
+    </div>
+  }
+
+  @if (!isLoading) {
+    <!-- Selected Interests Counter -->
+    <div class="interests-counter">
+      <span class="count-text">{{ selectedInterests.length }}/20 interests selected</span>
+      @if (selectedInterests.length === 0) {
+        <span class="minimum-text">Select at least 1 interest</span>
+      }
+    </div>
+
+    <!-- Selected Interests Display -->
+    @if (selectedInterests.length > 0) {
+      <div class="selected-interests-section">
+        <h4 class="section-title">Selected Interests:</h4>
+        <div class="interests-grid selected">
+          @for (interest of selectedInterests; track interest) {
+            <button 
+              class="interest-tag selected"
+              (click)="removeInterest(interest)"
+              title="Click to remove">
+              {{ interest }}
+              <svg class="remove-icon" width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Interest Suggestions -->
+    <div class="suggestions-section">
+      <h4 class="section-title">Popular Interests:</h4>
+      <div class="interests-grid">
+        @for (suggestion of suggestions; track suggestion) {
+          <button 
+            class="interest-tag"
+            [class.selected]="isSelected(suggestion)"
+            [class.disabled]="!isSelected(suggestion) && selectedInterests.length >= 20"
+            (click)="toggleInterest(suggestion)"
+            [disabled]="!isSelected(suggestion) && selectedInterests.length >= 20">
+            {{ suggestion }}
+            @if (isSelected(suggestion)) {
+              <svg class="check-icon" width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path d="M16.25 6.25L8.75 13.75l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Custom Interest Input -->
+    <div class="custom-interest-section">
+      <h4 class="section-title">Add Custom Interest:</h4>
+      <div class="form-group">
+        <div class="input-wrapper">
+          <svg class="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 5v10m-5-5h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input 
+            type="text" 
+            [(ngModel)]="customInterest"
+            placeholder="Type your custom interest..."
+            class="form-input"
+            maxlength="50"
+            (keyup.enter)="addCustomInterest()"
+            [disabled]="selectedInterests.length >= 20">
+          <button 
+            type="button" 
+            (click)="addCustomInterest()"
+            class="add-custom-btn"
+            [disabled]="!customInterest.trim() || selectedInterests.length >= 20">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path d="M10 5v10m-5-5h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="interests-actions">
+      <button 
+        type="button" 
+        (click)="saveInterests()"
+        class="save-interests-btn"
+        [disabled]="selectedInterests.length === 0 || isLoading">
+        @if (isLoading) {
+          <div class="flex items-center">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+            Saving...
+          </div>
+        } @else {
+          <span class="flex items-center">
+            <i class="fas fa-save mr-2"></i>
+            {{ isFirstTimeSetup ? 'Continue' : 'Save Changes' }}
+          </span>
+        }
+      </button>
+      
+      @if (isFirstTimeSetup && selectedInterests.length > 0) {
+        <button 
+          type="button" 
+          (click)="setupCompleted.emit()"
+          class="skip-btn">
+          <i class="fas fa-arrow-right mr-2"></i>
+          Skip for now
+        </button>
+      }
+    </div>
+  }
+</div>
+

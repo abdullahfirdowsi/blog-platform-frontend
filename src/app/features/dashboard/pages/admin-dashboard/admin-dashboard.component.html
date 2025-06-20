@@ -1,0 +1,367 @@
+<div class="dashboard-bg p-4">
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <div class="text-center glass-card p-8">
+      <div class="loading-spinner mx-auto mb-4"></div>
+      <p class="text-white font-medium">Loading dashboard data...</p>
+      <p class="text-white/70 text-sm mt-2">Please wait while we fetch your analytics...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="hasError && !isLoading" class="flex justify-center items-center h-64">
+    <div class="text-center glass-card p-8">
+      <i class="fas fa-exclamation-triangle text-red-400 text-5xl mb-4"></i>
+      <h3 class="text-xl font-bold text-white mb-2">Failed to Load Dashboard</h3>
+      <p class="text-white/80 mb-6">There was an error loading the dashboard data.</p>
+      <button 
+        (click)="refreshData()" 
+        class="btn btn-primary"
+      >
+        <i class="fas fa-sync-alt mr-2"></i>Try Again
+      </button>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading" class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8 glass-card p-6 header-gradient">
+      <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <div>
+          <h1 class="text-4xl font-bold text-white mb-2">Admin Dashboard</h1>
+          <p class="text-white/80">Overview of your blog platform analytics and insights</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button
+            (click)="toggleView()"
+            class="btn btn-primary"
+          >
+            <i class="fas fa-exchange-alt mr-2"></i>
+            {{ isUserView ? 'Admin View' : 'User View' }}
+          </button>
+          <button
+            (click)="refreshData()"
+            class="btn btn-success"
+          >
+            <i class="fas fa-sync-alt mr-2"></i>Refresh
+          </button>
+          <div class="relative">
+            <button
+              (click)="toggleExportDropdown()"
+              class="btn btn-secondary"
+            >
+              <i class="fas fa-download mr-2"></i>Export
+            </button>
+            <div 
+              *ngIf="isExportDropdownOpen" 
+              class="export-dropdown" [class.show]="isExportDropdownOpen"
+            >
+              <button
+                (click)="exportToPDF(); closeExportDropdown()"
+                class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <i class="fas fa-file-pdf mr-3 text-red-500"></i>Export as PDF
+              </button>
+              <button
+                (click)="exportToCSV(); closeExportDropdown()"
+                class="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <i class="fas fa-file-csv mr-3 text-green-500"></i>Export as CSV
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="glass-card p-6 mb-8">
+      <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+        <i class="fas fa-filter mr-3 text-indigo-600"></i>
+        Filters & Controls
+      </h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <!-- Search Bar -->
+        <div class="sm:col-span-2 lg:col-span-2">
+          <label class="form-label">🔍 Search</label>
+          <div class="search-container">
+            <input
+              type="text"
+              [(ngModel)]="searchTerm"
+              placeholder="Search activities, tags, users..."
+              class="form-control search-input"
+            />
+            <i class="fas fa-search search-icon"></i>
+          </div>
+        </div>
+
+        <!-- Time Period Filter -->
+        <div>
+          <label class="form-label">📅 Time Period</label>
+          <select
+            [(ngModel)]="selectedTimePeriod"
+            (ngModelChange)="onTimePeriodChange()"
+            class="form-control"
+          >
+            <option *ngFor="let period of timePeriods" [value]="period.value">
+              {{ period.label }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Category Filter -->
+        <div>
+          <label class="form-label">📂 Category</label>
+          <select
+            [(ngModel)]="selectedCategory"
+            class="form-control"
+          >
+            <option value="">All Categories</option>
+            <option *ngFor="let category of categories" [value]="category">
+              {{ category }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Date Range -->
+        <div>
+          <label class="form-label">📆 Date Range</label>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input
+              type="date"
+              [(ngModel)]="startDate"
+              class="form-control"
+              placeholder="Start date"
+            />
+            <input
+              type="date"
+              [(ngModel)]="endDate"
+              class="form-control"
+              placeholder="End date"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 animate-fade-in" *ngIf="totals">
+      <div class="kpi-card">
+        <div class="kpi-icon bg-gradient-to-br from-blue-500 to-blue-600">
+          <i class="fas fa-users text-white"></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+          <p class="text-3xl font-bold text-gray-900">{{ totals.total_users | number }}</p>
+          <p class="text-xs text-green-600 mt-1">+12% from last month</p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-gradient-to-br from-green-500 to-green-600">
+          <i class="fas fa-blog text-white"></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600 mb-1">Total Posts</p>
+          <p class="text-3xl font-bold text-gray-900">{{ totals.total_posts | number }}</p>
+          <p class="text-xs text-green-600 mt-1">+8% from last month</p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-gradient-to-br from-amber-500 to-orange-600">
+          <i class="fas fa-comments text-white"></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600 mb-1">Total Comments</p>
+          <p class="text-3xl font-bold text-gray-900">{{ totals.total_comments | number }}</p>
+          <p class="text-xs text-green-600 mt-1">+15% from last month</p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon bg-gradient-to-br from-pink-500 to-red-600">
+          <i class="fas fa-heart text-white"></i>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-600 mb-1">Total Likes</p>
+          <p class="text-3xl font-bold text-gray-900">{{ totals.total_likes | number }}</p>
+          <p class="text-xs text-green-600 mt-1">+22% from last month</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8">
+      <!-- Pie Chart - Posts by Category -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">📊 Posts by Category</h3>
+          <div class="chart-subtitle" *ngIf="postsByCategory.length > 0">
+            {{ postsByCategory.length }} categories
+          </div>
+        </div>
+        <div class="h-80 relative">
+          <canvas #pieChart *ngIf="postsByCategory.length > 0" class="max-w-full max-h-full"></canvas>
+          <div *ngIf="postsByCategory.length === 0" class="empty-state">
+            <i class="fas fa-chart-pie empty-state-icon"></i>
+            <p class="empty-state-title">No category data available</p>
+            <p class="empty-state-description">Posts will appear here once categorized</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Line Chart - Posts Over Time -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">📈 Posts Published Over Time</h3>
+          <div class="chart-subtitle" *ngIf="postsOverTime.length > 0">
+            {{ selectedTimePeriod }} view
+          </div>
+        </div>
+        <div class="h-80 relative">
+          <canvas #lineChart *ngIf="postsOverTime.length > 0" class="max-w-full max-h-full"></canvas>
+          <div *ngIf="postsOverTime.length === 0" class="empty-state">
+            <i class="fas fa-chart-line empty-state-icon"></i>
+            <p class="empty-state-title">No time series data available</p>
+            <p class="empty-state-description">Publication trends will appear here</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bar Chart - Most Liked Posts -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">❤️ Most Liked Posts</h3>
+          <div class="chart-subtitle" *ngIf="mostLikedPosts.length > 0">
+            Top {{ mostLikedPosts.length }} posts
+          </div>
+        </div>
+        <div class="h-80 relative">
+          <canvas #likesChart *ngIf="mostLikedPosts.length > 0" class="max-w-full max-h-full"></canvas>
+          <div *ngIf="mostLikedPosts.length === 0" class="empty-state">
+            <i class="fas fa-heart empty-state-icon"></i>
+            <p class="empty-state-title">No liked posts data available</p>
+            <p class="empty-state-description">Popular posts will be ranked here</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Horizontal Bar Chart - Most Commented Posts -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">💬 Most Commented Posts</h3>
+          <div class="chart-subtitle" *ngIf="mostCommentedPosts.length > 0">
+            Top {{ mostCommentedPosts.length }} posts
+          </div>
+        </div>
+        <div class="h-80 relative">
+          <canvas #commentsChart *ngIf="mostCommentedPosts.length > 0" class="max-w-full max-h-full"></canvas>
+          <div *ngIf="mostCommentedPosts.length === 0" class="empty-state">
+            <i class="fas fa-comments empty-state-icon"></i>
+            <p class="empty-state-title">No commented posts data available</p>
+            <p class="empty-state-description">Engaging posts will appear here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Section with Activity Feed, Contributors, and Trending Tags -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Recent Activity Feed -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">🕐 Recent Activity</h3>
+          <span class="chart-subtitle" *ngIf="getFilteredActivity().length > 0">
+            {{ getFilteredActivity().length }} activities
+          </span>
+        </div>
+        <div class="activity-feed custom-scrollbar">
+          <div *ngFor="let activity of getFilteredActivity(); trackBy: trackByActivityId" 
+               class="activity-item">
+            <div class="flex-shrink-0">
+              <div class="activity-dot"></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm text-gray-900 leading-relaxed">{{ activity.description }}</p>
+              <p class="text-xs text-gray-500 mt-1">
+                <i class="fas fa-user mr-1"></i>{{ activity.user }} • 
+                <i class="fas fa-clock mr-1"></i>{{ activity.created_at | date:'short' }}
+              </p>
+            </div>
+          </div>
+          <div *ngIf="getFilteredActivity().length === 0" class="empty-state">
+            <i class="fas fa-history empty-state-icon"></i>
+            <p class="empty-state-title">No recent activity found</p>
+            <p class="empty-state-description">Activity will appear here as users interact</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Contributors -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">🏆 Top Contributors</h3>
+          <span class="chart-subtitle" *ngIf="topContributors.length > 0">
+            Top {{ topContributors.length }}
+          </span>
+        </div>
+        <div class="activity-feed custom-scrollbar">
+          <div *ngFor="let contributor of topContributors; let i = index" 
+               class="contributor-item">
+            <div class="flex-shrink-0">
+              <div class="contributor-rank">
+                {{ i + 1 }}
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-900">{{ contributor.username }}</p>
+              <div class="flex items-center space-x-3 text-xs text-gray-500 mt-1">
+                <span><i class="fas fa-blog mr-1"></i>{{ contributor.post_count }} posts</span>
+                <span><i class="fas fa-comments mr-1"></i>{{ contributor.comment_count }} comments</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-indigo-600">{{ contributor.total_score }}</div>
+              <div class="text-xs text-gray-500">score</div>
+            </div>
+          </div>
+          <div *ngIf="topContributors.length === 0" class="empty-state">
+            <i class="fas fa-users empty-state-icon"></i>
+            <p class="empty-state-title">No contributors found</p>
+            <p class="empty-state-description">Active users will be ranked here</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trending Tags -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3 class="chart-title">🔥 Trending Tags</h3>
+          <span class="chart-subtitle" *ngIf="getFilteredTags().length > 0">
+            {{ getFilteredTags().length }} tags
+          </span>
+        </div>
+        <div class="activity-feed custom-scrollbar">
+          <div *ngFor="let tag of getFilteredTags(); let i = index" 
+               class="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors">
+            <span class="tag" [ngClass]="i < 3 ? 'tag-primary' : 'tag-secondary'">
+              <i class="fas fa-hashtag text-xs mr-1"></i>{{ tag.tag }}
+            </span>
+            <div class="text-right">
+              <div class="text-sm font-bold text-gray-700">{{ tag.count }}</div>
+              <div class="text-xs text-gray-500">posts</div>
+            </div>
+          </div>
+          <div *ngIf="getFilteredTags().length === 0" class="empty-state">
+            <i class="fas fa-tags empty-state-icon"></i>
+            <p class="empty-state-title">No tags found</p>
+            <p class="empty-state-description">Popular tags will appear here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

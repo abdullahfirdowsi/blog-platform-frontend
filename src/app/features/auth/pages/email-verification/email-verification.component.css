@@ -1,0 +1,444 @@
+/* Email Verification Page - Matching Landing Page Design */
+
+/* Import landing page styles */
+/* Main Landing Container */
+.landing-hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-container {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Brand Section */
+.brand-section {
+  margin-bottom: 3rem;
+  animation: fadeInUp 1s ease-out;
+}
+
+.brand-logo {
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeInScale 1.2s ease-out 0.2s forwards;
+}
+
+.brand-title {
+  font-size: 2.25rem;
+  font-weight: 300;
+  color: #ffffff;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.02em;
+  font-family: 'Inter', sans-serif;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.4s forwards;
+}
+
+.brand-subtitle {
+  font-size: 1rem;
+  color: #9ca3af;
+  margin: 0;
+  font-weight: 400;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.6s forwards;
+}
+
+/* Auth Card */
+.auth-card {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.8s forwards;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.auth-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+/* Verification States */
+.verification-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.5rem;
+}
+
+.state-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.loading-icon {
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.success-icon {
+  background: rgba(34, 197, 94, 0.1);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+}
+
+.error-icon {
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+.state-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.state-message {
+  font-size: 1rem;
+  color: #9ca3af;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+/* Countdown Message */
+.countdown-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  color: #93c5fd;
+  font-size: 0.875rem;
+  margin: 0.5rem 0;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.countdown-icon {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.countdown-message strong {
+  color: #dbeafe;
+  font-weight: 600;
+}
+
+/* Buttons */
+.submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+  width: 100%;
+  text-decoration: none;
+  margin-top: 1rem;
+}
+
+.submit-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.submit-button:hover::before {
+  opacity: 1;
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: rgba(75, 85, 99, 0.2);
+  border: 1px solid rgba(75, 85, 99, 0.4);
+  border-radius: 12px;
+  color: #d1d5db;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: rgba(75, 85, 99, 0.3);
+  border-color: rgba(75, 85, 99, 0.6);
+  color: #ffffff;
+}
+
+.secondary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button-text,
+.button-arrow {
+  position: relative;
+  z-index: 1;
+}
+
+.button-arrow {
+  transition: transform 0.3s ease;
+}
+
+.submit-button:hover .button-arrow {
+  transform: translateX(4px);
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* Loading Spinners */
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid transparent;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top-color: #d1d5db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Decorative Elements */
+.decoration-dots {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float 6s ease-in-out infinite;
+}
+
+.dot-1 {
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.dot-2 {
+  top: 25%;
+  right: 15%;
+  animation-delay: 1s;
+}
+
+.dot-3 {
+  top: 60%;
+  left: 8%;
+  animation-delay: 2s;
+}
+
+.dot-4 {
+  bottom: 20%;
+  right: 12%;
+  animation-delay: 3s;
+}
+
+.dot-5 {
+  top: 40%;
+  left: 50%;
+  animation-delay: 4s;
+  opacity: 0.1;
+}
+
+.dot-6 {
+  bottom: 35%;
+  left: 20%;
+  animation-delay: 5s;
+  opacity: 0.2;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(120deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(240deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .landing-hero {
+    padding: 1rem;
+  }
+  
+  .landing-container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .brand-title {
+    font-size: 1.875rem;
+  }
+  
+  .auth-card {
+    padding: 1.5rem;
+  }
+  
+  .state-icon {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (max-width: 640px) {
+  .brand-title {
+    font-size: 1.75rem;
+  }
+  
+  .state-title {
+    font-size: 1.25rem;
+  }
+  
+  .state-message {
+    font-size: 0.875rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .landing-hero {
+    background: #000000;
+  }
+  
+  .auth-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .brand-logo,
+  .brand-title,
+  .brand-subtitle,
+  .auth-card {
+    animation: none;
+    opacity: 1;
+  }
+  
+  .dot {
+    animation: none;
+  }
+  
+  .submit-button,
+  .secondary-button {
+    transition: none;
+  }
+}
+

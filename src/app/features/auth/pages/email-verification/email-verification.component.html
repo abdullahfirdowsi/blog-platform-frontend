@@ -1,0 +1,117 @@
+<!-- Email Verification Page - Matching Landing Page Design -->
+<section class="landing-hero">
+  <div class="landing-container">
+    <!-- Brand Section -->
+    <div class="brand-section">
+      <div class="brand-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="url(#gradient)"/>
+          <path d="M16 18h16M16 24h12M16 30h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="gradient" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#667eea"/>
+              <stop offset="1" stop-color="#764ba2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="brand-title">Email Verification</h1>
+      <p class="brand-subtitle">Confirming your email address</p>
+    </div>
+
+    <!-- Verification Card -->
+    <div class="auth-card">
+      <!-- Loading State -->
+      @if (isLoading) {
+        <div class="verification-state loading-state">
+          <div class="state-icon loading-icon">
+            <div class="loading-spinner"></div>
+          </div>
+          <h2 class="state-title">Verifying Your Email</h2>
+          <p class="state-message">Please wait while we confirm your email address...</p>
+        </div>
+      }
+
+      <!-- Success State -->
+      @if (!isLoading && isSuccess) {
+        <div class="verification-state success-state">
+          <div class="state-icon success-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="state-title">Email Verified Successfully!</h2>
+          <p class="state-message">Your email has been verified. You can now sign in to your account.</p>
+          
+          <!-- Countdown Timer -->
+          @if (showCountdown) {
+            <div class="countdown-message">
+              <svg class="countdown-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-11a1 1 0 011 1v3a1 1 0 11-2 0V8a1 1 0 011-1zm0-3a1 1 0 100 2 1 1 0 000-2z" fill="currentColor"/>
+              </svg>
+              <span>Redirecting to login in <strong>{{ countdown }}</strong> seconds...</span>
+            </div>
+          }
+          
+          <a routerLink="/auth/login" class="submit-button">
+            <span class="button-text">Sign In to Your Account</span>
+            <svg class="button-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      }
+
+      <!-- Error State -->
+      @if (!isLoading && !isSuccess) {
+        <div class="verification-state error-state">
+          <div class="state-icon error-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="state-title">Verification Failed</h2>
+          <p class="state-message">{{ errorMessage }}</p>
+          
+          <div class="button-group">
+            <a routerLink="/auth/login" class="submit-button">
+              <span class="button-text">Back to Login</span>
+              <svg class="button-arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            
+            @if (canResend) {
+              <button 
+                type="button"
+                (click)="resendVerification()"
+                [disabled]="resendingVerification"
+                class="secondary-button"
+              >
+                @if (resendingVerification) {
+                  <div class="loading-content">
+                    <div class="loading-spinner-small"></div>
+                    <span>Sending...</span>
+                  </div>
+                } @else {
+                  <span>Resend Verification Email</span>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Decorative Elements -->
+    <div class="decoration-dots">
+      <div class="dot dot-1"></div>
+      <div class="dot dot-2"></div>
+      <div class="dot dot-3"></div>
+      <div class="dot dot-4"></div>
+      <div class="dot dot-5"></div>
+      <div class="dot dot-6"></div>
+    </div>
+  </div>
+</section>
+

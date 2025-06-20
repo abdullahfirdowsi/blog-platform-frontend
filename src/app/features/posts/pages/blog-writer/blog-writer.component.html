@@ -1,0 +1,412 @@
+<!-- Blog Writer Component -->
+<div class="blog-writer" (click)="onDocumentClick($event)">
+  <!-- Header -->
+  <header class="writer-header">
+    <div class="header-container">
+      <div class="header-left">
+        <button class="back-btn" (click)="discardChanges()">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 18L2 10l8-8M2 10h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Back to Home
+        </button>
+        <div class="page-info">
+          <h1 class="page-title">✍️ Write New Blog</h1>
+          <p class="page-subtitle">Share your thoughts with the world</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <button class="action-btn primary" (click)="openPublishModal()" [disabled]="!blogTitle || blogBlocks.length === 0">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" fill="currentColor"/>
+          </svg>
+          Publish
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Message Container -->
+  <div class="message-container" [class]="'message-' + messageType" *ngIf="showMessage">
+    <div class="message-content">
+      <span class="message-text">{{ messageText }}</span>
+      <button class="message-close" (click)="hideMessage()">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+          <path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Editor Area -->
+  <main class="editor-main">
+    <div class="editor-container">
+      <!-- Title Input -->
+      <div class="title-section">
+        <input 
+          type="text" 
+          class="blog-title-input" 
+          placeholder="Enter your blog title..."
+          [(ngModel)]="blogTitle"
+          maxlength="200"
+        />
+        <div class="title-counter">{{ blogTitle.length }}/200</div>
+      </div>
+
+      <!-- Content Blocks -->
+      <div class="content-blocks">
+        <!-- Empty state with add button -->
+        <div *ngIf="blogBlocks.length === 0" class="empty-content">
+          <div class="empty-message">
+            <div class="empty-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h3>Ready to create something amazing?</h3>
+            <p>Start by adding your first content block. Choose from text, images, and more!</p>
+          </div>
+          
+          <!-- Main Add Button -->
+          <div class="add-block-container add-menu-container" 
+               [class.menu-open]="showAddMenu && currentBlockId === null"
+               (mouseenter)="toggleAddMenu()"
+               (mouseleave)="closeAddMenu()">
+            <button class="add-block-btn main-add" 
+                    (click)="toggleAddMenu()"
+                    (mouseenter)="toggleAddMenu()">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            
+            <!-- Add Menu -->
+            <div class="add-menu" *ngIf="showAddMenu && currentBlockId === null">
+              <div class="menu-header">
+                <h4>Add Content Block</h4>
+              </div>
+              <button 
+                *ngFor="let blockType of blockTypes" 
+                class="menu-item"
+                (click)="addBlock(blockType.type)"
+              >
+                <span class="menu-icon">{{ blockType.icon }}</span>
+                <div class="menu-content">
+                  <span class="menu-label">{{ blockType.label }}</span>
+                  <span class="menu-description">Add {{ blockType.label.toLowerCase() }} content</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Blocks List -->
+        <div *ngFor="let block of blogBlocks; let i = index; trackBy: trackByBlockId" class="block-container">
+          <!-- Block Content -->
+          <div class="content-block" [ngClass]="'block-' + block.type">
+            <!-- Block Controls -->
+            <div class="block-controls">
+              <div class="control-group">
+                <button 
+                  class="control-btn" 
+                  (click)="moveBlockUp(block.id)" 
+                  [disabled]="i === 0"
+                  title="Move up"
+                >
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M5 12l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                
+                <button 
+                  class="control-btn" 
+                  (click)="moveBlockDown(block.id)" 
+                  [disabled]="i === blogBlocks.length - 1"
+                  title="Move down"
+                >
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M15 8l-5 5-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+                
+                <button 
+                  class="control-btn delete" 
+                  (click)="removeBlock(block.id)"
+                  title="Delete block"
+                >
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M6 6l8 8M14 6l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Block Input Based on Type -->
+            <div class="block-input">
+              <!-- Subtitle Block -->
+              <input 
+                *ngIf="block.type === 'subtitle'"
+                type="text"
+                class="subtitle-input"
+                [id]="'block-' + block.id"
+                [placeholder]="block.placeholder"
+                [value]="block.data"
+                (input)="onBlockChange(block.id, $any($event.target).value)"
+                maxlength="150"
+              />
+              
+              <!-- Content Block -->
+              <textarea 
+                *ngIf="block.type === 'content'"
+                class="content-input"
+                [id]="'block-' + block.id"
+                [placeholder]="block.placeholder"
+                [value]="block.data"
+                (input)="onBlockChange(block.id, $any($event.target).value); autoResize($event)"
+                rows="3"
+              ></textarea>
+              
+              <!-- Image Block -->
+              <div *ngIf="block.type === 'image'" class="image-block">
+                <!-- Image Upload Options -->
+                <div class="image-upload-options">
+                  <button 
+                    type="button" 
+                    class="upload-btn" 
+                    (click)="selectImageFile(block.id)"
+                    [disabled]="isUploadingImage"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ isUploadingImage ? 'Uploading...' : 'Upload from Device' }}
+                  </button>
+                  
+                  <span class="upload-divider">or</span>
+                  
+                  <input 
+                    type="url"
+                    class="image-url-input"
+                    [id]="'block-' + block.id"
+                    placeholder="Paste image URL"
+                    [value]="block.data"
+                    (input)="onBlockChange(block.id, $any($event.target).value)"
+                  />
+                </div>
+                
+                <!-- Loading State -->
+                <div *ngIf="isUploadingImage" class="upload-loading">
+                  <div class="loading-spinner"></div>
+                  <span>Uploading image...</span>
+                </div>
+                
+                <!-- Image Preview -->
+                <div *ngIf="block.data && !isUploadingImage" class="image-preview">
+                  <img [src]="block.data" [alt]="'Image preview'" 
+                       (error)="onImageError($event, block.id)" 
+                       (load)="onImageLoad($event, block.id)" />
+                  <div class="image-url-display">
+                    <small>{{ block.data }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Block Between Elements -->
+          <div class="add-block-container add-menu-container" 
+               [class.menu-open]="showAddMenu && currentBlockId === block.id"
+               (mouseenter)="toggleAddMenu(block.id)"
+               (mouseleave)="closeAddMenu()">
+            <button class="add-block-btn" 
+                    (click)="toggleAddMenu(block.id)"
+                    (mouseenter)="toggleAddMenu(block.id)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            
+            <!-- Add Menu -->
+            <div class="add-menu" *ngIf="showAddMenu && currentBlockId === block.id">
+              <div class="menu-header">
+                <h4>Add Content Block</h4>
+              </div>
+              <button 
+                *ngFor="let blockType of blockTypes" 
+                class="menu-item"
+                (click)="addBlock(blockType.type)"
+              >
+                <span class="menu-icon">{{ blockType.icon }}</span>
+                <div class="menu-content">
+                  <span class="menu-label">{{ blockType.label }}</span>
+                  <span class="menu-description">Add {{ blockType.label.toLowerCase() }} content</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Actions (Mobile) -->
+  <div class="bottom-actions mobile-only">
+    <button class="mobile-btn primary" (click)="openPublishModal()" [disabled]="!blogTitle || blogBlocks.length === 0">
+      Publish
+    </button>
+  </div>
+</div>
+
+<!-- Publish Modal -->
+<div *ngIf="showPublishModal" class="publish-modal-overlay">
+  <div class="publish-modal">
+    <div class="modal-header">
+      <h2>Publish Blog</h2>
+      <button class="close-btn" (click)="closePublishModal()">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Main Image Upload -->
+      <div class="form-group">
+        <label>📸 Featured Image</label>
+        <div class="main-image-upload">
+          <!-- No Image State -->
+          <div *ngIf="!mainImageUrl" class="upload-area">
+            <div class="upload-placeholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <p>No featured image selected</p>
+              <small>This will be shown as the cover image</small>
+            </div>
+          </div>
+          
+          <!-- Image Preview -->
+          <div *ngIf="mainImageUrl" class="image-preview">
+            <img 
+              [src]="mainImageUrl" 
+              alt="Featured image preview"
+              (error)="onMainImageError($event)"
+            />
+            <button type="button" class="remove-btn" (click)="removeMainImage()">×</button>
+          </div>
+          
+          <!-- Upload Actions -->
+          <button 
+            type="button" 
+            class="upload-btn"
+            (click)="selectMainImageFile()"
+            [disabled]="isUploadingMainImage"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span *ngIf="!isUploadingMainImage">{{ mainImageUrl ? 'Change Image' : 'Upload Featured Image' }}</span>
+            <span *ngIf="isUploadingMainImage">Uploading...</span>
+          </button>
+          
+          <!-- Upload Loading -->
+          <div *ngIf="isUploadingMainImage" class="upload-loading">
+            <div class="loading-spinner"></div>
+            <span>Uploading featured image...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags Section -->
+      <div class="form-group">
+        <label>🏷️ Tags (Help readers discover your content)</label>
+        
+        <!-- Add Custom Tag -->
+        <div class="add-tag-section">
+          <div class="tag-input-group">
+            <input 
+              type="text" 
+              class="tag-input" 
+              placeholder="Enter tag name (case-insensitive)..."
+              [(ngModel)]="newTagInput"
+              (keyup.enter)="addCustomTag()"
+              maxlength="20"
+            />
+            <button 
+              type="button" 
+              class="add-tag-btn" 
+              (click)="addCustomTag()"
+              [disabled]="!newTagInput.trim() || selectedTags.length >= 10"
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Add Tag
+            </button>
+          </div>
+        </div>
+
+        <!-- Selected Tags -->
+        <div class="selected-tags" *ngIf="selectedTags.length > 0">
+          <h4>Selected Tags ({{ selectedTags.length }}/10):</h4>
+          <div class="tags-list">
+            <span 
+              *ngFor="let tag of selectedTags" 
+              class="tag-item selected"
+            >
+              {{ tag }}
+              <button 
+                type="button" 
+                class="remove-tag-btn" 
+                (click)="removeTag(tag)"
+              >
+                &times;
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <!-- Recommended Tags -->
+        <div class="recommended-tags" *ngIf="availableTags.length > 0">
+          <h4>💡 Recommended Tags:</h4>
+          <div class="tags-grid">
+            <span 
+              *ngFor="let tag of availableTags" 
+              class="tag-item recommended"
+              [class.disabled]="selectedTags.includes(tag.name) || selectedTags.length >= 10"
+              (click)="addRecommendedTag(tag.name)"
+            >
+              {{ tag.name }}
+              <span *ngIf="selectedTags.includes(tag.name)" class="checkmark">✓</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button 
+        type="button" 
+        class="btn secondary" 
+        (click)="closePublishModal()"
+      >
+        Cancel
+      </button>
+        <button 
+          type="button" 
+          class="btn primary" 
+          (click)="publishBlog()" 
+          [disabled]="isPublishing"
+        >
+          <svg *ngIf="!isPublishing" width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" fill="currentColor"/>
+          </svg>
+          <div *ngIf="isPublishing" class="spinner"></div>
+          <span *ngIf="!isPublishing">🚀 Publish Blog</span>
+          <span *ngIf="isPublishing">Publishing...</span>
+        </button>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>
