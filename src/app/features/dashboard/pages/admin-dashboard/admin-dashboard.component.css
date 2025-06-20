@@ -1,4 +1,4 @@
-/* Modern Dashboard Design System */
+/* Modern Dashboard Design System - Optimized */
 :root {
   --primary: #4f46e5;
   --primary-dark: #3730a3;
@@ -119,7 +119,7 @@
 
 .chart-header {
   display: flex;
-  justify-content: between;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
@@ -402,60 +402,21 @@ canvas {
   color: var(--text-secondary);
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .chart-container {
-    padding: 1.5rem;
-  }
-  
-  .kpi-card {
-    padding: 1.25rem;
+/* Responsive Design - Mobile First Approach */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 768px) {
-  .dashboard-bg {
-    padding: 1rem;
-  }
-  
-  .chart-container {
-    padding: 1rem;
-  }
-  
-  .kpi-card {
-    padding: 1rem;
-  }
-  
-  .btn {
-    padding: 0.625rem 1.25rem;
-    font-size: 0.8125rem;
-  }
-  
-  .chart-title {
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .dashboard-bg {
-    padding: 0.75rem;
-  }
-  
-  .chart-container {
-    padding: 0.75rem;
-  }
-  
-  .kpi-card {
-    padding: 0.75rem;
-  }
-  
-  .btn {
-    padding: 0.5rem 1rem;
-    font-size: 0.75rem;
-  }
-  
-  .form-control {
-    padding: 0.625rem 0.875rem;
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 
@@ -523,97 +484,6 @@ canvas {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Dropdown styles */
-.dropdown-toggle:hover + div,
-.dropdown-toggle:focus + div,
-div:hover {
-  display: block !important;
-}
-
-/* Chart container responsive styles */
-canvas {
-  max-width: 100%;
-  height: auto !important;
-}
-
-/* Card hover effects */
-.bg-white {
-  transition: box-shadow 0.3s ease;
-}
-
-.bg-white:hover {
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-/* Button hover effects */
-button {
-  transition: all 0.2s ease;
-}
-
-/* Focus styles for accessibility */
-input:focus,
-select:focus {
-  outline: none;
-  ring: 2px;
-  ring-color: #3b82f6;
-  border-color: #3b82f6;
-}
-
-/* Responsive typography */
-@media (max-width: 768px) {
-  h1 {
-    font-size: 1.875rem;
-  }
-  
-  .grid {
-    gap: 1rem;
-  }
-}
-
-/* Custom badge styles */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-/* Activity feed timeline */
-.activity-timeline {
-  position: relative;
-}
-
-.activity-timeline::before {
-  content: '';
-  position: absolute;
-  left: 0.5rem;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: #e2e8f0;
-}
-
-/* Chart loading state */
-.chart-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 320px;
-  background: #f8fafc;
-  border-radius: 0.5rem;
-}
-
 /* Export dropdown */
 .export-dropdown {
   position: absolute;
@@ -663,13 +533,16 @@ select:focus {
     gap: 0.75rem;
   }
   
-  .space-x-3 > * + * {
-    margin-left: 0;
-    margin-top: 0.75rem;
+  .chart-container {
+    padding: 1rem;
+  }
+  
+  .kpi-card {
+    padding: 1rem;
   }
 }
 
-/* Dark mode support (if needed) */
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .bg-gray-50 {
     background-color: #1f2937;
@@ -701,5 +574,10 @@ select:focus {
   .shadow-sm {
     box-shadow: none !important;
   }
+  
+  .chart-container,
+  .kpi-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 }
-
