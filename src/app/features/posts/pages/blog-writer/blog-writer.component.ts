@@ -1,15 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { BlogService } from '../../../../core/services/blog.service';
 import { ImageUploadService } from '../../../../core/services/image-upload.service';
 import { FooterComponent } from "../../../../shared/components/footer/footer.component";
-import { Tag } from '../../../../shared/interfaces/post.interface';
 import { DateUtil } from '../../../../shared/utils/date.util';
 import { normalizeTag, normalizeTags, areTagsEqual } from '../../../../shared/utils/tag-utils';
+import { Editor, Toolbar, NgxEditorModule } from 'ngx-editor';
 
 export interface BlogBlock {
   id: string;
@@ -21,7 +21,7 @@ export interface BlogBlock {
 @Component({
   selector: 'app-blog-writer',
   standalone: true,
-  imports: [CommonModule, FormsModule, FooterComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, FooterComponent, NgxEditorModule],
   templateUrl: './blog-writer.component.html',
   styleUrl: './blog-writer.component.css'
 })
@@ -31,6 +31,19 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   // Blog data
   blogTitle = '';
   blogBlocks: BlogBlock[] = [];
+  
+  // Rich text editor
+  editor: Editor;
+  editorContent = new FormControl('');
+  toolbar: Toolbar = [
+    ['bold', 'italic', 'underline', 'strike'],
+    ['ordered_list', 'bullet_list'],
+    ['blockquote', 'code'],
+    ['link', 'image'],
+    ['align_left', 'align_center', 'align_right', 'align_justify'],
+    ['text_color', 'background_color'],
+    ['heading']
+  ];
   
   // UI state
   showAddMenu = false;
@@ -47,7 +60,7 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   mainImageUrl = '';
   selectedTags: string[] = [];
   newTagInput = '';
-  availableTags: Tag[] = [];
+  availableTags: any[] = [];
   isLoadingTags = false;
   
   // Message container
@@ -67,16 +80,25 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     private router: Router,
     private blogService: BlogService,
     private imageUploadService: ImageUploadService
-  ) {}
+  ) {
+    // Initialize the editor
+    this.editor = new Editor();
+  }
 
   ngOnInit(): void {
     this.checkAuthStatus();
     this.loadAvailableTags();
+    
+    // Add a default content block with the rich text editor
+    this.addBlock('content');
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    
+    // Destroy the editor instance
+    this.editor.destroy();
   }
 
   private checkAuthStatus(): void {
@@ -292,13 +314,13 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     }
     
     // Validate file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024;
-        if (file.size > maxSize) {
-          this.showMessageContainer('Image size should be less than 5MB', 'error');
-          return;
-        }
-        
-        this.uploadImageToS3(file, blockId);
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.showMessageContainer('Image size should be less than 5MB', 'error');
+      return;
+    }
+    
+    this.uploadImageToS3(file, blockId);
   }
   
   // Upload image to AWS S3
@@ -348,7 +370,6 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     return timestamp + random.padEnd(16, '0');
   }
 
-
   // Get current user ID (you might need to implement this based on your auth service)
   private getCurrentUserId(): string {
     // For now, return a placeholder. You should get this from your auth service
@@ -383,7 +404,7 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   // Discard changes and go back
   discardChanges(): void {
     if (this.blogTitle || this.blogBlocks.length > 0) {
-        this.router.navigate(['/home']);
+      this.router.navigate(['/home']);
     } else {
       this.router.navigate(['/home']);
     }
@@ -537,6 +558,30 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   publishBlog(): void {
     this.isPublishing = true;
 
+    // Get content from the rich text editor
+    const editorContent = this.editorContent.value;
+    
+    // Create a content block with the editor content
+    const contentBlock = {
+      id: this.generateId(),
+      type: 'content' as const,
+      data: editorContent || ''
+    };
+    
+    // Ensure we have at least one content block
+    if (this.blogBlocks.length === 0) {
+      this.blogBlocks.push(contentBlock);
+    } else {
+      // Update the first content block if it exists
+      const contentBlockIndex = this.blogBlocks.findIndex(block => block.type === 'content');
+      if (contentBlockIndex >= 0) {
+        this.blogBlocks[contentBlockIndex].data = editorContent || '';
+      } else {
+        // Add a new content block if none exists
+        this.blogBlocks.push(contentBlock);
+      }
+    }
+
     // Convert blocks to content string
     const contentJsonString = JSON.stringify(this.blogBlocks);
 
@@ -612,18 +657,8 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Handle main image error event
-  onMainImageError(event: Event): void {
-    const target = event.target as HTMLImageElement;
-    if (target) {
-      target.src = this.getDefaultImage();
-      this.showMessageContainer('Failed to load main image. Using default image.', 'error');
-    }
-  }
-
   // Get default image placeholder
   getDefaultImage(): string {
     return 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
   }
 }
-

@@ -54,6 +54,17 @@
         <div class="title-counter">{{ blogTitle.length }}/200</div>
       </div>
 
+      <!-- Rich Text Editor -->
+      <div class="rich-editor-container">
+        <ngx-editor
+          [editor]="editor"
+          [ngModel]="editorContent.value"
+          [placeholder]="'Start writing your amazing blog post...'"
+          [toolbar]="toolbar"
+          (ngModelChange)="editorContent.setValue($event)"
+        ></ngx-editor>
+      </div>
+
       <!-- Content Blocks -->
       <div class="content-blocks">
         <!-- Empty state with add button -->

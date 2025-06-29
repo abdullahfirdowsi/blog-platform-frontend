@@ -2,6 +2,7 @@
 @import '../tailwind.css';
 @import '@fortawesome/fontawesome-free/css/all.css';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import 'ngx-editor/ngx-editor.css';
 
 /* CSS Custom Properties for Color System */
 :root {
@@ -555,4 +556,66 @@ em, i {
     border-color: var(--color-gray-300);
     color: var(--color-gray-700);
   }
+}
+
+/* NGX Editor Custom Styles */
+.NgxEditor {
+  background-color: rgba(31, 41, 55, 0.4) !important;
+  border: 1px solid rgba(102, 126, 234, 0.1) !important;
+  border-radius: 16px !important;
+  color: #ffffff !important;
+  min-height: 300px !important;
+  margin-bottom: 2rem !important;
+}
+
+.NgxEditor__Content {
+  padding: 1.5rem !important;
+  min-height: 250px !important;
+  color: #e5e7eb !important;
+}
+
+.NgxEditor__Placeholder {
+  color: #9ca3af !important;
+}
+
+.NgxEditor__MenuBar {
+  background-color: rgba(17, 24, 39, 0.6) !important;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.1) !important;
+  border-top-left-radius: 16px !important;
+  border-top-right-radius: 16px !important;
+}
+
+.NgxEditor__MenuItem {
+  color: #e5e7eb !important;
+}
+
+.NgxEditor__MenuItem--Active {
+  background-color: rgba(102, 126, 234, 0.2) !important;
+  color: #ffffff !important;
+}
+
+.NgxEditor__MenuItem:hover {
+  background-color: rgba(102, 126, 234, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.NgxEditor__Dropdown {
+  background-color: rgba(17, 24, 39, 0.95) !important;
+  border: 1px solid rgba(102, 126, 234, 0.2) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+}
+
+.NgxEditor__Dropdown-Item {
+  color: #e5e7eb !important;
+}
+
+.NgxEditor__Dropdown-Item:hover {
+  background-color: rgba(102, 126, 234, 0.1) !important;
+  color: #ffffff !important;
+}
+
+/* Rich editor container */
+.rich-editor-container {
+  margin-bottom: 2rem;
 }
