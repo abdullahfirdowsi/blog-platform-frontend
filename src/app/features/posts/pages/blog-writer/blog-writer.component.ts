@@ -33,7 +33,7 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
   blogBlocks: BlogBlock[] = [];
   
   // Rich text editor
-  editor: Editor;
+  editor!: Editor;
   editorContent = new FormControl('');
   toolbar: Toolbar = [
     ['bold', 'italic', 'underline', 'strike'],
@@ -80,12 +80,12 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     private router: Router,
     private blogService: BlogService,
     private imageUploadService: ImageUploadService
-  ) {
-    // Initialize the editor
-    this.editor = new Editor();
-  }
+  ) {}
 
   ngOnInit(): void {
+    // Initialize the editor
+    this.editor = new Editor();
+    
     this.checkAuthStatus();
     this.loadAvailableTags();
     
@@ -98,7 +98,9 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
     
     // Destroy the editor instance
-    this.editor.destroy();
+    if (this.editor) {
+      this.editor.destroy();
+    }
   }
 
   private checkAuthStatus(): void {
