@@ -2,7 +2,6 @@
 @import '../tailwind.css';
 @import '@fortawesome/fontawesome-free/css/all.css';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import 'ngx-editor/ngx-editor.css';
 
 /* CSS Custom Properties for Color System */
 :root {
