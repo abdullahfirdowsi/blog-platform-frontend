@@ -42,7 +42,7 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     ['link', 'image'],
     ['align_left', 'align_center', 'align_right', 'align_justify'],
     ['text_color', 'background_color'],
-    'heading'
+    ['heading']
   ];
   
   // UI state
