@@ -56,11 +56,11 @@
 
       <!-- Rich Text Editor -->
       <div class="rich-editor-container">
+        <ngx-editor-menu [editor]="editor"></ngx-editor-menu>
         <ngx-editor
           [editor]="editor"
           [ngModel]="editorContent.value"
           [placeholder]="'Start writing your amazing blog post...'"
-          [toolbar]="toolbar"
           (ngModelChange)="editorContent.setValue($event)"
         ></ngx-editor>
       </div>
@@ -301,7 +301,7 @@
             <img 
               [src]="mainImageUrl" 
               alt="Featured image preview"
-              (error)="onMainImageError($event)"
+              (error)="onImageError($event)"
             />
             <button type="button" class="remove-btn" (click)="removeMainImage()">×</button>
           </div>

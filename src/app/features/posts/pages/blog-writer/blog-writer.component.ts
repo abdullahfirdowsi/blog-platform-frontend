@@ -42,7 +42,7 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
     ['link', 'image'],
     ['align_left', 'align_center', 'align_right', 'align_justify'],
     ['text_color', 'background_color'],
-    [{ heading: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] }]
+    { heading: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] }
   ];
   
   // UI state
@@ -653,14 +653,6 @@ export class BlogWriterComponent implements OnInit, OnDestroy {
 
   // Handle image error event
   onImageError(event: Event, blockId?: string): void {
-    const target = event.target as HTMLImageElement;
-    if (target) {
-      target.src = this.getDefaultImage();
-    }
-  }
-
-  // Handle main image error event
-  onMainImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
     if (target) {
       target.src = this.getDefaultImage();
